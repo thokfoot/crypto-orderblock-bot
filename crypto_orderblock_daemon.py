@@ -73,30 +73,44 @@ logging.basicConfig(
 log = logging.getLogger("CryptoDaemon")
 
 # --------------------------------------------------------------------------- #
-# TELEGRAM NOTIFIER
+# TELEGRAM NOTIFIER & INTERACTIVE BUTTONS
 # --------------------------------------------------------------------------- #
-def send_telegram(message: str):
-    """Send formatted alert to Telegram."""
+STATUS_KEYBOARD = json.dumps({
+    "keyboard": [
+        [{"text": "📊 Status Summary"}, {"text": "💰 P&L Report"}]
+    ],
+    "resize_keyboard": True,
+    "is_persistent": True
+})
+
+def send_telegram(message: str, reply_markup=STATUS_KEYBOARD):
+    """Send formatted alert to Telegram with persistent status summary buttons."""
     if not TELEGRAM_BOT_TOKEN or "placeholder" in TELEGRAM_BOT_TOKEN:
         log.info(f"[TELEGRAM SIMULATED]:\n{message}")
         return
     try:
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        payload = urllib.parse.urlencode({
+        payload_dict = {
             "chat_id": TELEGRAM_CHAT_ID,
             "text": message,
             "parse_mode": "Markdown"
-        }).encode("utf-8")
+        }
+        if reply_markup:
+            payload_dict["reply_markup"] = reply_markup
+        payload = urllib.parse.urlencode(payload_dict).encode("utf-8")
         req = urllib.request.Request(url, data=payload, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, timeout=8) as resp:
             pass
     except Exception as e:
         # Fallback to plain text if markdown formatting fails
         try:
-            payload_plain = urllib.parse.urlencode({
+            payload_dict_plain = {
                 "chat_id": TELEGRAM_CHAT_ID,
                 "text": message.replace("*", "").replace("`", "")
-            }).encode("utf-8")
+            }
+            if reply_markup:
+                payload_dict_plain["reply_markup"] = reply_markup
+            payload_plain = urllib.parse.urlencode(payload_dict_plain).encode("utf-8")
             req = urllib.request.Request(url, data=payload_plain, headers={"User-Agent": "Mozilla/5.0"})
             with urllib.request.urlopen(req, timeout=8) as resp:
                 pass
@@ -331,6 +345,7 @@ class CryptoPaperTrader:
         self.open_positions = {}  # {symbol: position_dict}
         self.trade_history = []
         self.last_scan_time = 0
+        self.last_update_id = 0
         self.load_state()
 
     def load_state(self):
@@ -344,6 +359,7 @@ class CryptoPaperTrader:
                         data = json.load(f)
                     self.capital = data.get("capital", INITIAL_CAPITAL)
                     self.open_positions = data.get("open_positions", {})
+                    self.last_update_id = data.get("last_update_id", 0)
                     log.info(f"Loaded existing state from {path}: Capital=${self.capital:.2f}, Open Trades={len(self.open_positions)}")
                     loaded = True
                     break
@@ -357,6 +373,7 @@ class CryptoPaperTrader:
             "capital": round(self.capital, 2),
             "open_positions": self.open_positions,
             "total_trades": len(self.trade_history),
+            "last_update_id": self.last_update_id,
             "updated_at": datetime.now(timezone.utc).isoformat()
         }
         for path in [DASHBOARD_FILE, "crypto_dashboard.json"]:
@@ -371,6 +388,74 @@ class CryptoPaperTrader:
                 os.replace(temp_path, path)
             except Exception as e:
                 log.warning(f"Could not atomically save to {path}: {e}")
+
+    def send_telegram_status_summary(self):
+        """Sends comprehensive live portfolio and PnL status card to Telegram."""
+        btc_bullish, btc_info = check_btc_regime()
+        lines = [
+            "📊 *CRYPTO BOT LIVE STATUS SUMMARY*",
+            "━━━━━━━━━━━━━━━━━━━━━━",
+            f"💰 *Capital Balance:* `${self.capital:,.2f} USD`",
+            f"📈 *Active Trades:* `{len(self.open_positions)} / {MAX_CONCURRENT_TRADES}`",
+            f"🔄 *Macro BTC 1H:* `{'🟢 BULLISH' if btc_bullish else '🔴 BEARISH/NEUTRAL'}` ({btc_info})",
+            ""
+        ]
+
+        if not self.open_positions:
+            lines.append("💤 *Positions:* No active positions. Scanning on 15m closes.")
+        else:
+            total_unrealized_usd = 0.0
+            for sym, pos in self.open_positions.items():
+                cur_p = get_live_price(sym)
+                entry_p = pos["entry_price"]
+                action = pos["action"]
+                notional = pos["notional_usd"]
+                if cur_p:
+                    pnl_pct = ((cur_p - entry_p) / entry_p * 100) if action == "BUY" else ((entry_p - cur_p) / entry_p * 100)
+                    pnl_usd = notional * (pnl_pct / 100.0)
+                    total_unrealized_usd += pnl_usd
+                    status_tag = "🛡️ 50% SCALED OUT" if pos.get("scaled_out") else ("🛡️ BE-LOCKED" if pos.get("breakeven_locked") else "🟢 ACTIVE")
+                    lines.extend([
+                        f"• *{sym}* ({action} @ `${entry_p:,.4f}`):",
+                        f"  - *Live Price:* `${cur_p:,.4f}` (`{pnl_pct:+.2f}%` / `${pnl_usd:+.2f}`)",
+                        f"  - *Position Size:* `${notional:.2f}` ({status_tag})",
+                        f"  - *Stop Loss:* `${pos['current_sl']:,.4f}` | *TP:* `${pos['tp']:,.4f}`",
+                        ""
+                    ])
+            lines.append(f"💵 *Total Floating P&L:* `${total_unrealized_usd:+.2f} USD`")
+
+        lines.extend([
+            "━━━━━━━━━━━━━━━━━━━━━━",
+            f"💎 *Net Realized P&L:* `${self.capital - INITIAL_CAPITAL:+.2f} USD` (After all fees)",
+            f"⏱️ *System Status:* Active 24/7 Cloud Daemon",
+            "👉 _Tap buttons below anytime for instant refresh_"
+        ])
+
+        msg = "\n".join(lines)
+        log.info("Sending live status summary to Telegram...")
+        send_telegram(msg)
+
+    def check_telegram_inbox(self):
+        """Polls for Telegram commands (/status, /summary, or button clicks)."""
+        if not TELEGRAM_BOT_TOKEN or "placeholder" in TELEGRAM_BOT_TOKEN:
+            return
+        try:
+            url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates?offset={self.last_update_id + 1}&limit=10&timeout=1"
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=4) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                for update in data.get("result", []):
+                    self.last_update_id = max(self.last_update_id, update.get("update_id", 0))
+                    msg = update.get("message", {})
+                    text = msg.get("text", "").strip()
+                    chat_id = str(msg.get("chat", {}).get("id", ""))
+                    if chat_id != str(TELEGRAM_CHAT_ID):
+                        continue
+                    if any(cmd in text.lower() for cmd in ["/status", "/summary", "/start", "status", "summary", "📊", "💰", "report"]):
+                        self.send_telegram_status_summary()
+                        self.save_state()
+        except Exception:
+            pass
 
     def log_trade_to_csv(self, trade_record):
         df = pd.DataFrame([trade_record])
@@ -609,7 +694,10 @@ class CryptoPaperTrader:
 
     def run_cycle(self):
         now = time.time()
-        # 1. Manage active positions
+        # 1. Listen for interactive Telegram user commands (/status, /summary, buttons)
+        self.check_telegram_inbox()
+
+        # 2. Manage active positions
         self.manage_positions()
 
         # 2. Run new market scan every 15 mins (if slots available)

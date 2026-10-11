@@ -54,26 +54,40 @@ logging.basicConfig(
 )
 log = logging.getLogger("USABot")
 
-def send_telegram(msg: str):
+STATUS_KEYBOARD = json.dumps({
+    "keyboard": [
+        [{"text": "📊 Status Summary"}, {"text": "💰 P&L Report"}]
+    ],
+    "resize_keyboard": True,
+    "is_persistent": True
+})
+
+def send_telegram(msg: str, reply_markup=STATUS_KEYBOARD):
     if not TELEGRAM_BOT_TOKEN or "placeholder" in TELEGRAM_BOT_TOKEN:
         log.info(f"[TELEGRAM SIMULATED]: {msg}")
         return
     try:
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        payload = urllib.parse.urlencode({
+        payload_dict = {
             "chat_id": TELEGRAM_CHAT_ID,
             "text": msg,
             "parse_mode": "Markdown"
-        }).encode("utf-8")
+        }
+        if reply_markup:
+            payload_dict["reply_markup"] = reply_markup
+        payload = urllib.parse.urlencode(payload_dict).encode("utf-8")
         req = urllib.request.Request(url, data=payload, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, timeout=8) as resp:
             pass
     except Exception as e:
         try:
-            payload_plain = urllib.parse.urlencode({
+            payload_dict_plain = {
                 "chat_id": TELEGRAM_CHAT_ID,
                 "text": msg.replace("*", "").replace("`", "")
-            }).encode("utf-8")
+            }
+            if reply_markup:
+                payload_dict_plain["reply_markup"] = reply_markup
+            payload_plain = urllib.parse.urlencode(payload_dict_plain).encode("utf-8")
             req = urllib.request.Request(url, data=payload_plain, headers={"User-Agent": "Mozilla/5.0"})
             with urllib.request.urlopen(req, timeout=8) as resp:
                 pass
@@ -85,6 +99,7 @@ class USAOptionsTrader:
         self.capital = INITIAL_CAPITAL
         self.active_trade = None
         self.last_trade_date = None
+        self.last_update_id = 0
         self.load_state()
 
     def load_state(self):
@@ -97,6 +112,7 @@ class USAOptionsTrader:
                         self.capital = data.get("capital", INITIAL_CAPITAL)
                         self.active_trade = data.get("active_trade", None)
                         self.last_trade_date = data.get("last_trade_date", None)
+                        self.last_update_id = data.get("last_update_id", 0)
                         break
                 except Exception:
                     pass
@@ -106,6 +122,7 @@ class USAOptionsTrader:
             "capital": round(self.capital, 2),
             "active_trade": self.active_trade,
             "last_trade_date": self.last_trade_date,
+            "last_update_id": self.last_update_id,
             "updated_at": datetime.now(pytz.utc).isoformat()
         }
         os.makedirs("data", exist_ok=True)
@@ -118,6 +135,63 @@ class USAOptionsTrader:
             except Exception as e:
                 log.warning(f"Could not atomically save to {p}: {e}")
 
+    def send_telegram_status_summary(self):
+        """Sends rich status summary of USA options trading account."""
+        is_open, status_str = self.is_market_open()
+        now_ny = datetime.now(TZ_NY)
+        lines = [
+            "🇺🇸 *USA SPY OPTIONS LIVE STATUS SUMMARY*",
+            "━━━━━━━━━━━━━━━━━━━━━━",
+            f"💰 *Capital Balance:* `${self.capital:,.2f} USD`",
+            f"🕒 *Market Status:* `{status_str}` ({now_ny.strftime('%I:%M %p EST')})",
+            ""
+        ]
+
+        if self.active_trade:
+            t = self.active_trade
+            lines.extend([
+                f"• *Active Position:* `{t.get('structure')}`",
+                f"  - *Entry Spot:* `${t.get('entry_spot', 0):,.2f}`",
+                f"  - *Cost / Risk:* `${t.get('entry_cost', 0):,.2f}`",
+                f"  - *Entry Time:* `{t.get('entry_time')}`",
+                ""
+            ])
+        else:
+            lines.append("💤 *Positions:* No open spread right now. Market opens Mon-Fri 09:30 AM EST.")
+
+        lines.extend([
+            "",
+            "━━━━━━━━━━━━━━━━━━━━━━",
+            f"💎 *Realized P&L:* `${self.capital - INITIAL_CAPITAL:+.2f} USD`",
+            "🛡️ *Strategy:* 100% Hedged Bull Call Spread (Spot Stop -0.30%)",
+            "👉 _Tap buttons below anytime for instant refresh_"
+        ])
+        msg = "\n".join(lines)
+        log.info("Sending USA status summary to Telegram...")
+        send_telegram(msg)
+
+    def check_telegram_inbox(self):
+        """Polls for Telegram commands (/status, /summary, or button clicks)."""
+        if not TELEGRAM_BOT_TOKEN or "placeholder" in TELEGRAM_BOT_TOKEN:
+            return
+        try:
+            url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates?offset={self.last_update_id + 1}&limit=10&timeout=1"
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=4) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                for update in data.get("result", []):
+                    self.last_update_id = max(self.last_update_id, update.get("update_id", 0))
+                    msg = update.get("message", {})
+                    text = msg.get("text", "").strip()
+                    chat_id = str(msg.get("chat", {}).get("id", ""))
+                    if chat_id != str(TELEGRAM_CHAT_ID):
+                        continue
+                    if any(cmd in text.lower() for cmd in ["/status", "/summary", "/start", "status", "summary", "📊", "💰", "report"]):
+                        self.send_telegram_status_summary()
+                        self.save_state()
+        except Exception:
+            pass
+
     def is_market_open(self):
         now_ny = datetime.now(TZ_NY)
         # Weekday check (0 = Mon, 4 = Fri, 5/6 = Sat/Sun)
@@ -129,6 +203,9 @@ class USAOptionsTrader:
         return True, "Market Open"
 
     def run_cycle(self):
+        # 1. Listen for interactive Telegram user commands (/status, /summary, buttons)
+        self.check_telegram_inbox()
+
         is_open, status_str = self.is_market_open()
         now_ny = datetime.now(TZ_NY)
         t = now_ny.time()
