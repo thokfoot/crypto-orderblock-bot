@@ -39,6 +39,7 @@ import numpy as np
 INITIAL_CAPITAL = 2000.0
 TRADE_ALLOCATION_USD = 200.0  # $200 per position (10% of capital)
 MAX_CONCURRENT_TRADES = 3
+ROUNDTRIP_FEE_PCT = 0.30  # Realistic friction: 0.10% taker fees + 0.08% spread crossing + 0.12% slippage
 POLL_INTERVAL_SECS = int(os.environ.get("POLL_INTERVAL_SECS", "15"))  # Poll every 15s for responsive exits
 SCAN_INTERVAL_SECS = int(os.environ.get("SCAN_INTERVAL_SECS", "900")) # Market scan every 15 mins (900s)
 RUN_MINUTES = int(os.environ.get("RUN_MINUTES", "0"))                 # 0 = infinite loop, >0 = bounded cloud run
@@ -132,10 +133,31 @@ def get_klines_df(symbol: str, interval="15m", limit=80):
     return df
 
 # --------------------------------------------------------------------------- #
+# BTC MACRO REGIME FILTER (COUNCIL CONSENSUS)
+# --------------------------------------------------------------------------- #
+def check_btc_regime():
+    """Checks Bitcoin 1h trend regime: BTC > EMA50 and RSI > 48."""
+    btc_df = get_klines_df("BTCUSDT", interval="1h", limit=60)
+    if btc_df is None or len(btc_df) < 50:
+        return True, "BTC Data Fallback"
+    btc_close = btc_df["close"].iloc[-1]
+    btc_ema50 = btc_df["close"].ewm(span=50).mean().iloc[-1]
+    delta = btc_df["close"].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(14).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
+    rs = gain / (loss + 1e-9)
+    btc_rsi = float((100 - (100 / (1 + rs))).iloc[-1])
+    is_bullish = bool((btc_close > btc_ema50) and (btc_rsi > 48.0))
+    return is_bullish, f"BTC=${btc_close:,.1f}, EMA50=${btc_ema50:,.1f}, RSI={btc_rsi:.1f}"
+
+# --------------------------------------------------------------------------- #
 # V2 ORDER BLOCK & LIQUIDITY SCANNER
 # --------------------------------------------------------------------------- #
 def scan_order_block_setups():
-    """Scans liquid pairs on Binance Futures for fresh Order Block retests."""
+    """Scans liquid pairs on Binance Futures for fresh Order Block retests with BTC regime filter."""
+    btc_bullish, btc_regime_info = check_btc_regime()
+    log.info(f"Macro BTC 1H Regime: Bullish={btc_bullish} ({btc_regime_info})")
+
     tickers = fetch_json("https://fapi.binance.com/fapi/v1/ticker/24hr")
     if not tickers:
         return []
@@ -212,18 +234,22 @@ def scan_order_block_setups():
                             reward_pct = (reward / cur_p) * 100
 
                             if rr >= 2.0 and 1.0 <= risk_pct <= 4.5 and reward_pct >= 2.5:
-                                candidate_setups.append({
-                                    "symbol": sym,
-                                    "action": "BUY",
-                                    "price": cur_p,
-                                    "ob_zone": (ob_bottom, ob_top),
-                                    "sl": final_sl,
-                                    "tp": tp,
-                                    "rr": rr,
-                                    "risk_pct": risk_pct,
-                                    "reward_pct": reward_pct
-                                })
-                                break
+                                if not btc_bullish:
+                                    log.info(f"Skipping {sym} BUY setup: Macro BTC 1H is Bearish/Neutral.")
+                                else:
+                                    candidate_setups.append({
+                                        "symbol": sym,
+                                        "action": "BUY",
+                                        "price": cur_p,
+                                        "ob_zone": (ob_bottom, ob_top),
+                                        "sl": final_sl,
+                                        "tp": tp,
+                                        "rr": rr,
+                                        "atr": atr_15m,
+                                        "risk_pct": risk_pct,
+                                        "reward_pct": reward_pct
+                                    })
+                                    break
 
         # Bearish OB Check
         for i in range(len(df) - 30, len(df) - 3):
@@ -265,18 +291,22 @@ def scan_order_block_setups():
                             reward_pct = (reward / cur_p) * 100
 
                             if rr >= 2.0 and 1.0 <= risk_pct <= 4.5 and reward_pct >= 2.5:
-                                candidate_setups.append({
-                                    "symbol": sym,
-                                    "action": "SELL",
-                                    "price": cur_p,
-                                    "ob_zone": (ob_bottom, ob_top),
-                                    "sl": final_sl,
-                                    "tp": tp,
-                                    "rr": rr,
-                                    "risk_pct": risk_pct,
-                                    "reward_pct": reward_pct
-                                })
-                                break
+                                if btc_bullish:
+                                    log.info(f"Skipping {sym} SHORT setup: Macro BTC 1H is Bullish.")
+                                else:
+                                    candidate_setups.append({
+                                        "symbol": sym,
+                                        "action": "SELL",
+                                        "price": cur_p,
+                                        "ob_zone": (ob_bottom, ob_top),
+                                        "sl": final_sl,
+                                        "tp": tp,
+                                        "rr": rr,
+                                        "atr": atr_15m,
+                                        "risk_pct": risk_pct,
+                                        "reward_pct": reward_pct
+                                    })
+                                    break
 
     return candidate_setups
 
@@ -358,6 +388,7 @@ class CryptoPaperTrader:
         sl = setup["sl"]
         tp = setup["tp"]
         rr = setup["rr"]
+        atr = setup.get("atr", cur_p * 0.015)
 
         pos = {
             "symbol": sym,
@@ -366,8 +397,12 @@ class CryptoPaperTrader:
             "current_sl": sl,
             "original_sl": sl,
             "tp": tp,
+            "atr": atr,
+            "peak_price": cur_p,
             "notional_usd": TRADE_ALLOCATION_USD,
             "entry_time": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "scaled_out": False,
+            "realized_pnl_usd": 0.0,
             "breakeven_locked": False,
             "peak_pnl_pct": 0.0
         }
@@ -389,7 +424,7 @@ class CryptoPaperTrader:
         send_telegram(msg)
 
     def manage_positions(self):
-        """Monitors active trades for Breakeven trailing, TP, and SL."""
+        """Monitors active trades for Scale-Out profit taking, Chandelier trailing, TP, and SL."""
         to_close = []
 
         for sym, pos in list(self.open_positions.items()):
@@ -399,53 +434,98 @@ class CryptoPaperTrader:
 
             action = pos["action"]
             entry_p = pos["entry_price"]
-            sl = pos["current_sl"]
             tp = pos["tp"]
             notional = pos["notional_usd"]
 
-            # Calculate current P&L %
+            # Track peak price
             if action == "BUY":
                 pnl_pct = ((cur_p - entry_p) / entry_p) * 100
+                if cur_p > pos.get("peak_price", entry_p):
+                    pos["peak_price"] = cur_p
             else:
                 pnl_pct = ((entry_p - cur_p) / entry_p) * 100
+                if cur_p < pos.get("peak_price", entry_p):
+                    pos["peak_price"] = cur_p
 
-            if pnl_pct > pos["peak_pnl_pct"]:
+            if pnl_pct > pos.get("peak_pnl_pct", 0.0):
                 pos["peak_pnl_pct"] = pnl_pct
 
-            # 1. Automated Breakeven Trailing Rule (Fee Protected)
-            # If trade hits +2.0% profit, trail SL to Entry Price + 0.12% buffer to guarantee fee-neutral exit
-            if pnl_pct >= 2.0 and not pos.get("breakeven_locked"):
-                be_price = entry_p * (1.0012 if action == "BUY" else 0.9988)
-                pos["current_sl"] = be_price
-                pos["breakeven_locked"] = True
+            atr_val = pos.get("atr", entry_p * 0.015)
+
+            # -------------------------------------------------------------
+            # 1. Scale-Out Profit Taking (Council Consensus):
+            # At +3.0% (or +1.5R), bank 50% cash to lock in positive skewness!
+            # -------------------------------------------------------------
+            if pnl_pct >= 3.0 and not pos.get("scaled_out"):
+                partial_notional = pos["notional_usd"] * 0.5
+                fee_usd = partial_notional * (ROUNDTRIP_FEE_PCT / 100.0)
+                partial_pnl_usd = (partial_notional * (pnl_pct / 100.0)) - fee_usd
+                self.capital += partial_pnl_usd
+                pos["notional_usd"] -= partial_notional
+                pos["scaled_out"] = True
+                pos["realized_pnl_usd"] = pos.get("realized_pnl_usd", 0.0) + partial_pnl_usd
+
+                # Floor the trailing stop at Entry + 0.40% buffer (covers 0.30% roundtrip friction with net credit)
+                be_floor = entry_p * (1.0040 if action == "BUY" else 0.9960)
+                pos["current_sl"] = max(pos["current_sl"], be_floor) if action == "BUY" else min(pos["current_sl"], be_floor)
                 self.save_state()
+
+                # Record partial scale-out to trade journal
+                scale_record = {
+                    "symbol": sym,
+                    "action": action,
+                    "entry_time": pos["entry_time"],
+                    "exit_time": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
+                    "entry_price": entry_p,
+                    "exit_price": cur_p,
+                    "pnl_pct": round(pnl_pct, 2),
+                    "fee_usd": round(fee_usd, 2),
+                    "pnl_usd": round(partial_pnl_usd, 2),
+                    "reason": "PARTIAL_TP_50PCT",
+                    "balance": round(self.capital, 2)
+                }
+                self.trade_history.append(scale_record)
+                self.log_trade_to_csv(scale_record)
+
                 msg = (
-                    f"🛡️ *BREAKEVEN LOCKED (RISK-FREE)*\n\n"
+                    f"💰 *SCALE-OUT PROFIT TAKEN (50% BANKED)*\n\n"
                     f"• *Coin:* `{sym}`\n"
-                    f"• *Current P&L:* `+{pnl_pct:.2f}%`\n"
-                    f"• *New SL:* `${be_price:,.4f}` (Entry + Fee Buffer)\n"
-                    f"• Trade is now 100% Risk-Free (Fees Protected)!"
+                    f"• *Trigger Gain:* `+{pnl_pct:.2f}%`\n"
+                    f"• *Banked Realized Cash:* `+${partial_pnl_usd:.2f} USD` (Added to Balance)\n"
+                    f"• *Remaining Runner Size:* `${pos['notional_usd']:.2f}`\n"
+                    f"• *Runner SL Floor:* `${pos['current_sl']:,.4f}` (Guaranteed Net Credit)\n"
+                    f"• *New Account Balance:* `${self.capital:,.2f}`"
                 )
-                log.info(f"Trailing SL moved to Breakeven for {sym} (P&L: +{pnl_pct:.2f}%)")
+                log.info(f"Scaled out 50% on {sym} @ +{pnl_pct:.2f}% (Banked ${partial_pnl_usd:.2f})")
                 send_telegram(msg)
 
-            # 2. Tiered Profit Lock: If trade hits +5.0% profit, lock in +2.5% profit!
-            if pnl_pct >= 5.0 and not pos.get("profit_locked_5pct"):
-                lock_price = entry_p * (1.025 if action == "BUY" else 0.975)
-                pos["current_sl"] = lock_price
-                pos["profit_locked_5pct"] = True
-                self.save_state()
-                msg = (
-                    f"💰 *PROFIT LOCKED (+2.5% PROTECTED)*\n\n"
-                    f"• *Coin:* `{sym}`\n"
-                    f"• *Current P&L:* `+{pnl_pct:.2f}%`\n"
-                    f"• *New Trailing SL:* `${lock_price:,.4f}`\n"
-                    f"• Minimum +2.5% Net Profit Secured!"
-                )
-                log.info(f"Trailing SL moved to +2.5% Lock for {sym} (P&L: +{pnl_pct:.2f}%)")
-                send_telegram(msg)
+            # -------------------------------------------------------------
+            # 2. Dynamic Chandelier Trailing Stop on Remaining 50% Runner
+            # -------------------------------------------------------------
+            if pos.get("scaled_out"):
+                peak_p = pos.get("peak_price", cur_p)
+                if action == "BUY":
+                    chandelier_sl = peak_p - (2.5 * atr_val)
+                    be_floor = entry_p * 1.0040
+                    target_sl = max(be_floor, chandelier_sl)
+                    if target_sl > pos["current_sl"]:
+                        pos["current_sl"] = target_sl
+                        self.save_state()
+                        log.info(f"Chandelier SL trailed to ${target_sl:.4f} for {sym}")
+                else:
+                    chandelier_sl = peak_p + (2.5 * atr_val)
+                    be_floor = entry_p * 0.9960
+                    target_sl = min(be_floor, chandelier_sl)
+                    if target_sl < pos["current_sl"]:
+                        pos["current_sl"] = target_sl
+                        self.save_state()
+                        log.info(f"Chandelier SL trailed to ${target_sl:.4f} for {sym}")
 
+            sl = pos["current_sl"]
+
+            # -------------------------------------------------------------
             # 3. Check Take Profit Hit
+            # -------------------------------------------------------------
             is_tp = (action == "BUY" and cur_p >= tp) or (action == "SELL" and cur_p <= tp)
             # 4. Check Stop Loss Hit
             is_sl = (action == "BUY" and cur_p <= sl) or (action == "SELL" and cur_p >= sl)
@@ -455,6 +535,10 @@ class CryptoPaperTrader:
                     reason = "TAKE_PROFIT"
                     exit_p = tp
                     trade_pnl_pct = ((tp - entry_p) / entry_p * 100) if action == "BUY" else ((entry_p - tp) / entry_p * 100)
+                elif pos.get("scaled_out"):
+                    reason = "RUNNER_TRAIL_EXIT"
+                    exit_p = sl
+                    trade_pnl_pct = ((sl - entry_p) / entry_p * 100) if action == "BUY" else ((entry_p - sl) / entry_p * 100)
                 elif pos.get("breakeven_locked"):
                     reason = "BREAKEVEN_EXIT"
                     exit_p = sl
@@ -464,10 +548,10 @@ class CryptoPaperTrader:
                     exit_p = cur_p
                     trade_pnl_pct = pnl_pct
 
-                # Account for Binance Futures Taker Fee (0.05% entry + 0.05% exit = 0.10% round-trip)
-                roundtrip_fee_pct = 0.10
-                fee_usd = notional * (roundtrip_fee_pct / 100.0)
-                gross_pnl_usd = notional * (trade_pnl_pct / 100.0)
+                # Account for realistic roundtrip friction (0.30%)
+                curr_notional = pos["notional_usd"]
+                fee_usd = curr_notional * (ROUNDTRIP_FEE_PCT / 100.0)
+                gross_pnl_usd = curr_notional * (trade_pnl_pct / 100.0)
                 net_pnl_usd = gross_pnl_usd - fee_usd
                 self.capital += net_pnl_usd
 

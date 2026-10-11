@@ -1,29 +1,20 @@
 {
-  "capital": 2000.0,
+  "capital": 2003.43,
   "open_positions": {
-    "RLCUSDT": {
-      "symbol": "RLCUSDT",
-      "action": "BUY",
-      "entry_price": 1.0535,
-      "current_sl": 1.0535,
-      "original_sl": 1.0079685714285715,
-      "tp": 1.148357142857143,
-      "notional_usd": 200.0,
-      "entry_time": "2026-10-11 13:20:47 UTC",
-      "breakeven_locked": true,
-      "peak_pnl_pct": 3.834836260085428
-    },
     "CFXUSDT": {
       "symbol": "CFXUSDT",
       "action": "BUY",
       "entry_price": 0.06613,
-      "current_sl": 0.06613,
+      "current_sl": 0.06639452,
       "original_sl": 0.06450399999999999,
       "tp": 0.07229,
-      "notional_usd": 200.0,
+      "notional_usd": 100.0,
       "entry_time": "2026-10-11 13:20:47 UTC",
       "breakeven_locked": true,
-      "peak_pnl_pct": 6.835021926508408
+      "peak_pnl_pct": 6.835021926508408,
+      "peak_price": 0.06873,
+      "scaled_out": true,
+      "realized_pnl_usd": 3.631649780734924
     },
     "ARBUSDT": {
       "symbol": "ARBUSDT",
@@ -35,9 +26,9 @@
       "notional_usd": 200.0,
       "entry_time": "2026-10-11 13:54:38 UTC",
       "breakeven_locked": false,
-      "peak_pnl_pct": 0.0
+      "peak_pnl_pct": 1.7984511921744333
     }
   },
   "total_trades": 0,
-  "updated_at": "2026-10-11T16:18:40.498601+00:00"
+  "updated_at": "2026-10-11T16:27:05.144557+00:00"
 }

@@ -1,7 +1,13 @@
 """
 usa_options_daemon.py
 =====================
-Autonomous 24/7 Production Daemon for SPY Hedged Options Spread (US Market).
+Autonomous Production Daemon for SPY Hedged Options Spread (US Market).
+
+[QUANT AUDIT COUNCIL CONSENSUS NOTICE]:
+This module is running in PAPER-SIMULATION SANDBOX ONLY.
+Live capital deployment is quarantined per Council Consensus until a full
+Black-Scholes-Merton Greek engine (Delta, Gamma, Vega, intraday Theta decay)
+and real multi-leg Cboe options chain integration are completed.
 
 Features:
 - Market Clock: Automatically tracks US Market (09:30 - 16:00 EST / America/New_York).

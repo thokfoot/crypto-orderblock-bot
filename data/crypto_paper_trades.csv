@@ -1,1 +1,3 @@
-symbol,action,entry_time,exit_time,entry_price,exit_price,pnl_pct,pnl_usd,reason,balance
+symbol,action,entry_time,exit_time,entry_price,exit_price,pnl_pct,fee_usd,pnl_usd,reason,balance
+RLCUSDT,BUY,2026-10-11 13:20:47 UTC,2026-10-11 15:54:29 UTC,1.0535,1.0535,0.0,0.20,-0.20,BREAKEVEN_EXIT,1999.80
+CFXUSDT,BUY,2026-10-11 13:20:47 UTC,2026-10-11 16:27:05 UTC,0.06613,0.06873,3.93,0.3,3.63,PARTIAL_TP_50PCT,2003.43
