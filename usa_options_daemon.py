@@ -34,7 +34,7 @@ import yfinance as yf
 TELEGRAM_BOT_TOKEN = os.environ.get("USA_TELEGRAM_BOT_TOKEN") or os.environ.get("TELEGRAM_BOT_TOKEN", "8453830677:AAE5ufDdwU-lTyrw1taYlIFt5aoQLeErXkI")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "988970998")
 INITIAL_CAPITAL = 2000.0
-POLL_INTERVAL_SECS = int(os.environ.get("POLL_INTERVAL_SECS", "5"))
+POLL_INTERVAL_SECS = int(os.environ.get("POLL_INTERVAL_SECS", "2"))
 RUN_MINUTES = int(os.environ.get("RUN_MINUTES", "0"))  # 0 = infinite loop, >0 = bounded cloud run
 
 # Market Hours (America/New_York)
@@ -175,33 +175,41 @@ class USAOptionsTrader:
         """Sends rich status summary of USA options trading account."""
         is_open, status_str = self.is_market_open()
         now_ny = datetime.now(TZ_NY)
+        realized_pnl = self.capital - INITIAL_CAPITAL
+        floating_pnl = 0.0
+
+        pos_lines = []
+        if self.active_trade:
+            t = self.active_trade
+            pos_lines.extend([
+                f"• *Active Position:* `{t.get('structure')}`",
+                f"  ├ Entry Spot: `${t.get('entry_spot', 0):,.2f}`",
+                f"  ├ Cost / Risk: `${t.get('entry_cost', 0):,.2f}`",
+                f"  └ Entry Time: `{t.get('entry_time')}`",
+                ""
+            ])
+        else:
+            pos_lines.append("💤 *Open Positions:* No active spread. Market opens Mon-Fri 09:30 AM EST.")
+
+        total_net_worth = self.capital + floating_pnl
+        total_return_pct = ((total_net_worth - INITIAL_CAPITAL) / INITIAL_CAPITAL) * 100
+
         lines = [
             "🇺🇸 *USA SPY OPTIONS LIVE STATUS SUMMARY*",
             "━━━━━━━━━━━━━━━━━━━━━━",
             f"💰 *Capital Balance:* `${self.capital:,.2f} USD`",
-            f"🕒 *Market Status:* `{status_str}` ({now_ny.strftime('%I:%M %p EST')})",
-            ""
-        ]
-
-        if self.active_trade:
-            t = self.active_trade
-            lines.extend([
-                f"• *Active Position:* `{t.get('structure')}`",
-                f"  - *Entry Spot:* `${t.get('entry_spot', 0):,.2f}`",
-                f"  - *Cost / Risk:* `${t.get('entry_cost', 0):,.2f}`",
-                f"  - *Entry Time:* `{t.get('entry_time')}`",
-                ""
-            ])
-        else:
-            lines.append("💤 *Positions:* No open spread right now. Market opens Mon-Fri 09:30 AM EST.")
-
-        lines.extend([
-            "",
+            f"🌊 *Floating P&L (Live):* *`${floating_pnl:+.2f} USD`*",
+            f"💎 *Realized P&L (Banked):* *`${realized_pnl:+.2f} USD`*",
+            f"📈 *Total Portfolio Value:* *`${total_net_worth:,.2f} USD`* (`{total_return_pct:+.2f}%`)",
             "━━━━━━━━━━━━━━━━━━━━━━",
-            f"💎 *Realized P&L:* `${self.capital - INITIAL_CAPITAL:+.2f} USD`",
-            "🛡️ *Strategy:* 100% Hedged Bull Call Spread (Spot Stop -0.30%)",
+            f"🕒 *Market Status:* `{status_str}` ({now_ny.strftime('%I:%M %p EST')})",
+            f"🛡️ *Strategy:* 100% Hedged Bull Call Spread (Spot Stop -0.30%)",
+            "",
+            *pos_lines,
+            "━━━━━━━━━━━━━━━━━━━━━━",
+            "⏱️ *System:* 24/7 Cloud Daemon (Fast 2s Polling)",
             "👉 _Tap buttons below anytime for instant refresh_"
-        ])
+        ]
         msg = "\n".join(lines)
         log.info("Sending USA status summary to Telegram...")
         send_telegram(msg)
@@ -213,7 +221,7 @@ class USAOptionsTrader:
         try:
             url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates?offset={self.last_update_id + 1}&limit=10&timeout=1"
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=4) as resp:
+            with urllib.request.urlopen(req, timeout=3) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 for update in data.get("result", []):
                     self.last_update_id = max(self.last_update_id, update.get("update_id", 0))
@@ -237,7 +245,6 @@ class USAOptionsTrader:
                     if any(cmd in text.lower() for cmd in ["/status", "/summary", "/start", "status", "summary", "📊", "💰", "report"]):
                         self.send_telegram_status_summary()
                         self.save_state()
-                        push_git_sync("status requested")
         except Exception:
             pass
 

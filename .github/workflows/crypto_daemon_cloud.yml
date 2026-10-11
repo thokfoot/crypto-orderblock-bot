@@ -46,7 +46,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           RUN_MINUTES: ${{ github.event.inputs.run_minutes || '350' }}
-          POLL_INTERVAL_SECS: 3
+          POLL_INTERVAL_SECS: 1
         run: |
           echo "========================================================"
           echo "Starting Crypto Order Block SMC Daemon in Cloud..."

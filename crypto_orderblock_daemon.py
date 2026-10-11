@@ -41,7 +41,7 @@ INITIAL_CAPITAL = 2000.0
 TRADE_ALLOCATION_USD = 200.0  # $200 per position (10% of capital)
 MAX_CONCURRENT_TRADES = 3
 ROUNDTRIP_FEE_PCT = 0.30  # Realistic friction: 0.10% taker fees + 0.08% spread crossing + 0.12% slippage
-POLL_INTERVAL_SECS = int(os.environ.get("POLL_INTERVAL_SECS", "3"))   # Poll every 3s for sub-second UI & fast exits
+POLL_INTERVAL_SECS = int(os.environ.get("POLL_INTERVAL_SECS", "1"))   # Poll every 1s for instant UI & fast exits
 SCAN_INTERVAL_SECS = int(os.environ.get("SCAN_INTERVAL_SECS", "900")) # Market scan every 15 mins (900s)
 RUN_MINUTES = int(os.environ.get("RUN_MINUTES", "0"))                 # 0 = infinite loop, >0 = bounded cloud run
 
@@ -428,19 +428,12 @@ class CryptoPaperTrader:
     def send_telegram_status_summary(self):
         """Sends comprehensive live portfolio and PnL status card to Telegram."""
         btc_bullish, btc_info = check_btc_regime()
-        lines = [
-            "📊 *CRYPTO BOT LIVE STATUS SUMMARY*",
-            "━━━━━━━━━━━━━━━━━━━━━━",
-            f"💰 *Capital Balance:* `${self.capital:,.2f} USD`",
-            f"📈 *Active Trades:* `{len(self.open_positions)} / {MAX_CONCURRENT_TRADES}`",
-            f"🔄 *Macro BTC 1H:* `{'🟢 BULLISH' if btc_bullish else '🔴 BEARISH/NEUTRAL'}` ({btc_info})",
-            ""
-        ]
+        total_unrealized_usd = 0.0
+        pos_lines = []
 
         if not self.open_positions:
-            lines.append("💤 *Positions:* No active positions. Scanning on 15m closes.")
+            pos_lines.append("💤 *Open Trades:* None active (Scanning Binance 15m order blocks).")
         else:
-            total_unrealized_usd = 0.0
             for sym, pos in self.open_positions.items():
                 cur_p = get_live_price(sym)
                 entry_p = pos["entry_price"]
@@ -450,22 +443,35 @@ class CryptoPaperTrader:
                     pnl_pct = ((cur_p - entry_p) / entry_p * 100) if action == "BUY" else ((entry_p - cur_p) / entry_p * 100)
                     pnl_usd = notional * (pnl_pct / 100.0)
                     total_unrealized_usd += pnl_usd
-                    status_tag = "🛡️ 50% SCALED OUT" if pos.get("scaled_out") else ("🛡️ BE-LOCKED" if pos.get("breakeven_locked") else "🟢 ACTIVE")
-                    lines.extend([
+                    status_tag = "🔒 50% SCALED OUT" if pos.get("scaled_out") else ("🛡️ BE-LOCKED" if pos.get("breakeven_locked") else "🟢 ACTIVE")
+                    pos_lines.extend([
                         f"• *{sym}* ({action} @ `${entry_p:,.4f}`):",
-                        f"  - *Live Price:* `${cur_p:,.4f}` (`{pnl_pct:+.2f}%` / `${pnl_usd:+.2f}`)",
-                        f"  - *Position Size:* `${notional:.2f}` ({status_tag})",
-                        f"  - *Stop Loss:* `${pos['current_sl']:,.4f}` | *TP:* `${pos['tp']:,.4f}`",
+                        f"  ├ Live: `${cur_p:,.4f}` (`{pnl_pct:+.2f}%` / *{pnl_usd:+.2f} USD*)",
+                        f"  ├ Size: `${notional:.2f}` [{status_tag}]",
+                        f"  └ SL: `${pos['current_sl']:,.4f}` | TP: `${pos['tp']:,.4f}`",
                         ""
                     ])
-            lines.append(f"💵 *Total Floating P&L:* `${total_unrealized_usd:+.2f} USD`")
 
-        lines.extend([
+        realized_pnl = self.capital - INITIAL_CAPITAL
+        total_net_worth = self.capital + total_unrealized_usd
+        total_return_pct = ((total_net_worth - INITIAL_CAPITAL) / INITIAL_CAPITAL) * 100
+
+        lines = [
+            "📊 *CRYPTO BOT LIVE STATUS SUMMARY*",
             "━━━━━━━━━━━━━━━━━━━━━━",
-            f"💎 *Net Realized P&L:* `${self.capital - INITIAL_CAPITAL:+.2f} USD` (After all fees)",
-            f"⏱️ *System Status:* Active 24/7 Cloud Daemon",
+            f"💰 *Capital Balance:* `${self.capital:,.2f} USD`",
+            f"🌊 *Floating P&L (Live):* *`${total_unrealized_usd:+.2f} USD`*",
+            f"💎 *Realized P&L (Banked):* *`${realized_pnl:+.2f} USD`*",
+            f"📈 *Total Portfolio Value:* *`${total_net_worth:,.2f} USD`* (`{total_return_pct:+.2f}%`)",
+            "━━━━━━━━━━━━━━━━━━━━━━",
+            f"🔄 *Macro BTC 1H:* `{'🟢 BULLISH' if btc_bullish else '🔴 BEARISH/NEUTRAL'}` ({btc_info})",
+            f"⚡ *Active Trades:* `{len(self.open_positions)} / {MAX_CONCURRENT_TRADES}`",
+            "",
+            *pos_lines,
+            "━━━━━━━━━━━━━━━━━━━━━━",
+            "⏱️ *System:* 24/7 Cloud Daemon (Fast 1s Polling)",
             "👉 _Tap buttons below anytime for instant refresh_"
-        ])
+        ]
 
         msg = "\n".join(lines)
         log.info("Sending live status summary to Telegram...")
@@ -478,7 +484,7 @@ class CryptoPaperTrader:
         try:
             url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates?offset={self.last_update_id + 1}&limit=10&timeout=1"
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=4) as resp:
+            with urllib.request.urlopen(req, timeout=3) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 for update in data.get("result", []):
                     self.last_update_id = max(self.last_update_id, update.get("update_id", 0))
@@ -500,9 +506,9 @@ class CryptoPaperTrader:
                         continue
 
                     if any(cmd in text.lower() for cmd in ["/status", "/summary", "/start", "status", "summary", "📊", "💰", "report"]):
+                        # Immediate reply first for sub-2s perceived latency
                         self.send_telegram_status_summary()
                         self.save_state()
-                        push_git_sync("status requested")
         except Exception:
             pass
 
