@@ -1,21 +1,6 @@
 {
-  "capital": 2003.43,
+  "capital": 2004.22,
   "open_positions": {
-    "CFXUSDT": {
-      "symbol": "CFXUSDT",
-      "action": "BUY",
-      "entry_price": 0.06613,
-      "current_sl": 0.066880125,
-      "original_sl": 0.06450399999999999,
-      "tp": 0.07229,
-      "notional_usd": 100.0,
-      "entry_time": "2026-10-11 13:20:47 UTC",
-      "breakeven_locked": true,
-      "peak_pnl_pct": 6.835021926508408,
-      "peak_price": 0.06936,
-      "scaled_out": true,
-      "realized_pnl_usd": 3.631649780734924
-    },
     "ARBUSDT": {
       "symbol": "ARBUSDT",
       "action": "BUY",
@@ -30,8 +15,8 @@
       "peak_price": 0.2003
     }
   },
-  "total_trades": 0,
+  "total_trades": 1,
   "last_update_id": 159576174,
   "last_scan_record": null,
-  "updated_at": "2026-10-11T20:29:28.751934+00:00"
+  "updated_at": "2026-10-11T20:32:38.857878+00:00"
 }
