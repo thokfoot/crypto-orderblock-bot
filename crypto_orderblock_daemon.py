@@ -43,8 +43,8 @@ POLL_INTERVAL_SECS = int(os.environ.get("POLL_INTERVAL_SECS", "15"))  # Poll eve
 SCAN_INTERVAL_SECS = int(os.environ.get("SCAN_INTERVAL_SECS", "900")) # Market scan every 15 mins (900s)
 RUN_MINUTES = int(os.environ.get("RUN_MINUTES", "0"))                 # 0 = infinite loop, >0 = bounded cloud run
 
-# Telegram Credentials
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8232616481:AAFnxgOYCN9WxjF-LCUM9lokJ5b5rXAbZzg")
+# Telegram Credentials (Dedicated Crypto Bot: @mytradingbot0312_bot)
+TELEGRAM_BOT_TOKEN = os.environ.get("CRYPTO_TELEGRAM_BOT_TOKEN") or os.environ.get("TELEGRAM_BOT_TOKEN", "8232616481:AAFnxgOYCN9WxjF-LCUM9lokJ5b5rXAbZzg")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "988970998")
 
 # State File Paths
@@ -75,7 +75,7 @@ log = logging.getLogger("CryptoDaemon")
 # TELEGRAM NOTIFIER
 # --------------------------------------------------------------------------- #
 def send_telegram(message: str):
-    """Send formatted markdown alert to Telegram."""
+    """Send formatted alert to Telegram."""
     if not TELEGRAM_BOT_TOKEN or "placeholder" in TELEGRAM_BOT_TOKEN:
         log.info(f"[TELEGRAM SIMULATED]:\n{message}")
         return
@@ -90,7 +90,17 @@ def send_telegram(message: str):
         with urllib.request.urlopen(req, timeout=8) as resp:
             pass
     except Exception as e:
-        log.warning(f"Telegram alert failed: {e}")
+        # Fallback to plain text if markdown formatting fails
+        try:
+            payload_plain = urllib.parse.urlencode({
+                "chat_id": TELEGRAM_CHAT_ID,
+                "text": message.replace("*", "").replace("`", "")
+            }).encode("utf-8")
+            req = urllib.request.Request(url, data=payload_plain, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                pass
+        except Exception as e2:
+            log.warning(f"Telegram alert failed: {e2}")
 
 # --------------------------------------------------------------------------- #
 # BINANCE API HELPERS

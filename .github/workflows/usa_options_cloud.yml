@@ -39,6 +39,7 @@ jobs:
 
       - name: Run USA SPY Options Daemon
         env:
+          USA_TELEGRAM_BOT_TOKEN: ${{ secrets.USA_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |

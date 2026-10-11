@@ -23,9 +23,9 @@ from datetime import datetime, time as dtime
 import pytz
 import yfinance as yf
 
-# Configuration
-TELEGRAM_BOT_TOKEN = "8232616481:AAFnxgOYCN9WxjF-LCUM9lokJ5b5rXAbZzg"
-TELEGRAM_CHAT_ID = "988970998"
+# Configuration (Dedicated USA Options Bot: @trade234_bot)
+TELEGRAM_BOT_TOKEN = os.environ.get("USA_TELEGRAM_BOT_TOKEN") or os.environ.get("TELEGRAM_BOT_TOKEN", "8453830677:AAE5ufDdwU-lTyrw1taYlIFt5aoQLeErXkI")
+TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "988970998")
 INITIAL_CAPITAL = 2000.0
 POLL_INTERVAL_SECS = 60
 
@@ -59,7 +59,16 @@ def send_telegram(msg: str):
         with urllib.request.urlopen(req, timeout=8) as resp:
             pass
     except Exception as e:
-        log.warning(f"Telegram failed: {e}")
+        try:
+            payload_plain = urllib.parse.urlencode({
+                "chat_id": TELEGRAM_CHAT_ID,
+                "text": msg.replace("*", "").replace("`", "")
+            }).encode("utf-8")
+            req = urllib.request.Request(url, data=payload_plain, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                pass
+        except Exception as e2:
+            log.warning(f"Telegram failed: {e2}")
 
 class USAOptionsTrader:
     def __init__(self):

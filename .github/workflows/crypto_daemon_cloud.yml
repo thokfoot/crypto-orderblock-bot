@@ -42,6 +42,7 @@ jobs:
 
       - name: Run Crypto Order Block Daemon
         env:
+          CRYPTO_TELEGRAM_BOT_TOKEN: ${{ secrets.CRYPTO_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           RUN_MINUTES: ${{ github.event.inputs.run_minutes || '24' }}
