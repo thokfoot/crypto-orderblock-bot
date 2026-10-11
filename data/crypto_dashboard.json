@@ -1,6 +1,18 @@
 {
-  "capital": 1999.8,
+  "capital": 2000.0,
   "open_positions": {
+    "RLCUSDT": {
+      "symbol": "RLCUSDT",
+      "action": "BUY",
+      "entry_price": 1.0535,
+      "current_sl": 1.0535,
+      "original_sl": 1.0079685714285715,
+      "tp": 1.148357142857143,
+      "notional_usd": 200.0,
+      "entry_time": "2026-10-11 13:20:47 UTC",
+      "breakeven_locked": true,
+      "peak_pnl_pct": 3.834836260085428
+    },
     "CFXUSDT": {
       "symbol": "CFXUSDT",
       "action": "BUY",
@@ -23,9 +35,9 @@
       "notional_usd": 200.0,
       "entry_time": "2026-10-11 13:54:38 UTC",
       "breakeven_locked": false,
-      "peak_pnl_pct": 1.7984511921744333
+      "peak_pnl_pct": 0.0
     }
   },
-  "total_trades": 1,
-  "updated_at": "2026-10-11T15:54:30.552472+00:00"
+  "total_trades": 0,
+  "updated_at": "2026-10-11T16:18:40.498601+00:00"
 }
