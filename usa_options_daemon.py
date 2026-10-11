@@ -33,7 +33,7 @@ import yfinance as yf
 TELEGRAM_BOT_TOKEN = os.environ.get("USA_TELEGRAM_BOT_TOKEN") or os.environ.get("TELEGRAM_BOT_TOKEN", "8453830677:AAE5ufDdwU-lTyrw1taYlIFt5aoQLeErXkI")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "988970998")
 INITIAL_CAPITAL = 2000.0
-POLL_INTERVAL_SECS = 60
+POLL_INTERVAL_SECS = int(os.environ.get("POLL_INTERVAL_SECS", "10"))
 RUN_MINUTES = int(os.environ.get("RUN_MINUTES", "0"))  # 0 = infinite loop, >0 = bounded cloud run
 
 # Market Hours (America/New_York)
