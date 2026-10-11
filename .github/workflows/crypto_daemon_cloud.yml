@@ -60,6 +60,7 @@ jobs:
           mkdir -p /tmp/state_backup
           cp data/crypto_dashboard.json /tmp/state_backup/ 2>/dev/null || true
           cp data/crypto_paper_trades.csv /tmp/state_backup/ 2>/dev/null || true
+          cp data/crypto_scan_history.csv /tmp/state_backup/ 2>/dev/null || true
           cp crypto_dashboard.json /tmp/state_backup/ 2>/dev/null || true
 
           git fetch origin main
@@ -68,13 +69,14 @@ jobs:
           mkdir -p data
           cp /tmp/state_backup/crypto_dashboard.json data/ 2>/dev/null || true
           cp /tmp/state_backup/crypto_paper_trades.csv data/ 2>/dev/null || true
+          cp /tmp/state_backup/crypto_scan_history.csv data/ 2>/dev/null || true
           if [ -f /tmp/state_backup/crypto_dashboard.json ]; then
             cp /tmp/state_backup/crypto_dashboard.json .
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/crypto_dashboard.json data/crypto_paper_trades.csv crypto_dashboard.json -f
+          git add data/crypto_dashboard.json data/crypto_paper_trades.csv data/crypto_scan_history.csv crypto_dashboard.json -f
           if git diff --cached --quiet; then
             echo "No trade state changes to commit."
           else

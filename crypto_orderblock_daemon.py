@@ -54,6 +54,7 @@ DATA_DIR = "data"
 os.makedirs(DATA_DIR, exist_ok=True)
 DASHBOARD_FILE = os.path.join(DATA_DIR, "crypto_dashboard.json")
 CSV_FILE = os.path.join(DATA_DIR, "crypto_paper_trades.csv")
+SCAN_LOG_FILE = os.path.join(DATA_DIR, "crypto_scan_history.csv")
 LOG_FILE = "crypto_orderblock.log"
 
 # Logging Setup
@@ -78,7 +79,8 @@ log = logging.getLogger("CryptoDaemon")
 # --------------------------------------------------------------------------- #
 STATUS_KEYBOARD = json.dumps({
     "keyboard": [
-        [{"text": "📊 Status Summary"}, {"text": "💰 P&L Report"}]
+        [{"text": "📊 Status Summary"}, {"text": "🔍 Scan Log"}],
+        [{"text": "💰 P&L Report"}, {"text": "⚡ Rescan Now"}]
     ],
     "resize_keyboard": True,
     "is_persistent": True
@@ -141,7 +143,7 @@ def push_git_sync(comment: str = "auto-sync"):
             return
         subprocess.run(["git", "config", "user.name", "github-actions[bot]"], capture_output=True, timeout=5)
         subprocess.run(["git", "config", "user.email", "github-actions[bot]@users.noreply.github.com"], capture_output=True, timeout=5)
-        subprocess.run(["git", "add", "data/crypto_dashboard.json", "data/crypto_paper_trades.csv", "crypto_dashboard.json"], capture_output=True, timeout=5)
+        subprocess.run(["git", "add", "data/crypto_dashboard.json", "data/crypto_paper_trades.csv", "data/crypto_scan_history.csv", "crypto_dashboard.json"], capture_output=True, timeout=5)
         diff = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True, timeout=5)
         if diff.returncode != 0:
             subprocess.run(["git", "commit", "-m", f"state: {comment} [skip ci]"], capture_output=True, timeout=5)
@@ -236,18 +238,22 @@ def scan_order_block_setups():
     tickers = fetch_json("https://fapi.binance.com/fapi/v1/ticker/24hr")
     if not tickers or not isinstance(tickers, list):
         log.warning(f"Binance ticker API returned invalid data (error or rate limit): {tickers}")
-        return []
+        return [], None
 
     universe = []
     for t in tickers:
-        sym = t["symbol"]
+        sym = t.get("symbol", "")
         if sym.endswith("USDT") and not sym.startswith(("USDC", "FDUSD", "BUSD")):
-            vol = float(t["quoteVolume"])
-            if vol >= 40_000_000:
-                universe.append(sym)
+            try:
+                vol = float(t.get("quoteVolume", 0))
+                if vol >= 40_000_000:
+                    universe.append(sym)
+            except Exception:
+                continue
 
     log.info(f"Scanning {min(len(universe), 35)} high-volume perpetual pairs...")
     candidate_setups = []
+    filtered_setups = []
 
     for sym in universe[:35]:
         df = get_klines_df(sym, interval="15m", limit=80)
@@ -312,6 +318,7 @@ def scan_order_block_setups():
                             if rr >= 2.0 and 1.0 <= risk_pct <= 4.5 and reward_pct >= 2.5:
                                 if not btc_bullish:
                                     log.info(f"Skipping {sym} BUY setup: Macro BTC 1H is Bearish/Neutral.")
+                                    filtered_setups.append({"symbol": sym, "action": "BUY", "reason": "BTC Bearish filter"})
                                 else:
                                     candidate_setups.append({
                                         "symbol": sym,
@@ -369,6 +376,7 @@ def scan_order_block_setups():
                             if rr >= 2.0 and 1.0 <= risk_pct <= 4.5 and reward_pct >= 2.5:
                                 if btc_bullish:
                                     log.info(f"Skipping {sym} SHORT setup: Macro BTC 1H is Bullish.")
+                                    filtered_setups.append({"symbol": sym, "action": "SELL", "reason": "BTC Bullish filter"})
                                 else:
                                     candidate_setups.append({
                                         "symbol": sym,
@@ -384,7 +392,41 @@ def scan_order_block_setups():
                                     })
                                     break
 
-    return candidate_setups
+    # Construct Scan Record
+    now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    pairs_count = min(len(universe), 35)
+    cand_symbols = [f"{s['symbol']}:{s['action']}@{s['price']:.4f}(RR:{s['rr']:.1f})" for s in candidate_setups]
+    filt_symbols = [f"{f['symbol']}:{f['action']}({f['reason']})" for f in filtered_setups]
+
+    scan_record = {
+        "timestamp": now_utc,
+        "btc_bullish": btc_bullish,
+        "btc_info": btc_regime_info,
+        "pairs_scanned": pairs_count,
+        "candidates_count": len(candidate_setups),
+        "candidates_str": "; ".join(cand_symbols) if cand_symbols else "None",
+        "filtered_count": len(filtered_setups),
+        "filtered_str": "; ".join(filt_symbols) if filt_symbols else "None"
+    }
+
+    # Save to CSV history
+    try:
+        csv_row = pd.DataFrame([{
+            "timestamp": now_utc,
+            "btc_bullish": btc_bullish,
+            "btc_info": btc_regime_info,
+            "pairs_scanned": pairs_count,
+            "candidates_count": len(candidate_setups),
+            "candidates": "; ".join(cand_symbols) if cand_symbols else "None",
+            "filtered": "; ".join(filt_symbols) if filt_symbols else "None"
+        }])
+        header = not os.path.exists(SCAN_LOG_FILE)
+        csv_row.to_csv(SCAN_LOG_FILE, mode="a", index=False, header=header)
+        log.info(f"Scan history logged: {len(candidate_setups)} qualified, {len(filtered_setups)} filtered.")
+    except Exception as e:
+        log.warning(f"Could not append to scan CSV: {e}")
+
+    return candidate_setups, scan_record
 
 # --------------------------------------------------------------------------- #
 # PAPER TRADING DAEMON STATE MACHINE
@@ -395,6 +437,7 @@ class CryptoPaperTrader:
         self.open_positions = {}  # {symbol: position_dict}
         self.trade_history = []
         self.last_scan_time = 0
+        self.last_scan_record = None
         self.last_update_id = 0
         self.last_known_prices = {}
         self.cached_btc_regime = (True, "BTC Trend Active")
@@ -423,6 +466,7 @@ class CryptoPaperTrader:
                     self.capital = data.get("capital", INITIAL_CAPITAL)
                     self.open_positions = data.get("open_positions", {})
                     self.last_update_id = data.get("last_update_id", 0)
+                    self.last_scan_record = data.get("last_scan_record", None)
                     log.info(f"Loaded existing state from {path}: Capital=${self.capital:.2f}, Open Trades={len(self.open_positions)}")
                     loaded = True
                     break
@@ -437,6 +481,7 @@ class CryptoPaperTrader:
             "open_positions": self.open_positions,
             "total_trades": len(self.trade_history),
             "last_update_id": self.last_update_id,
+            "last_scan_record": self.last_scan_record,
             "updated_at": datetime.now(timezone.utc).isoformat()
         }
         for path in [DASHBOARD_FILE, "crypto_dashboard.json"]:
@@ -488,6 +533,20 @@ class CryptoPaperTrader:
         total_net_worth = self.capital + total_unrealized_usd
         total_return_pct = ((total_net_worth - INITIAL_CAPITAL) / INITIAL_CAPITAL) * 100
 
+        # Scan block info
+        scan_summary_lines = []
+        if self.last_scan_record:
+            rec = self.last_scan_record
+            t_str = rec.get("timestamp", "N/A")
+            c_cnt = rec.get("candidates_count", 0)
+            c_str = rec.get("candidates_str", "None")
+            p_n = rec.get("pairs_scanned", 35)
+            scan_summary_lines = [
+                f"🔍 *Market Scan:* `{t_str}` ({p_n} pairs checked)",
+                f"  └ *Setups:* `{c_str if c_cnt > 0 else 'None qualified (waiting for clean OB)'}`",
+                ""
+            ]
+
         lines = [
             "📊 *CRYPTO BOT LIVE STATUS SUMMARY*",
             "━━━━━━━━━━━━━━━━━━━━━━",
@@ -500,6 +559,7 @@ class CryptoPaperTrader:
             f"⚡ *Active Trades:* `{len(self.open_positions)} / {MAX_CONCURRENT_TRADES}`",
             "",
             *pos_lines,
+            *scan_summary_lines,
             "━━━━━━━━━━━━━━━━━━━━━━",
             "⏱️ *System:* 24/7 Cloud Daemon (Fast 1s Polling)",
             "👉 _Tap buttons below anytime for instant refresh_"
@@ -508,6 +568,147 @@ class CryptoPaperTrader:
         msg = "\n".join(lines)
         log.info("Sending live status summary to Telegram...")
         send_telegram(msg)
+
+    def send_telegram_scan_log(self):
+        """Sends comprehensive market scan audit log to Telegram."""
+        if not self.last_scan_record and os.path.exists(SCAN_LOG_FILE):
+            try:
+                df = pd.read_csv(SCAN_LOG_FILE)
+                if not df.empty:
+                    last_row = df.iloc[-1]
+                    self.last_scan_record = {
+                        "timestamp": str(last_row.get("timestamp", "N/A")),
+                        "btc_bullish": bool(last_row.get("btc_bullish", True)),
+                        "btc_info": str(last_row.get("btc_info", "")),
+                        "pairs_scanned": int(last_row.get("pairs_scanned", 35)),
+                        "candidates_count": int(last_row.get("candidates_count", 0)),
+                        "candidates_str": str(last_row.get("candidates", "None")),
+                        "filtered_count": int(len(str(last_row.get("filtered", "")).split(";"))) if str(last_row.get("filtered", "None")) != "None" else 0,
+                        "filtered_str": str(last_row.get("filtered", "None"))
+                    }
+            except Exception:
+                pass
+
+        rec = self.last_scan_record
+        if not rec:
+            msg = (
+                "🔍 *MARKET SCAN AUDIT LOG*\n\n"
+                "• *Status:* Initializing scan cycle...\n"
+                "• *Interval:* Every 15 minutes (on 15m candle close)\n"
+                "👉 Tap *⚡ Rescan Now* to run an instant market scan."
+            )
+            send_telegram(msg)
+            return
+
+        btc_status = "🟢 BULLISH" if rec.get("btc_bullish") else "🔴 BEARISH/NEUTRAL"
+        time_str = rec.get("timestamp", "N/A")
+        pairs_n = rec.get("pairs_scanned", 35)
+        cand_cnt = rec.get("candidates_count", 0)
+        cand_str = rec.get("candidates_str", "None")
+        filt_str = rec.get("filtered_str", "None")
+
+        # Read last 4 scan timestamps from CSV if available
+        history_lines = []
+        if os.path.exists(SCAN_LOG_FILE):
+            try:
+                df_hist = pd.read_csv(SCAN_LOG_FILE)
+                for _, row in df_hist.tail(4).iloc[::-1].iterrows():
+                    t = str(row.get("timestamp", ""))[-12:-4]
+                    c_n = row.get("candidates_count", 0)
+                    history_lines.append(f"  • `{t} UTC` | Scanned: 35 | Setups: `{c_n}`")
+            except Exception:
+                pass
+
+        lines = [
+            "🔍 *BINANCE 15M ORDER BLOCK SCAN AUDIT*",
+            "━━━━━━━━━━━━━━━━━━━━━━",
+            f"🕒 *Latest Scan Time:* `{time_str}`",
+            f"🔄 *Macro BTC 1H Filter:* `{btc_status}`",
+            f"   _{rec.get('btc_info', '')}_",
+            f"📊 *Universe Checked:* `{pairs_n} High-Volume Perpetuals`",
+            f"⚡ *Open Trade Slots:* `{len(self.open_positions)} / {MAX_CONCURRENT_TRADES} in use`",
+            "━━━━━━━━━━━━━━━━━━━━━━",
+            f"🎯 *Qualified Setups ({cand_cnt}):*",
+            f"   `{cand_str}`" if cand_cnt > 0 else "   _0 qualified (waiting for clean OB zone retest & R:R >= 2.0)_",
+            "",
+            f"🚫 *Filtered by BTC Trend:*",
+            f"   `{filt_str}`" if filt_str != "None" else "   _None_",
+            "━━━━━━━━━━━━━━━━━━━━━━"
+        ]
+
+        if history_lines:
+            lines.extend([
+                "📋 *Recent Scan History Log:*",
+                *history_lines,
+                "━━━━━━━━━━━━━━━━━━━━━━"
+            ])
+
+        lines.extend([
+            "⏱️ *Rescan Frequency:* Every 15 mins (on 15m candle close)",
+            "👉 _Tap '⚡ Rescan Now' to trigger an on-demand scan instantly._"
+        ])
+
+        send_telegram("\n".join(lines))
+
+    def trigger_on_demand_rescan(self):
+        """Executes an instant on-demand scan and replies immediately."""
+        send_telegram("⏳ *Initiating On-Demand Market Scan...*\nScanning 35 top Binance Futures perpetuals now...")
+        candidate_setups, scan_record = scan_order_block_setups()
+        self.last_scan_record = scan_record
+        self.last_scan_time = time.time()
+        self.save_state()
+        push_git_sync("on-demand scan")
+
+        # If slot available and candidate found, enter trade
+        if len(self.open_positions) < MAX_CONCURRENT_TRADES and candidate_setups:
+            for s in candidate_setups:
+                if len(self.open_positions) >= MAX_CONCURRENT_TRADES:
+                    break
+                self.enter_trade(s)
+                break
+
+        # Send updated scan log
+        self.send_telegram_scan_log()
+
+    def send_telegram_pnl_report(self):
+        """Sends detailed realized P&L and trade performance report."""
+        realized_pnl = self.capital - INITIAL_CAPITAL
+        total_trades = 0
+        winning_trades = 0
+        losing_trades = 0
+        trade_rows = []
+
+        if os.path.exists(CSV_FILE):
+            try:
+                df = pd.read_csv(CSV_FILE)
+                total_trades = len(df)
+                winning_trades = len(df[df["pnl_usd"] > 0])
+                losing_trades = len(df[df["pnl_usd"] < 0])
+                for _, row in df.tail(5).iloc[::-1].iterrows():
+                    icon = "🟢" if row["pnl_usd"] > 0 else ("🛡️" if "BREAKEVEN" in str(row["reason"]) else "🔴")
+                    trade_rows.append(f"{icon} *{row['symbol']}* ({row['action']}): `{row['pnl_pct']:+.2f}%` (*{row['pnl_usd']:+.2f} USD*) [{row['reason']}]")
+            except Exception:
+                pass
+
+        win_rate = (winning_trades / total_trades * 100) if total_trades > 0 else 0.0
+
+        lines = [
+            "💰 *CRYPTO BOT REALIZED P&L REPORT*",
+            "━━━━━━━━━━━━━━━━━━━━━━",
+            f"💵 *Current Account Balance:* `${self.capital:,.2f} USD`",
+            f"💎 *Net Banked Realized P&L:* *`${realized_pnl:+.2f} USD`*",
+            f"📊 *Closed Trades:* `{total_trades}` | *Win Rate:* `{win_rate:.1f}%`",
+            f"🏆 *Wins:* `{winning_trades}` | 🛡️ *Losses / BE:* `{losing_trades}`",
+            "━━━━━━━━━━━━━━━━━━━━━━"
+        ]
+        if trade_rows:
+            lines.extend([
+                "📜 *Recent Closed / Scaled Trades:*",
+                *trade_rows,
+                "━━━━━━━━━━━━━━━━━━━━━━"
+            ])
+        lines.append("👉 _Tap '📊 Status Summary' to check live open positions._")
+        send_telegram("\n".join(lines))
 
     def check_telegram_inbox(self):
         """Polls for Telegram commands (/status, /summary, buttons, or inline callbacks)."""
@@ -537,8 +738,14 @@ class CryptoPaperTrader:
                     if chat_id != str(TELEGRAM_CHAT_ID):
                         continue
 
-                    if any(cmd in text.lower() for cmd in ["/status", "/summary", "/start", "status", "summary", "📊", "💰", "report"]):
-                        # Immediate reply first for sub-2s perceived latency
+                    cmd_lower = text.lower()
+                    if any(cmd in cmd_lower for cmd in ["rescan", "⚡", "/rescan"]):
+                        self.trigger_on_demand_rescan()
+                    elif any(cmd in cmd_lower for cmd in ["scan", "🔍", "/scan", "/scanlog"]):
+                        self.send_telegram_scan_log()
+                    elif any(cmd in cmd_lower for cmd in ["pnl", "💰", "/pnl", "profit", "report"]):
+                        self.send_telegram_pnl_report()
+                    elif any(cmd in cmd_lower for cmd in ["/status", "/summary", "/start", "status", "summary", "📊"]):
                         self.send_telegram_status_summary()
                         self.save_state()
         except Exception:
@@ -602,6 +809,7 @@ class CryptoPaperTrader:
         }
         self.open_positions[sym] = pos
         self.save_state()
+        push_git_sync(f"entered {sym}")
 
         msg = (
             f"🎯 *NEW ORDER BLOCK TRADE OPENED*\n\n"
@@ -663,6 +871,7 @@ class CryptoPaperTrader:
                 be_floor = entry_p * (1.0040 if action == "BUY" else 0.9960)
                 pos["current_sl"] = max(pos["current_sl"], be_floor) if action == "BUY" else min(pos["current_sl"], be_floor)
                 self.save_state()
+                push_git_sync(f"scaled out {sym}")
 
                 # Record partial scale-out to trade journal
                 scale_record = {
@@ -767,6 +976,7 @@ class CryptoPaperTrader:
         for sym, rec in to_close:
             del self.open_positions[sym]
             self.save_state()
+            push_git_sync(f"closed {sym}")
 
             icon = "🎉" if rec["pnl_usd"] > 0 else ("🛡️" if rec["reason"] == "BREAKEVEN_EXIT" else "🛑")
             msg = (
@@ -787,17 +997,21 @@ class CryptoPaperTrader:
         # 2. Manage active positions
         self.manage_positions()
 
-        # 2. Run new market scan every 15 mins (if slots available)
+        # 3. Run new market scan every 15 mins (always runs to maintain continuous scan history)
         if now - self.last_scan_time >= SCAN_INTERVAL_SECS:
             self.last_scan_time = now
+            candidate_setups, scan_record = scan_order_block_setups()
+            self.last_scan_record = scan_record
+            self.save_state()
+            push_git_sync("periodic scan cycle")
+
             if len(self.open_positions) < MAX_CONCURRENT_TRADES:
-                setups = scan_order_block_setups()
-                for s in setups:
+                for s in candidate_setups:
                     if len(self.open_positions) >= MAX_CONCURRENT_TRADES:
                         break
                     self.enter_trade(s)
             else:
-                log.info(f"Max trades active ({len(self.open_positions)}/{MAX_CONCURRENT_TRADES}). Skipping scan.")
+                log.info(f"Max trades active ({len(self.open_positions)}/{MAX_CONCURRENT_TRADES}). Candidate setups logged.")
 
 def main():
     log.info("Starting Autonomous 24/7 Crypto Order Block Paper Trading Daemon...")
