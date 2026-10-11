@@ -1,1 +1,2 @@
 symbol,action,entry_time,exit_time,entry_price,exit_price,pnl_pct,pnl_usd,reason,balance
+RLCUSDT,BUY,2026-10-11 13:20:47 UTC,2026-10-11 15:54:29 UTC,1.0535,1.0535,0.0,0.2,-0.2,BREAKEVEN_EXIT,1999.8
