@@ -605,7 +605,11 @@ class CryptoPaperTrader:
         pairs_n = rec.get("pairs_scanned", 35)
         cand_cnt = rec.get("candidates_count", 0)
         cand_str = rec.get("candidates_str", "None")
+        if not cand_str or str(cand_str).strip().lower() in ["nan", "none", ""]:
+            cand_str = "None"
         filt_str = rec.get("filtered_str", "None")
+        if not filt_str or str(filt_str).strip().lower() in ["nan", "none", ""]:
+            filt_str = "None"
 
         # Read last 4 scan timestamps from CSV if available
         history_lines = []
