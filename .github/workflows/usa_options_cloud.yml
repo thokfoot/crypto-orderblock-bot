@@ -2,11 +2,14 @@ name: USA SPY Options Spread Cloud Daemon
 
 on:
   schedule:
-    # Runs Monday-Friday at US Market Open (13:30 UTC = 9:30 AM EDT) and mid-day
-    - cron: '30 13 * * 1-5'
-    - cron: '00 16 * * 1-5'
-    - cron: '30 18 * * 1-5'
+    # Runs every 25 minutes automatically around the clock (24/7/365)
+    - cron: '*/25 * * * *'
   workflow_dispatch:
+    inputs:
+      run_minutes:
+        description: 'Duration to run (in minutes)'
+        required: false
+        default: '24'
 
 permissions:
   contents: write
@@ -18,7 +21,7 @@ concurrency:
 jobs:
   run-usa-daemon:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
 
     steps:
       - name: Checkout Repository
@@ -42,7 +45,8 @@ jobs:
           USA_TELEGRAM_BOT_TOKEN: ${{ secrets.USA_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          RUN_MINUTES: 55
+          RUN_MINUTES: ${{ github.event.inputs.run_minutes || '24' }}
+          POLL_INTERVAL_SECS: 10
         run: |
           echo "========================================================"
           echo "Starting USA SPY Options Spread Daemon in Cloud..."
@@ -75,5 +79,5 @@ jobs:
             echo "No USA state changes to commit."
           else
             git commit -m "state: usa-sync $(date -u +'%Y-%m-%d %H:%M:%S UTC') [skip ci]"
-            git push origin main
+            git push origin main || (git pull --rebase origin main && git push origin main)
           fi

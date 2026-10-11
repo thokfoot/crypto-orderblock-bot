@@ -79,5 +79,5 @@ jobs:
             echo "No trade state changes to commit."
           else
             git commit -m "state: auto-sync $(date -u +'%Y-%m-%d %H:%M:%S UTC') [skip ci]"
-            git push origin main
+            git push origin main || (git pull --rebase origin main && git push origin main)
           fi
