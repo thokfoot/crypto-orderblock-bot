@@ -48,6 +48,9 @@ logging.basicConfig(
 log = logging.getLogger("USABot")
 
 def send_telegram(msg: str):
+    if not TELEGRAM_BOT_TOKEN or "placeholder" in TELEGRAM_BOT_TOKEN:
+        log.info(f"[TELEGRAM SIMULATED]: {msg}")
+        return
     try:
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
         payload = urllib.parse.urlencode({
@@ -77,14 +80,17 @@ class USAOptionsTrader:
         self.load_state()
 
     def load_state(self):
-        if os.path.exists("usa_dashboard.json"):
-            try:
-                with open("usa_dashboard.json", "r") as f:
-                    data = json.load(f)
-                    self.capital = data.get("capital", INITIAL_CAPITAL)
-                    self.active_trade = data.get("active_trade", None)
-            except Exception:
-                pass
+        paths = ["data/usa_dashboard.json", "usa_dashboard.json"]
+        for p in paths:
+            if os.path.exists(p):
+                try:
+                    with open(p, "r") as f:
+                        data = json.load(f)
+                        self.capital = data.get("capital", INITIAL_CAPITAL)
+                        self.active_trade = data.get("active_trade", None)
+                        break
+                except Exception:
+                    pass
 
     def save_state(self):
         data = {
@@ -92,8 +98,13 @@ class USAOptionsTrader:
             "active_trade": self.active_trade,
             "updated_at": datetime.now(pytz.utc).isoformat()
         }
-        with open("usa_dashboard.json", "w") as f:
-            json.dump(data, f, indent=2)
+        os.makedirs("data", exist_ok=True)
+        for p in ["data/usa_dashboard.json", "usa_dashboard.json"]:
+            try:
+                with open(p, "w") as f:
+                    json.dump(data, f, indent=2)
+            except Exception as e:
+                log.warning(f"Could not save to {p}: {e}")
 
     def is_market_open(self):
         now_ny = datetime.now(TZ_NY)
@@ -144,4 +155,61 @@ class USAOptionsTrader:
 
                 msg = (
                     f"🇺🇸 *USA SPY TRADE CLOSED: {reason}*\n\n"
-                    f"• *Exit SPY Price:*
+                    f"• *Exit SPY Price:* `${current_spot:,.2f}`\n"
+                    f"• *Realized P&L:* `${pnl:+,.2f}`\n"
+                    f"• *Account Balance:* `${self.capital:,.2f}`"
+                )
+                log.info(f"Closed SPY Trade: PnL=${pnl:.2f} ({reason})")
+                send_telegram(msg)
+
+                self.active_trade = None
+                self.save_state()
+            return
+
+        # 2. Check for New Entry (Between 10:00 AM and 2:30 PM EST)
+        if ENTRY_START <= t <= ENTRY_END and not self.active_trade:
+            # Entry: 100% Hedged Bull Call Spread
+            # Long ATM Call ($current_spot), Short OTM Call ($current_spot + $2)
+            strike_long = round(current_spot)
+            strike_short = strike_long + 2
+            est_cost = 120.0  # $120 estimated spread debit
+
+            self.active_trade = {
+                "symbol": "SPY",
+                "structure": f"Bull Call Spread ({strike_long}/{strike_short})",
+                "entry_spot": current_spot,
+                "entry_cost": est_cost,
+                "entry_time": now_ny.strftime("%Y-%m-%d %H:%M:%S EST")
+            }
+            self.save_state()
+
+            msg = (
+                f"🇺🇸 *NEW USA SPY SPREAD OPENED*\n\n"
+                f"• *Underlying:* `SPY @ ${current_spot:,.2f}`\n"
+                f"• *Structure:* `Bull Call Spread {strike_long}/{strike_short}`\n"
+                f"• *Cost / Max Risk:* `${est_cost:,.2f}`\n"
+                f"• *Take Profit:* `+50%` ($60.00)\n"
+                f"• *Stop Loss:* `Spot -0.30%` (Hedging protected)\n"
+                f"• *Zero Overnight Risk:* Auto-exit at 3:45 PM EST"
+            )
+            log.info(f"Opened SPY spread @ ${current_spot:.2f}")
+            send_telegram(msg)
+
+def main():
+    log.info("Starting Autonomous 24/7 USA Options Paper Trading Daemon...")
+    trader = USAOptionsTrader()
+    send_telegram("🚀 *USA SPY Options 24/7 Paper Trading Daemon Started*\nClock configured for New York Market (Mon-Fri 09:30-16:00 EST).")
+
+    while True:
+        try:
+            trader.run_cycle()
+            time.sleep(POLL_INTERVAL_SECS)
+        except KeyboardInterrupt:
+            log.info("USA Bot stopped by user.")
+            break
+        except Exception as e:
+            log.error(f"Error in USA loop: {e}")
+            time.sleep(10)
+
+if __name__ == "__main__":
+    main()
