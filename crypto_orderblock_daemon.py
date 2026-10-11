@@ -182,7 +182,7 @@ def scan_order_block_setups():
                         ob_top = c_ob["high"]
                         ob_bottom = c_ob["low"]
 
-                        # Freshness / Mitigation Check
+                        # Freshness / Mitigation Check (Strict 0 prior taps)
                         intermediate = df.iloc[i + 3 : len(df) - 1]
                         prior_taps = 0
                         prior_breaks = False
@@ -193,7 +193,7 @@ def scan_order_block_setups():
                                 prior_breaks = True
                                 break
 
-                        if prior_breaks or prior_taps >= 2:
+                        if prior_breaks or prior_taps >= 1:
                             continue
 
                         dist_pct = ((cur_p - ob_top) / ob_top) * 100
@@ -247,7 +247,7 @@ def scan_order_block_setups():
                                 prior_breaks = True
                                 break
 
-                        if prior_breaks or prior_taps >= 2:
+                        if prior_breaks or prior_taps >= 1:
                             continue
 
                         dist_pct = ((ob_bottom - cur_p) / ob_bottom) * 100
@@ -412,31 +412,64 @@ class CryptoPaperTrader:
             if pnl_pct > pos["peak_pnl_pct"]:
                 pos["peak_pnl_pct"] = pnl_pct
 
-            # 1. Automated Breakeven Trailing Rule
-            # If trade hits +2.0% profit, trail SL to Entry Price (Risk-Free)
-            if pnl_pct >= 2.0 and not pos["breakeven_locked"]:
-                pos["current_sl"] = entry_p
+            # 1. Automated Breakeven Trailing Rule (Fee Protected)
+            # If trade hits +2.0% profit, trail SL to Entry Price + 0.12% buffer to guarantee fee-neutral exit
+            if pnl_pct >= 2.0 and not pos.get("breakeven_locked"):
+                be_price = entry_p * (1.0012 if action == "BUY" else 0.9988)
+                pos["current_sl"] = be_price
                 pos["breakeven_locked"] = True
                 self.save_state()
                 msg = (
                     f"🛡️ *BREAKEVEN LOCKED (RISK-FREE)*\n\n"
                     f"• *Coin:* `{sym}`\n"
                     f"• *Current P&L:* `+{pnl_pct:.2f}%`\n"
-                    f"• *New SL:* `${entry_p:,.4f}` (Entry Price)\n"
-                    f"• Trade is now 100% Risk-Free!"
+                    f"• *New SL:* `${be_price:,.4f}` (Entry + Fee Buffer)\n"
+                    f"• Trade is now 100% Risk-Free (Fees Protected)!"
                 )
                 log.info(f"Trailing SL moved to Breakeven for {sym} (P&L: +{pnl_pct:.2f}%)")
                 send_telegram(msg)
 
-            # 2. Check Take Profit Hit
+            # 2. Tiered Profit Lock: If trade hits +5.0% profit, lock in +2.5% profit!
+            if pnl_pct >= 5.0 and not pos.get("profit_locked_5pct"):
+                lock_price = entry_p * (1.025 if action == "BUY" else 0.975)
+                pos["current_sl"] = lock_price
+                pos["profit_locked_5pct"] = True
+                self.save_state()
+                msg = (
+                    f"💰 *PROFIT LOCKED (+2.5% PROTECTED)*\n\n"
+                    f"• *Coin:* `{sym}`\n"
+                    f"• *Current P&L:* `+{pnl_pct:.2f}%`\n"
+                    f"• *New Trailing SL:* `${lock_price:,.4f}`\n"
+                    f"• Minimum +2.5% Net Profit Secured!"
+                )
+                log.info(f"Trailing SL moved to +2.5% Lock for {sym} (P&L: +{pnl_pct:.2f}%)")
+                send_telegram(msg)
+
+            # 3. Check Take Profit Hit
             is_tp = (action == "BUY" and cur_p >= tp) or (action == "SELL" and cur_p <= tp)
-            # 3. Check Stop Loss Hit
+            # 4. Check Stop Loss Hit
             is_sl = (action == "BUY" and cur_p <= sl) or (action == "SELL" and cur_p >= sl)
 
             if is_tp or is_sl:
-                reason = "TAKE_PROFIT" if is_tp else ("BREAKEVEN_EXIT" if pos["breakeven_locked"] and abs(pnl_pct) < 0.25 else "STOP_LOSS")
-                pnl_usd = notional * (pnl_pct / 100.0)
-                self.capital += pnl_usd
+                if is_tp:
+                    reason = "TAKE_PROFIT"
+                    exit_p = tp
+                    trade_pnl_pct = ((tp - entry_p) / entry_p * 100) if action == "BUY" else ((entry_p - tp) / entry_p * 100)
+                elif pos.get("breakeven_locked"):
+                    reason = "BREAKEVEN_EXIT"
+                    exit_p = sl
+                    trade_pnl_pct = ((sl - entry_p) / entry_p * 100) if action == "BUY" else ((entry_p - sl) / entry_p * 100)
+                else:
+                    reason = "STOP_LOSS"
+                    exit_p = cur_p
+                    trade_pnl_pct = pnl_pct
+
+                # Account for Binance Futures Taker Fee (0.05% entry + 0.05% exit = 0.10% round-trip)
+                roundtrip_fee_pct = 0.10
+                fee_usd = notional * (roundtrip_fee_pct / 100.0)
+                gross_pnl_usd = notional * (trade_pnl_pct / 100.0)
+                net_pnl_usd = gross_pnl_usd - fee_usd
+                self.capital += net_pnl_usd
 
                 record = {
                     "symbol": sym,
@@ -444,9 +477,10 @@ class CryptoPaperTrader:
                     "entry_time": pos["entry_time"],
                     "exit_time": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
                     "entry_price": entry_p,
-                    "exit_price": cur_p,
-                    "pnl_pct": round(pnl_pct, 2),
-                    "pnl_usd": round(pnl_usd, 2),
+                    "exit_price": exit_p,
+                    "pnl_pct": round(trade_pnl_pct, 2),
+                    "fee_usd": round(fee_usd, 2),
+                    "pnl_usd": round(net_pnl_usd, 2),
                     "reason": reason,
                     "balance": round(self.capital, 2)
                 }
@@ -458,15 +492,15 @@ class CryptoPaperTrader:
             del self.open_positions[sym]
             self.save_state()
 
-            icon = "🎉" if rec["pnl_usd"] > 0 else "🛑"
+            icon = "🎉" if rec["pnl_usd"] > 0 else ("🛡️" if rec["reason"] == "BREAKEVEN_EXIT" else "🛑")
             msg = (
                 f"{icon} *TRADE CLOSED: {rec['reason']}*\n\n"
                 f"• *Coin:* `{sym}`\n"
                 f"• *Exit Price:* `${rec['exit_price']:,.4f}`\n"
-                f"• *Realized P&L:* `{rec['pnl_pct']:+.2f}%` ({rec['pnl_usd']:+.2f} USD)\n"
+                f"• *Realized P&L:* `{rec['pnl_pct']:+.2f}%` ({rec['pnl_usd']:+.2f} USD after fees)\n"
                 f"• *Account Balance:* `${rec['balance']:,.2f}`"
             )
-            log.info(f"Closed {sym}: PnL=${rec['pnl_usd']:.2f} ({rec['reason']})")
+            log.info(f"Closed {sym}: Net PnL=${rec['pnl_usd']:.2f} ({rec['reason']})")
             send_telegram(msg)
 
     def run_cycle(self):
