@@ -1,0 +1,64 @@
+name: USA SPY Options Spread Cloud Daemon
+
+on:
+  schedule:
+    # Runs Monday-Friday at US Market Open (13:30 UTC = 9:30 AM EDT) and mid-day
+    - cron: '30 13 * * 1-5'
+    - cron: '00 16 * * 1-5'
+    - cron: '30 18 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: usa-options
+  cancel-in-progress: false
+
+jobs:
+  run-usa-daemon:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run USA SPY Options Daemon
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          echo "========================================================"
+          echo "Starting USA SPY Options Spread Daemon in Cloud..."
+          echo "Timestamp: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          echo "========================================================"
+          python usa_options_daemon.py || true
+
+      - name: Persist Dashboard State
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git rebase origin/main || git rebase --abort || true
+          git add data/ usa_dashboard.json -f
+          if git diff --cached --quiet; then
+            echo "No USA state changes to commit."
+          else
+            git commit -m "state: usa-sync $(date -u +'%Y-%m-%d %H:%M:%S UTC') [skip ci]"
+            git push origin main || git push origin main --force-with-lease || true
+          fi

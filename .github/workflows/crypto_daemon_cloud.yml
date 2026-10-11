@@ -1,0 +1,69 @@
+name: Crypto Order Block 24-7 Cloud Daemon
+
+on:
+  schedule:
+    # Runs every 25 minutes automatically around the clock (24/7/365)
+    - cron: '*/25 * * * *'
+  workflow_dispatch:
+    inputs:
+      run_minutes:
+        description: 'Duration to run (in minutes)'
+        required: false
+        default: '24'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: crypto-daemon
+  cancel-in-progress: false
+
+jobs:
+  run-daemon:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Crypto Order Block Daemon
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RUN_MINUTES: ${{ github.event.inputs.run_minutes || '24' }}
+          POLL_INTERVAL_SECS: 15
+        run: |
+          echo "========================================================"
+          echo "Starting Crypto Order Block SMC Daemon in Cloud..."
+          echo "Timestamp: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          echo "========================================================"
+          python crypto_orderblock_daemon.py
+
+      - name: Persist Dashboard & Trade Journal State
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git rebase origin/main || git rebase --abort || true
+          git add data/ crypto_dashboard.json -f
+          if git diff --cached --quiet; then
+            echo "No trade state changes to commit."
+          else
+            git commit -m "state: auto-sync $(date -u +'%Y-%m-%d %H:%M:%S UTC') [skip ci]"
+            git push origin main || git push origin main --force-with-lease || true
+          fi
