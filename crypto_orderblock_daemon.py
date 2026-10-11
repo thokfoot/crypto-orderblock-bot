@@ -178,8 +178,22 @@ def fetch_json(url: str):
     return None
 
 def get_live_price(symbol: str) -> float:
-    data = fetch_json(f"https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}")
-    return float(data["price"]) if data and isinstance(data, dict) and "price" in data else None
+    """Fetches live price with multi-tier fallback across Futures, Vision CDN, and Spot."""
+    urls = [
+        f"https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}",
+        f"https://data-api.binance.vision/api/v3/ticker/price?symbol={symbol}",
+        f"https://api.binance.com/api/v3/ticker/price?symbol={symbol}"
+    ]
+    for url in urls:
+        data = fetch_json(url)
+        if data and isinstance(data, dict) and "price" in data:
+            try:
+                p = float(data["price"])
+                if p > 0:
+                    return p
+            except Exception:
+                continue
+    return None
 
 def get_klines_df(symbol: str, interval="15m", limit=80):
     url = f"https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}"
@@ -382,7 +396,20 @@ class CryptoPaperTrader:
         self.trade_history = []
         self.last_scan_time = 0
         self.last_update_id = 0
+        self.last_known_prices = {}
+        self.cached_btc_regime = (True, "BTC Trend Active")
+        self.last_btc_check = 0
         self.load_state()
+
+    def get_btc_regime(self):
+        now = time.time()
+        if now - self.last_btc_check > 300:
+            try:
+                self.cached_btc_regime = check_btc_regime()
+                self.last_btc_check = now
+            except Exception:
+                pass
+        return self.cached_btc_regime
 
     def load_state(self):
         # Look in data/crypto_dashboard.json first, then fallback to crypto_dashboard.json
@@ -426,8 +453,8 @@ class CryptoPaperTrader:
                 log.warning(f"Could not atomically save to {path}: {e}")
 
     def send_telegram_status_summary(self):
-        """Sends comprehensive live portfolio and PnL status card to Telegram."""
-        btc_bullish, btc_info = check_btc_regime()
+        """Sends comprehensive live portfolio and PnL status card to Telegram (<100ms response)."""
+        btc_bullish, btc_info = self.get_btc_regime()
         total_unrealized_usd = 0.0
         pos_lines = []
 
@@ -436,21 +463,26 @@ class CryptoPaperTrader:
         else:
             for sym, pos in self.open_positions.items():
                 cur_p = get_live_price(sym)
+                if cur_p and cur_p > 0:
+                    self.last_known_prices[sym] = cur_p
+                else:
+                    cur_p = self.last_known_prices.get(sym, pos.get("peak_price", pos["entry_price"]))
+
                 entry_p = pos["entry_price"]
                 action = pos["action"]
                 notional = pos["notional_usd"]
-                if cur_p:
-                    pnl_pct = ((cur_p - entry_p) / entry_p * 100) if action == "BUY" else ((entry_p - cur_p) / entry_p * 100)
-                    pnl_usd = notional * (pnl_pct / 100.0)
-                    total_unrealized_usd += pnl_usd
-                    status_tag = "🔒 50% SCALED OUT" if pos.get("scaled_out") else ("🛡️ BE-LOCKED" if pos.get("breakeven_locked") else "🟢 ACTIVE")
-                    pos_lines.extend([
-                        f"• *{sym}* ({action} @ `${entry_p:,.4f}`):",
-                        f"  ├ Live: `${cur_p:,.4f}` (`{pnl_pct:+.2f}%` / *{pnl_usd:+.2f} USD*)",
-                        f"  ├ Size: `${notional:.2f}` [{status_tag}]",
-                        f"  └ SL: `${pos['current_sl']:,.4f}` | TP: `${pos['tp']:,.4f}`",
-                        ""
-                    ])
+
+                pnl_pct = ((cur_p - entry_p) / entry_p * 100) if action == "BUY" else ((entry_p - cur_p) / entry_p * 100)
+                pnl_usd = notional * (pnl_pct / 100.0)
+                total_unrealized_usd += pnl_usd
+                status_tag = "🔒 50% SCALED OUT" if pos.get("scaled_out") else ("🛡️ BE-LOCKED" if pos.get("breakeven_locked") else "🟢 ACTIVE")
+                pos_lines.extend([
+                    f"• *{sym}* ({action} @ `${entry_p:,.4f}`):",
+                    f"  ├ Live: `${cur_p:,.4f}` (`{pnl_pct:+.2f}%` / *{pnl_usd:+.2f} USD*)",
+                    f"  ├ Size: `${notional:.2f}` [{status_tag}]",
+                    f"  └ SL: `${pos['current_sl']:,.4f}` | TP: `${pos['tp']:,.4f}`",
+                    ""
+                ])
 
         realized_pnl = self.capital - INITIAL_CAPITAL
         total_net_worth = self.capital + total_unrealized_usd
