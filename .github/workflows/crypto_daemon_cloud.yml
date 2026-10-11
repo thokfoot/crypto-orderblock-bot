@@ -2,14 +2,14 @@ name: Crypto Order Block 24-7 Cloud Daemon
 
 on:
   schedule:
-    # Runs every 25 minutes automatically around the clock (24/7/365)
-    - cron: '*/25 * * * *'
+    # Runs every 4 hours automatically to maintain unbroken continuous cloud runner chain
+    - cron: '0 */4 * * *'
   workflow_dispatch:
     inputs:
       run_minutes:
         description: 'Duration to run (in minutes)'
         required: false
-        default: '24'
+        default: '350'
 
 permissions:
   contents: write
@@ -21,7 +21,7 @@ concurrency:
 jobs:
   run-daemon:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 360
 
     steps:
       - name: Checkout Repository
@@ -45,8 +45,8 @@ jobs:
           CRYPTO_TELEGRAM_BOT_TOKEN: ${{ secrets.CRYPTO_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          RUN_MINUTES: ${{ github.event.inputs.run_minutes || '24' }}
-          POLL_INTERVAL_SECS: 15
+          RUN_MINUTES: ${{ github.event.inputs.run_minutes || '350' }}
+          POLL_INTERVAL_SECS: 3
         run: |
           echo "========================================================"
           echo "Starting Crypto Order Block SMC Daemon in Cloud..."

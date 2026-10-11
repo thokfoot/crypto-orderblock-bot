@@ -30,6 +30,7 @@ import logging
 import urllib.request
 import urllib.parse
 from datetime import datetime, timezone
+import subprocess
 import pandas as pd
 import numpy as np
 
@@ -40,7 +41,7 @@ INITIAL_CAPITAL = 2000.0
 TRADE_ALLOCATION_USD = 200.0  # $200 per position (10% of capital)
 MAX_CONCURRENT_TRADES = 3
 ROUNDTRIP_FEE_PCT = 0.30  # Realistic friction: 0.10% taker fees + 0.08% spread crossing + 0.12% slippage
-POLL_INTERVAL_SECS = int(os.environ.get("POLL_INTERVAL_SECS", "15"))  # Poll every 15s for responsive exits
+POLL_INTERVAL_SECS = int(os.environ.get("POLL_INTERVAL_SECS", "3"))   # Poll every 3s for sub-second UI & fast exits
 SCAN_INTERVAL_SECS = int(os.environ.get("SCAN_INTERVAL_SECS", "900")) # Market scan every 15 mins (900s)
 RUN_MINUTES = int(os.environ.get("RUN_MINUTES", "0"))                 # 0 = infinite loop, >0 = bounded cloud run
 
@@ -116,6 +117,41 @@ def send_telegram(message: str, reply_markup=STATUS_KEYBOARD):
                 pass
         except Exception as e2:
             log.warning(f"Telegram alert failed: {e2}")
+
+def answer_callback_query(callback_query_id: str, text: str = ""):
+    """Acknowledges an inline button callback to dismiss spinning client loader."""
+    if not TELEGRAM_BOT_TOKEN or "placeholder" in TELEGRAM_BOT_TOKEN:
+        return
+    try:
+        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/answerCallbackQuery"
+        payload_dict = {"callback_query_id": callback_query_id}
+        if text:
+            payload_dict["text"] = text
+        payload = urllib.parse.urlencode(payload_dict).encode("utf-8")
+        req = urllib.request.Request(url, data=payload, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=4) as resp:
+            pass
+    except Exception:
+        pass
+
+def push_git_sync(comment: str = "auto-sync"):
+    """Atomically commits and pushes state to Git without requiring workflow teardown."""
+    try:
+        if not os.path.exists(".git"):
+            return
+        subprocess.run(["git", "config", "user.name", "github-actions[bot]"], capture_output=True, timeout=5)
+        subprocess.run(["git", "config", "user.email", "github-actions[bot]@users.noreply.github.com"], capture_output=True, timeout=5)
+        subprocess.run(["git", "add", "data/crypto_dashboard.json", "data/crypto_paper_trades.csv", "crypto_dashboard.json"], capture_output=True, timeout=5)
+        diff = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True, timeout=5)
+        if diff.returncode != 0:
+            subprocess.run(["git", "commit", "-m", f"state: {comment} [skip ci]"], capture_output=True, timeout=5)
+            push_res = subprocess.run(["git", "push", "origin", "main"], capture_output=True, timeout=10)
+            if push_res.returncode != 0:
+                subprocess.run(["git", "pull", "--rebase", "origin", "main"], capture_output=True, timeout=10)
+                subprocess.run(["git", "push", "origin", "main"], capture_output=True, timeout=10)
+            log.info("In-flight Git state push succeeded.")
+    except Exception as e:
+        log.warning(f"Git push notice: {e}")
 
 # --------------------------------------------------------------------------- #
 # BINANCE API HELPERS
@@ -436,7 +472,7 @@ class CryptoPaperTrader:
         send_telegram(msg)
 
     def check_telegram_inbox(self):
-        """Polls for Telegram commands (/status, /summary, or button clicks)."""
+        """Polls for Telegram commands (/status, /summary, buttons, or inline callbacks)."""
         if not TELEGRAM_BOT_TOKEN or "placeholder" in TELEGRAM_BOT_TOKEN:
             return
         try:
@@ -446,14 +482,27 @@ class CryptoPaperTrader:
                 data = json.loads(resp.read().decode("utf-8"))
                 for update in data.get("result", []):
                     self.last_update_id = max(self.last_update_id, update.get("update_id", 0))
-                    msg = update.get("message", {})
-                    text = msg.get("text", "").strip()
-                    chat_id = str(msg.get("chat", {}).get("id", ""))
+                    cb = update.get("callback_query")
+                    msg = update.get("message")
+
+                    if cb:
+                        cb_id = cb.get("id")
+                        answer_callback_query(cb_id)
+                        text = cb.get("data", "")
+                        chat_id = str(cb.get("message", {}).get("chat", {}).get("id", ""))
+                    elif msg:
+                        text = msg.get("text", "").strip()
+                        chat_id = str(msg.get("chat", {}).get("id", ""))
+                    else:
+                        continue
+
                     if chat_id != str(TELEGRAM_CHAT_ID):
                         continue
+
                     if any(cmd in text.lower() for cmd in ["/status", "/summary", "/start", "status", "summary", "📊", "💰", "report"]):
                         self.send_telegram_status_summary()
                         self.save_state()
+                        push_git_sync("status requested")
         except Exception:
             pass
 
