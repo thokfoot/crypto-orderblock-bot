@@ -26,12 +26,12 @@
       "notional_usd": 200.0,
       "entry_time": "2026-10-11 13:54:38 UTC",
       "breakeven_locked": false,
-      "peak_pnl_pct": 1.7984511921744333,
-      "peak_price": 0.1992
+      "peak_pnl_pct": 2.048094558793558,
+      "peak_price": 0.2003
     }
   },
   "total_trades": 0,
   "last_update_id": 159576174,
   "last_scan_record": null,
-  "updated_at": "2026-10-11T19:59:19.809286+00:00"
+  "updated_at": "2026-10-11T20:14:21.912467+00:00"
 }
