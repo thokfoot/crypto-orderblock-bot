@@ -34,6 +34,7 @@ TELEGRAM_BOT_TOKEN = os.environ.get("USA_TELEGRAM_BOT_TOKEN") or os.environ.get(
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "988970998")
 INITIAL_CAPITAL = 2000.0
 POLL_INTERVAL_SECS = 60
+RUN_MINUTES = int(os.environ.get("RUN_MINUTES", "0"))  # 0 = infinite loop, >0 = bounded cloud run
 
 # Market Hours (America/New_York)
 TZ_NY = pytz.timezone("America/New_York")
@@ -83,17 +84,19 @@ class USAOptionsTrader:
     def __init__(self):
         self.capital = INITIAL_CAPITAL
         self.active_trade = None
+        self.last_trade_date = None
         self.load_state()
 
     def load_state(self):
         paths = ["data/usa_dashboard.json", "usa_dashboard.json"]
         for p in paths:
-            if os.path.exists(p):
+            if os.path.exists(p) and os.path.getsize(p) > 5:
                 try:
                     with open(p, "r") as f:
                         data = json.load(f)
                         self.capital = data.get("capital", INITIAL_CAPITAL)
                         self.active_trade = data.get("active_trade", None)
+                        self.last_trade_date = data.get("last_trade_date", None)
                         break
                 except Exception:
                     pass
@@ -102,15 +105,18 @@ class USAOptionsTrader:
         data = {
             "capital": round(self.capital, 2),
             "active_trade": self.active_trade,
+            "last_trade_date": self.last_trade_date,
             "updated_at": datetime.now(pytz.utc).isoformat()
         }
         os.makedirs("data", exist_ok=True)
         for p in ["data/usa_dashboard.json", "usa_dashboard.json"]:
             try:
-                with open(p, "w") as f:
+                temp_p = f"{p}.tmp.{os.getpid()}"
+                with open(temp_p, "w") as f:
                     json.dump(data, f, indent=2)
+                os.replace(temp_p, p)
             except Exception as e:
-                log.warning(f"Could not save to {p}: {e}")
+                log.warning(f"Could not atomically save to {p}: {e}")
 
     def is_market_open(self):
         now_ny = datetime.now(TZ_NY)
@@ -126,6 +132,7 @@ class USAOptionsTrader:
         is_open, status_str = self.is_market_open()
         now_ny = datetime.now(TZ_NY)
         t = now_ny.time()
+        today_str = now_ny.strftime("%Y-%m-%d")
 
         if not is_open:
             log.info(f"[USA CLOCK] {status_str}. Sleeping until market open...")
@@ -169,13 +176,17 @@ class USAOptionsTrader:
                 send_telegram(msg)
 
                 self.active_trade = None
+                self.last_trade_date = today_str
                 self.save_state()
             return
 
         # 2. Check for New Entry (Between 10:00 AM and 2:30 PM EST)
+        # Council Compliance: Max 1 trade per day to prevent re-entry death spirals
         if ENTRY_START <= t <= ENTRY_END and not self.active_trade:
-            # Entry: 100% Hedged Bull Call Spread
-            # Long ATM Call ($current_spot), Short OTM Call ($current_spot + $2)
+            if self.last_trade_date == today_str:
+                log.info("Daily trade limit reached for SPY (1 trade/day). Skipping entry.")
+                return
+
             strike_long = round(current_spot)
             strike_short = strike_long + 2
             est_cost = 120.0  # $120 estimated spread debit
@@ -187,6 +198,7 @@ class USAOptionsTrader:
                 "entry_cost": est_cost,
                 "entry_time": now_ny.strftime("%Y-%m-%d %H:%M:%S EST")
             }
+            self.last_trade_date = today_str
             self.save_state()
 
             msg = (
@@ -206,16 +218,30 @@ def main():
     trader = USAOptionsTrader()
     send_telegram("🚀 *USA SPY Options 24/7 Paper Trading Daemon Started*\nClock configured for New York Market (Mon-Fri 09:30-16:00 EST).")
 
-    while True:
-        try:
-            trader.run_cycle()
-            time.sleep(POLL_INTERVAL_SECS)
-        except KeyboardInterrupt:
-            log.info("USA Bot stopped by user.")
-            break
-        except Exception as e:
-            log.error(f"Error in USA loop: {e}")
-            time.sleep(10)
+    if RUN_MINUTES > 0:
+        log.info(f"Cloud Runner Mode: Active for {RUN_MINUTES} minutes.")
+        start_t = time.time()
+        end_t = start_t + (RUN_MINUTES * 60)
+        while time.time() < end_t:
+            try:
+                trader.run_cycle()
+                time.sleep(POLL_INTERVAL_SECS)
+            except Exception as e:
+                log.error(f"Error in USA cycle: {e}")
+                time.sleep(10)
+        trader.save_state()
+        log.info("USA Cloud Runner finished cleanly. State saved.")
+    else:
+        while True:
+            try:
+                trader.run_cycle()
+                time.sleep(POLL_INTERVAL_SECS)
+            except KeyboardInterrupt:
+                log.info("USA Bot stopped by user.")
+                break
+            except Exception as e:
+                log.error(f"Error in USA loop: {e}")
+                time.sleep(10)
 
 if __name__ == "__main__":
     main()

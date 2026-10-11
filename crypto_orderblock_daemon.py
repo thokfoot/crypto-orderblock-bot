@@ -108,22 +108,33 @@ def send_telegram(message: str):
 # --------------------------------------------------------------------------- #
 def fetch_json(url: str):
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    for _ in range(3):
+    for attempt in range(3):
         try:
             with urllib.request.urlopen(req, timeout=8) as resp:
-                return json.loads(resp.read().decode("utf-8"))
+                data = json.loads(resp.read().decode("utf-8"))
+                if isinstance(data, dict) and "code" in data and data["code"] < 0:
+                    log.warning(f"Binance API error from {url}: {data}")
+                    time.sleep(1.0 * (attempt + 1))
+                    continue
+                return data
+        except urllib.error.HTTPError as he:
+            if he.code in (418, 429):
+                log.warning(f"Binance rate limit (HTTP {he.code}) on {url}: backing off...")
+                time.sleep(2.5 * (attempt + 1))
+            else:
+                time.sleep(0.5)
         except Exception:
             time.sleep(0.5)
     return None
 
 def get_live_price(symbol: str) -> float:
     data = fetch_json(f"https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}")
-    return float(data["price"]) if data and "price" in data else None
+    return float(data["price"]) if data and isinstance(data, dict) and "price" in data else None
 
 def get_klines_df(symbol: str, interval="15m", limit=80):
     url = f"https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}"
     data = fetch_json(url)
-    if not data:
+    if not data or not isinstance(data, list):
         return None
     cols = ["open_time", "open", "high", "low", "close", "volume", "close_time", "q_vol", "trades", "tb_vol", "tb_qvol", "ignore"]
     df = pd.DataFrame(data, columns=cols)
@@ -159,7 +170,8 @@ def scan_order_block_setups():
     log.info(f"Macro BTC 1H Regime: Bullish={btc_bullish} ({btc_regime_info})")
 
     tickers = fetch_json("https://fapi.binance.com/fapi/v1/ticker/24hr")
-    if not tickers:
+    if not tickers or not isinstance(tickers, list):
+        log.warning(f"Binance ticker API returned invalid data (error or rate limit): {tickers}")
         return []
 
     universe = []
@@ -323,18 +335,22 @@ class CryptoPaperTrader:
 
     def load_state(self):
         # Look in data/crypto_dashboard.json first, then fallback to crypto_dashboard.json
-        state_path = DASHBOARD_FILE if os.path.exists(DASHBOARD_FILE) else "crypto_dashboard.json"
-        if os.path.exists(state_path):
-            try:
-                with open(state_path, "r") as f:
-                    data = json.load(f)
+        paths_to_try = [DASHBOARD_FILE, "crypto_dashboard.json"]
+        loaded = False
+        for path in paths_to_try:
+            if os.path.exists(path) and os.path.getsize(path) > 5:
+                try:
+                    with open(path, "r") as f:
+                        data = json.load(f)
                     self.capital = data.get("capital", INITIAL_CAPITAL)
                     self.open_positions = data.get("open_positions", {})
-                    log.info(f"Loaded existing state: Capital=${self.capital:.2f}, Open Trades={len(self.open_positions)}")
-            except Exception as e:
-                log.warning(f"Could not load state from {state_path}: {e}")
-        else:
-            log.info("No prior state found. Initializing with fresh account.")
+                    log.info(f"Loaded existing state from {path}: Capital=${self.capital:.2f}, Open Trades={len(self.open_positions)}")
+                    loaded = True
+                    break
+                except Exception as e:
+                    log.warning(f"Could not load state from {path}: {e}")
+        if not loaded:
+            log.info("No prior valid state found. Initializing with fresh account.")
 
     def save_state(self):
         data = {
@@ -345,10 +361,16 @@ class CryptoPaperTrader:
         }
         for path in [DASHBOARD_FILE, "crypto_dashboard.json"]:
             try:
-                with open(path, "w") as f:
+                dir_name = os.path.dirname(path)
+                if dir_name:
+                    os.makedirs(dir_name, exist_ok=True)
+                # Atomic write pattern to eliminate 0-byte file truncation
+                temp_path = f"{path}.tmp.{os.getpid()}"
+                with open(temp_path, "w") as f:
                     json.dump(data, f, indent=2)
+                os.replace(temp_path, path)
             except Exception as e:
-                log.warning(f"Could not save to {path}: {e}")
+                log.warning(f"Could not atomically save to {path}: {e}")
 
     def log_trade_to_csv(self, trade_record):
         df = pd.DataFrame([trade_record])
@@ -535,18 +557,16 @@ class CryptoPaperTrader:
                     reason = "TAKE_PROFIT"
                     exit_p = tp
                     trade_pnl_pct = ((tp - entry_p) / entry_p * 100) if action == "BUY" else ((entry_p - tp) / entry_p * 100)
-                elif pos.get("scaled_out"):
-                    reason = "RUNNER_TRAIL_EXIT"
-                    exit_p = sl
-                    trade_pnl_pct = ((sl - entry_p) / entry_p * 100) if action == "BUY" else ((entry_p - sl) / entry_p * 100)
-                elif pos.get("breakeven_locked"):
-                    reason = "BREAKEVEN_EXIT"
-                    exit_p = sl
-                    trade_pnl_pct = ((sl - entry_p) / entry_p * 100) if action == "BUY" else ((entry_p - sl) / entry_p * 100)
                 else:
-                    reason = "STOP_LOSS"
-                    exit_p = cur_p
-                    trade_pnl_pct = pnl_pct
+                    # Slippage realism: If market gapped down past SL, execute at live price (Red-Team Bug #1 fix)
+                    exit_p = min(cur_p, sl) if action == "BUY" else max(cur_p, sl)
+                    trade_pnl_pct = ((exit_p - entry_p) / entry_p * 100) if action == "BUY" else ((entry_p - exit_p) / entry_p * 100)
+                    if pos.get("scaled_out"):
+                        reason = "RUNNER_TRAIL_EXIT"
+                    elif pos.get("breakeven_locked"):
+                        reason = "BREAKEVEN_EXIT"
+                    else:
+                        reason = "STOP_LOSS"
 
                 # Account for realistic roundtrip friction (0.30%)
                 curr_notional = pos["notional_usd"]

@@ -42,6 +42,7 @@ jobs:
           USA_TELEGRAM_BOT_TOKEN: ${{ secrets.USA_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RUN_MINUTES: 55
         run: |
           echo "========================================================"
           echo "Starting USA SPY Options Spread Daemon in Cloud..."
@@ -49,25 +50,27 @@ jobs:
           echo "========================================================"
           python usa_options_daemon.py || true
 
-      - name: Persist Dashboard State
+      - name: Persist USA Dashboard State
         if: always()
         run: |
           mkdir -p /tmp/state_backup
-          cp -r data/* /tmp/state_backup/ 2>/dev/null || true
+          cp data/usa_dashboard.json /tmp/state_backup/ 2>/dev/null || true
+          cp data/usa_paper_trades.csv /tmp/state_backup/ 2>/dev/null || true
           cp usa_dashboard.json /tmp/state_backup/ 2>/dev/null || true
 
           git fetch origin main
           git reset --hard origin/main
 
           mkdir -p data
-          cp -r /tmp/state_backup/* data/ 2>/dev/null || true
+          cp /tmp/state_backup/usa_dashboard.json data/ 2>/dev/null || true
+          cp /tmp/state_backup/usa_paper_trades.csv data/ 2>/dev/null || true
           if [ -f /tmp/state_backup/usa_dashboard.json ]; then
             cp /tmp/state_backup/usa_dashboard.json .
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/ usa_dashboard.json -f
+          git add data/usa_dashboard.json data/usa_paper_trades.csv usa_dashboard.json -f
           if git diff --cached --quiet; then
             echo "No USA state changes to commit."
           else
