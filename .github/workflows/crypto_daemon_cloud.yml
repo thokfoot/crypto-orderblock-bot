@@ -9,7 +9,7 @@ on:
       run_minutes:
         description: 'Duration to run (in minutes)'
         required: false
-        default: '350'
+        default: '230'
 
 permissions:
   contents: write
@@ -21,7 +21,7 @@ concurrency:
 jobs:
   run-daemon:
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 245
 
     steps:
       - name: Checkout Repository
@@ -45,7 +45,7 @@ jobs:
           CRYPTO_TELEGRAM_BOT_TOKEN: ${{ secrets.CRYPTO_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          RUN_MINUTES: ${{ github.event.inputs.run_minutes || '350' }}
+          RUN_MINUTES: ${{ github.event.inputs.run_minutes || '230' }}
           POLL_INTERVAL_SECS: 1
         run: |
           echo "========================================================"
