@@ -21,14 +21,14 @@
   "total_trades": 14,
   "last_update_id": 159576187,
   "last_scan_record": {
-    "timestamp": "2026-10-12 23:20:36 UTC",
+    "timestamp": "2026-10-12 23:35:39 UTC",
     "btc_bullish": false,
-    "btc_info": "BTC=$82,114.9, EMA50=$83,128.2, RSI=29.0",
+    "btc_info": "BTC=$81,846.8, EMA50=$83,116.7, RSI=26.9",
     "pairs_scanned": 35,
     "candidates_count": 0,
     "candidates_str": "None",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T23:20:36.219621+00:00"
+  "updated_at": "2026-10-12T23:35:39.140724+00:00"
 }
