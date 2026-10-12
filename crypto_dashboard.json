@@ -9,29 +9,29 @@
       "original_sl": 0.0579174,
       "tp": 0.06901,
       "atr": 0.001402857142857142,
-      "peak_price": 0.06119,
+      "peak_price": 0.06148,
       "notional_usd": 200.0,
       "entry_time": "2026-10-12 03:05:45 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
-      "peak_pnl_pct": 1.1070720423000726
+      "peak_pnl_pct": 1.586252478519502
     },
     "ONDOUSDT": {
       "symbol": "ONDOUSDT",
       "action": "BUY",
       "entry_price": 0.5152,
-      "current_sl": 0.5085828571428571,
+      "current_sl": 0.5172608,
       "original_sl": 0.5085828571428571,
       "tp": 0.5325,
       "atr": 0.005514285714285709,
-      "peak_price": 0.5236,
+      "peak_price": 0.5257,
       "notional_usd": 200.0,
       "entry_time": "2026-10-12 03:05:47 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
-      "breakeven_locked": false,
-      "peak_pnl_pct": 1.6304347826086887
+      "breakeven_locked": true,
+      "peak_pnl_pct": 2.0380434782608607
     }
   },
   "total_trades": 5,
@@ -46,5 +46,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T04:35:59.236935+00:00"
+  "updated_at": "2026-10-12T04:39:49.440484+00:00"
 }
