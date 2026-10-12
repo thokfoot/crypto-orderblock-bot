@@ -9,13 +9,13 @@
       "original_sl": 0.0761534,
       "tp": 0.06611,
       "atr": 0.0015414285714285697,
-      "peak_price": 0.0721,
+      "peak_price": 0.07188,
       "notional_usd": 100.0,
       "entry_time": "2026-10-12 13:11:51 UTC",
       "scaled_out": true,
       "realized_pnl_usd": 1.871274443695213,
       "breakeven_locked": true,
-      "peak_pnl_pct": 2.7646662171274397
+      "peak_pnl_pct": 3.061362103843553
     },
     "SUSDT": {
       "symbol": "SUSDT",
@@ -25,26 +25,26 @@
       "original_sl": 0.061133559999999997,
       "tp": 0.05532,
       "atr": 0.0009814285714285725,
-      "peak_price": 0.05693,
+      "peak_price": 0.05669,
       "notional_usd": 100.0,
       "entry_time": "2026-10-12 13:41:53 UTC",
       "scaled_out": true,
       "realized_pnl_usd": 2.7655213070574405,
       "breakeven_locked": true,
-      "peak_pnl_pct": 4.1098197742967795
+      "peak_pnl_pct": 4.514064342260404
     }
   },
-  "total_trades": 12,
+  "total_trades": 13,
   "last_update_id": 159576187,
   "last_scan_record": {
-    "timestamp": "2026-10-12 14:48:23 UTC",
+    "timestamp": "2026-10-12 20:34:59 UTC",
     "btc_bullish": false,
-    "btc_info": "BTC=$82,606.0, EMA50=$83,393.8, RSI=31.6",
+    "btc_info": "BTC=$83,054.6, EMA50=$83,242.6, RSI=31.6",
     "pairs_scanned": 35,
     "candidates_count": 0,
     "candidates_str": "None",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T14:48:29.010096+00:00"
+  "updated_at": "2026-10-12T20:34:59.127247+00:00"
 }
