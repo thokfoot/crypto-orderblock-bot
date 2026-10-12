@@ -16,6 +16,22 @@
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
       "peak_pnl_pct": 0.9170600134861768
+    },
+    "SUSDT": {
+      "symbol": "SUSDT",
+      "action": "SELL",
+      "entry_price": 0.05937,
+      "current_sl": 0.061133559999999997,
+      "original_sl": 0.061133559999999997,
+      "tp": 0.05532,
+      "atr": 0.0009814285714285725,
+      "peak_price": 0.05937,
+      "notional_usd": 200.0,
+      "entry_time": "2026-10-12 13:41:53 UTC",
+      "scaled_out": false,
+      "realized_pnl_usd": 0.0,
+      "breakeven_locked": false,
+      "peak_pnl_pct": 0.0
     }
   },
   "total_trades": 11,
@@ -30,5 +46,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T13:41:51.961390+00:00"
+  "updated_at": "2026-10-12T13:41:53.114809+00:00"
 }
