@@ -154,6 +154,18 @@ class USAOptionsTrader:
                 except Exception:
                     pass
 
+        # Robustness Guard: Verify from CSV if a trade was already executed today
+        if not self.last_trade_date and os.path.exists("data/usa_paper_trades.csv"):
+            try:
+                df_csv = pd.read_csv("data/usa_paper_trades.csv")
+                if not df_csv.empty and "entry_time" in df_csv.columns:
+                    today_ny = datetime.now(TZ_NY).strftime("%Y-%m-%d")
+                    if df_csv["entry_time"].astype(str).str.contains(today_ny).any():
+                        self.last_trade_date = today_ny
+                        log.info(f"Recovered daily trade guard from CSV for date: {today_ny}")
+            except Exception:
+                pass
+
     def save_state(self):
         data = {
             "capital": round(self.capital, 2),
