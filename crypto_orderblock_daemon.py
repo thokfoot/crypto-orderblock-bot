@@ -262,18 +262,22 @@ def scan_order_block_setups():
         log.warning(f"Binance ticker API returned invalid data across all endpoints: {tickers}")
         return [], None
 
-    universe = []
+    filtered_pairs = []
     for t in tickers:
         sym = t.get("symbol", "")
-        if sym.endswith("USDT") and not sym.startswith(("USDC", "FDUSD", "BUSD")):
+        if sym.endswith("USDT") and not sym.startswith(("USDC", "FDUSD", "BUSD", "EUR", "TUSD", "DAI")):
             try:
                 vol = float(t.get("quoteVolume", 0))
-                if vol >= 40_000_000:
-                    universe.append(sym)
+                if vol >= 15_000_000:
+                    filtered_pairs.append((sym, vol))
             except Exception:
                 continue
 
-    log.info(f"Scanning {min(len(universe), 35)} high-volume perpetual pairs...")
+    # Sort descending by 24h volume to guarantee top 35 liquid pairs across Futures or Spot
+    filtered_pairs.sort(key=lambda x: x[1], reverse=True)
+    universe = [p[0] for p in filtered_pairs[:35]]
+
+    log.info(f"Scanning {len(universe)} high-volume perpetual pairs...")
     candidate_setups = []
     filtered_setups = []
 
@@ -887,11 +891,13 @@ class CryptoPaperTrader:
                 pos["peak_pnl_pct"] = pnl_pct
 
             atr_val = pos.get("atr", entry_p * 0.015)
+            peak_pnl = max(pnl_pct, pos.get("peak_pnl_pct", 0.0))
 
             # -------------------------------------------------------------
             # 1. Tier-1: Breakeven Stop Lock at +2.0% (Fee-Safe Buffer)
+            # Peak-triggered: Locks permanently once high-water mark hits +2.0%
             # -------------------------------------------------------------
-            if pnl_pct >= 2.0 and not pos.get("breakeven_locked") and not pos.get("scaled_out"):
+            if peak_pnl >= 2.0 and not pos.get("breakeven_locked") and not pos.get("scaled_out"):
                 be_floor = entry_p * (1.0040 if action == "BUY" else 0.9960)
                 if action == "BUY":
                     pos["current_sl"] = max(pos["current_sl"], be_floor)
@@ -903,15 +909,16 @@ class CryptoPaperTrader:
                 msg = (
                     f"🛡️ *BREAKEVEN STOP LOCKED (RISK ELIMINATED)*\n\n"
                     f"• *Coin:* `{sym}`\n"
-                    f"• *Current Gain:* `+{pnl_pct:.2f}%`\n"
+                    f"• *Peak Gain Reached:* `+{peak_pnl:.2f}%` (Live: `{pnl_pct:+.2f}%`)\n"
                     f"• *Protected Stop Loss:* `${pos['current_sl']:,.4f}` (+0.40% Buffer)\n"
                     f"• *Status:* Guaranteed Fee-Covered Net Scratch or Better"
                 )
-                log.info(f"Breakeven locked for {sym} at +{pnl_pct:.2f}% (SL: ${pos['current_sl']:.4f})")
+                log.info(f"Breakeven locked for {sym} at peak +{peak_pnl:.2f}% (SL: ${pos['current_sl']:.4f})")
                 send_telegram(msg)
 
             # -------------------------------------------------------------
             # 2. Tier-2: Scale-Out Profit Taking at +3.0% (50% Banked to Cash)
+            # Note: Executes at live market price >= 3.0% to lock actual cash
             # -------------------------------------------------------------
             if pnl_pct >= 3.0 and not pos.get("scaled_out"):
                 partial_notional = pos["notional_usd"] * 0.5
@@ -965,8 +972,8 @@ class CryptoPaperTrader:
                 if action == "BUY":
                     chandelier_sl = peak_p - (2.5 * atr_val)
                     be_floor = entry_p * 1.0040
-                    # Tier-3 Lock: If runner reaches +5.0%, floor stop at +2.5% minimum profit
-                    if pnl_pct >= 5.0:
+                    # Tier-3 Lock: If peak ever reached >= +5.0%, floor stop at +2.5% minimum profit
+                    if peak_pnl >= 5.0:
                         be_floor = max(be_floor, entry_p * 1.0250)
                     target_sl = max(be_floor, chandelier_sl)
                     if target_sl > pos["current_sl"]:
@@ -976,8 +983,8 @@ class CryptoPaperTrader:
                 else:
                     chandelier_sl = peak_p + (2.5 * atr_val)
                     be_floor = entry_p * 0.9960
-                    # Tier-3 Lock: If runner reaches +5.0%, floor stop at +2.5% minimum profit
-                    if pnl_pct >= 5.0:
+                    # Tier-3 Lock: If peak ever reached >= +5.0%, floor stop at +2.5% minimum profit
+                    if peak_pnl >= 5.0:
                         be_floor = min(be_floor, entry_p * 0.9750)
                     target_sl = min(be_floor, chandelier_sl)
                     if target_sl < pos["current_sl"]:
