@@ -1,6 +1,23 @@
 {
   "capital": 2001.19,
-  "open_positions": {},
+  "open_positions": {
+    "SUSDT": {
+      "symbol": "SUSDT",
+      "action": "BUY",
+      "entry_price": 0.06052,
+      "current_sl": 0.0579174,
+      "original_sl": 0.0579174,
+      "tp": 0.06901,
+      "atr": 0.001402857142857142,
+      "peak_price": 0.06052,
+      "notional_usd": 200.0,
+      "entry_time": "2026-10-12 03:05:45 UTC",
+      "scaled_out": false,
+      "realized_pnl_usd": 0.0,
+      "breakeven_locked": false,
+      "peak_pnl_pct": 0.0
+    }
+  },
   "total_trades": 4,
   "last_update_id": 159576174,
   "last_scan_record": {
@@ -13,5 +30,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T03:05:44.148198+00:00"
+  "updated_at": "2026-10-12T03:05:45.308320+00:00"
 }
