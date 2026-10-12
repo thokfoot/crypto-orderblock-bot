@@ -16,7 +16,7 @@ permissions:
 
 concurrency:
   group: crypto-daemon
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   run-daemon:

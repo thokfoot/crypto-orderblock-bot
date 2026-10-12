@@ -20,7 +20,7 @@ permissions:
 
 concurrency:
   group: usa-options
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   run-usa-daemon:
