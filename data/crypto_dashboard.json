@@ -2,16 +2,16 @@
   "capital": 1987.27,
   "open_positions": {},
   "total_trades": 9,
-  "last_update_id": 159576184,
+  "last_update_id": 159576185,
   "last_scan_record": {
-    "timestamp": "2026-10-12 11:56:36 UTC",
+    "timestamp": "2026-10-12 12:11:33 UTC",
     "btc_bullish": false,
-    "btc_info": "BTC=$83,401.0, EMA50=$83,470.9, RSI=47.8",
+    "btc_info": "BTC=$83,307.4, EMA50=$83,467.2, RSI=44.0",
     "pairs_scanned": 35,
-    "candidates_count": 0,
-    "candidates_str": "None",
-    "filtered_count": 0,
-    "filtered_str": "None"
+    "candidates_count": 1,
+    "candidates_str": "CKBUSDT:SELL@0.0017(RR:2.1)",
+    "filtered_count": 1,
+    "filtered_str": "STRKUSDT:BUY(BTC Bearish filter)"
   },
-  "updated_at": "2026-10-12T11:56:36.501281+00:00"
+  "updated_at": "2026-10-12T12:11:33.765980+00:00"
 }
