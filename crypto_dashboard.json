@@ -1,6 +1,23 @@
 {
   "capital": 1990.31,
-  "open_positions": {},
+  "open_positions": {
+    "FETUSDT": {
+      "symbol": "FETUSDT",
+      "action": "BUY",
+      "entry_price": 0.2379,
+      "current_sl": 0.235056,
+      "original_sl": 0.235056,
+      "tp": 0.2443,
+      "atr": 0.0022357142857142853,
+      "peak_price": 0.2379,
+      "notional_usd": 200.0,
+      "entry_time": "2026-10-12 07:36:25 UTC",
+      "scaled_out": false,
+      "realized_pnl_usd": 0.0,
+      "breakeven_locked": false,
+      "peak_pnl_pct": 0.0
+    }
+  },
   "total_trades": 8,
   "last_update_id": 159576184,
   "last_scan_record": {
@@ -13,5 +30,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T07:36:24.712828+00:00"
+  "updated_at": "2026-10-12T07:36:25.670244+00:00"
 }
