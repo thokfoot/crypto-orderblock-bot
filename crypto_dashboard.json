@@ -4,14 +4,14 @@
   "total_trades": 9,
   "last_update_id": 159576184,
   "last_scan_record": {
-    "timestamp": "2026-10-12 08:51:24 UTC",
-    "btc_bullish": true,
-    "btc_info": "BTC=$83,645.1, EMA50=$83,464.1, RSI=49.4",
+    "timestamp": "2026-10-12 11:26:32 UTC",
+    "btc_bullish": false,
+    "btc_info": "BTC=$83,366.0, EMA50=$83,469.4, RSI=47.2",
     "pairs_scanned": 35,
     "candidates_count": 0,
     "candidates_str": "None",
     "filtered_count": 1,
-    "filtered_str": "MAGICUSDT:SELL(BTC Bullish filter)"
+    "filtered_str": "ZECUSDT:BUY(BTC Bearish filter)"
   },
-  "updated_at": "2026-10-12T08:54:17.226672+00:00"
+  "updated_at": "2026-10-12T11:26:32.588778+00:00"
 }
