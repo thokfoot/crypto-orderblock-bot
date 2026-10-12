@@ -1,5 +1,5 @@
 {
-  "capital": 1993.31,
+  "capital": 1996.08,
   "open_positions": {
     "MUBARAKUSDT": {
       "symbol": "MUBARAKUSDT",
@@ -25,17 +25,17 @@
       "original_sl": 0.061133559999999997,
       "tp": 0.05532,
       "atr": 0.0009814285714285725,
-      "peak_price": 0.05797,
-      "notional_usd": 200.0,
+      "peak_price": 0.05755,
+      "notional_usd": 100.0,
       "entry_time": "2026-10-12 13:41:53 UTC",
-      "scaled_out": false,
-      "realized_pnl_usd": 0.0,
+      "scaled_out": true,
+      "realized_pnl_usd": 2.7655213070574405,
       "breakeven_locked": true,
-      "peak_pnl_pct": 2.358093313121102
+      "peak_pnl_pct": 3.0655213070574403
     }
   },
   "total_trades": 11,
-  "last_update_id": 159576186,
+  "last_update_id": 159576187,
   "last_scan_record": {
     "timestamp": "2026-10-12 14:27:07 UTC",
     "btc_bullish": false,
@@ -46,5 +46,5 @@
     "filtered_count": 1,
     "filtered_str": "SUSDT:BUY(BTC Bearish filter)"
   },
-  "updated_at": "2026-10-12T14:27:07.090641+00:00"
+  "updated_at": "2026-10-12T14:36:30.771106+00:00"
 }
