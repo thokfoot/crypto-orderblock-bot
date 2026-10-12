@@ -198,8 +198,17 @@ def get_live_price(symbol: str) -> float:
     return None
 
 def get_klines_df(symbol: str, interval="15m", limit=80):
-    url = f"https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}"
-    data = fetch_json(url)
+    """Fetches klines dataframe with multi-tier failover across Futures, Vision CDN, and Spot."""
+    urls = [
+        f"https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval={interval}&limit={limit}",
+        f"https://data-api.binance.vision/api/v3/klines?symbol={symbol}&interval={interval}&limit={limit}",
+        f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval={interval}&limit={limit}"
+    ]
+    data = None
+    for u in urls:
+        data = fetch_json(u)
+        if data and isinstance(data, list) and len(data) > 0:
+            break
     if not data or not isinstance(data, list):
         return None
     cols = ["open_time", "open", "high", "low", "close", "volume", "close_time", "q_vol", "trades", "tb_vol", "tb_qvol", "ignore"]
@@ -208,6 +217,19 @@ def get_klines_df(symbol: str, interval="15m", limit=80):
         df[c] = df[c].astype(float)
     df["time"] = pd.to_datetime(df["open_time"], unit="ms", utc=True)
     return df
+
+def get_24hr_tickers():
+    """Fetches 24hr tickers with multi-tier failover across Futures, Vision CDN, and Spot."""
+    urls = [
+        "https://fapi.binance.com/fapi/v1/ticker/24hr",
+        "https://data-api.binance.vision/api/v3/ticker/24hr",
+        "https://api.binance.com/api/v3/ticker/24hr"
+    ]
+    for u in urls:
+        data = fetch_json(u)
+        if data and isinstance(data, list) and len(data) > 0:
+            return data
+    return None
 
 # --------------------------------------------------------------------------- #
 # BTC MACRO REGIME FILTER (COUNCIL CONSENSUS)
@@ -235,9 +257,9 @@ def scan_order_block_setups():
     btc_bullish, btc_regime_info = check_btc_regime()
     log.info(f"Macro BTC 1H Regime: Bullish={btc_bullish} ({btc_regime_info})")
 
-    tickers = fetch_json("https://fapi.binance.com/fapi/v1/ticker/24hr")
+    tickers = get_24hr_tickers()
     if not tickers or not isinstance(tickers, list):
-        log.warning(f"Binance ticker API returned invalid data (error or rate limit): {tickers}")
+        log.warning(f"Binance ticker API returned invalid data across all endpoints: {tickers}")
         return [], None
 
     universe = []
@@ -476,10 +498,18 @@ class CryptoPaperTrader:
             log.info("No prior valid state found. Initializing with fresh account.")
 
     def save_state(self):
+        total_trades = len(self.trade_history)
+        if os.path.exists(CSV_FILE):
+            try:
+                df_csv = pd.read_csv(CSV_FILE)
+                total_trades = len(df_csv)
+            except Exception:
+                pass
+
         data = {
             "capital": round(self.capital, 2),
             "open_positions": self.open_positions,
-            "total_trades": len(self.trade_history),
+            "total_trades": total_trades,
             "last_update_id": self.last_update_id,
             "last_scan_record": self.last_scan_record,
             "updated_at": datetime.now(timezone.utc).isoformat()
@@ -859,8 +889,29 @@ class CryptoPaperTrader:
             atr_val = pos.get("atr", entry_p * 0.015)
 
             # -------------------------------------------------------------
-            # 1. Scale-Out Profit Taking (Council Consensus):
-            # At +3.0% (or +1.5R), bank 50% cash to lock in positive skewness!
+            # 1. Tier-1: Breakeven Stop Lock at +2.0% (Fee-Safe Buffer)
+            # -------------------------------------------------------------
+            if pnl_pct >= 2.0 and not pos.get("breakeven_locked") and not pos.get("scaled_out"):
+                be_floor = entry_p * (1.0040 if action == "BUY" else 0.9960)
+                if action == "BUY":
+                    pos["current_sl"] = max(pos["current_sl"], be_floor)
+                else:
+                    pos["current_sl"] = min(pos["current_sl"], be_floor)
+                pos["breakeven_locked"] = True
+                self.save_state()
+                push_git_sync(f"breakeven locked {sym}")
+                msg = (
+                    f"🛡️ *BREAKEVEN STOP LOCKED (RISK ELIMINATED)*\n\n"
+                    f"• *Coin:* `{sym}`\n"
+                    f"• *Current Gain:* `+{pnl_pct:.2f}%`\n"
+                    f"• *Protected Stop Loss:* `${pos['current_sl']:,.4f}` (+0.40% Buffer)\n"
+                    f"• *Status:* Guaranteed Fee-Covered Net Scratch or Better"
+                )
+                log.info(f"Breakeven locked for {sym} at +{pnl_pct:.2f}% (SL: ${pos['current_sl']:.4f})")
+                send_telegram(msg)
+
+            # -------------------------------------------------------------
+            # 2. Tier-2: Scale-Out Profit Taking at +3.0% (50% Banked to Cash)
             # -------------------------------------------------------------
             if pnl_pct >= 3.0 and not pos.get("scaled_out"):
                 partial_notional = pos["notional_usd"] * 0.5
@@ -907,13 +958,16 @@ class CryptoPaperTrader:
                 send_telegram(msg)
 
             # -------------------------------------------------------------
-            # 2. Dynamic Chandelier Trailing Stop on Remaining 50% Runner
+            # 3. Dynamic Chandelier Trailing Stop on Remaining 50% Runner + Tier-3 Lock
             # -------------------------------------------------------------
             if pos.get("scaled_out"):
                 peak_p = pos.get("peak_price", cur_p)
                 if action == "BUY":
                     chandelier_sl = peak_p - (2.5 * atr_val)
                     be_floor = entry_p * 1.0040
+                    # Tier-3 Lock: If runner reaches +5.0%, floor stop at +2.5% minimum profit
+                    if pnl_pct >= 5.0:
+                        be_floor = max(be_floor, entry_p * 1.0250)
                     target_sl = max(be_floor, chandelier_sl)
                     if target_sl > pos["current_sl"]:
                         pos["current_sl"] = target_sl
@@ -922,6 +976,9 @@ class CryptoPaperTrader:
                 else:
                     chandelier_sl = peak_p + (2.5 * atr_val)
                     be_floor = entry_p * 0.9960
+                    # Tier-3 Lock: If runner reaches +5.0%, floor stop at +2.5% minimum profit
+                    if pnl_pct >= 5.0:
+                        be_floor = min(be_floor, entry_p * 0.9750)
                     target_sl = min(be_floor, chandelier_sl)
                     if target_sl < pos["current_sl"]:
                         pos["current_sl"] = target_sl
