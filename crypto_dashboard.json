@@ -1,24 +1,7 @@
 {
-  "capital": 1990.22,
-  "open_positions": {
-    "ONDOUSDT": {
-      "symbol": "ONDOUSDT",
-      "action": "BUY",
-      "entry_price": 0.5152,
-      "current_sl": 0.5173142857142857,
-      "original_sl": 0.5085828571428571,
-      "tp": 0.5325,
-      "atr": 0.005514285714285709,
-      "peak_price": 0.5311,
-      "notional_usd": 100.0,
-      "entry_time": "2026-10-12 03:05:47 UTC",
-      "scaled_out": true,
-      "realized_pnl_usd": 2.7085403726707993,
-      "breakeven_locked": true,
-      "peak_pnl_pct": 3.086180124223607
-    }
-  },
-  "total_trades": 7,
+  "capital": 1990.31,
+  "open_positions": {},
+  "total_trades": 8,
   "last_update_id": 159576183,
   "last_scan_record": {
     "timestamp": "2026-10-12 06:21:16 UTC",
@@ -30,5 +13,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T06:21:16.743177+00:00"
+  "updated_at": "2026-10-12T06:28:38.919431+00:00"
 }
