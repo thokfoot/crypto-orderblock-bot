@@ -17,3 +17,4 @@ timestamp,btc_bullish,btc_info,pairs_scanned,candidates_count,candidates,filtere
 2026-10-12 06:06:20 UTC,True,"BTC=$83,911.2, EMA50=$83,409.8, RSI=49.9",35,0,None,CFXUSDT:SELL(BTC Bullish filter)
 2026-10-12 06:21:16 UTC,False,"BTC=$83,790.0, EMA50=$83,404.6, RSI=47.4",35,0,None,None
 2026-10-12 06:36:18 UTC,True,"BTC=$84,004.0, EMA50=$83,413.8, RSI=52.0",35,0,None,None
+2026-10-12 06:51:20 UTC,True,"BTC=$83,995.9, EMA50=$83,413.5, RSI=51.8",35,0,None,None
