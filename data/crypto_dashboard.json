@@ -4,14 +4,14 @@
   "total_trades": 4,
   "last_update_id": 159576174,
   "last_scan_record": {
-    "timestamp": "2026-10-12 02:56:52 UTC",
+    "timestamp": "2026-10-12 03:05:44 UTC",
     "btc_bullish": true,
-    "btc_info": "BTC=$83,866.0, EMA50=$83,300.0, RSI=67.2",
-    "pairs_scanned": 13,
-    "candidates_count": 0,
-    "candidates_str": "None",
+    "btc_info": "BTC=$83,760.0, EMA50=$83,320.2, RSI=65.3",
+    "pairs_scanned": 35,
+    "candidates_count": 2,
+    "candidates_str": "SUSDT:BUY@0.0605(RR:3.3); ONDOUSDT:BUY@0.5152(RR:2.6)",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T03:04:19.761741+00:00"
+  "updated_at": "2026-10-12T03:05:44.148198+00:00"
 }
