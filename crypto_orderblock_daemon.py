@@ -45,9 +45,9 @@ POLL_INTERVAL_SECS = int(os.environ.get("POLL_INTERVAL_SECS", "1"))   # Poll eve
 SCAN_INTERVAL_SECS = int(os.environ.get("SCAN_INTERVAL_SECS", "900")) # Market scan every 15 mins (900s)
 RUN_MINUTES = int(os.environ.get("RUN_MINUTES", "0"))                 # 0 = infinite loop, >0 = bounded cloud run
 
-# Telegram Credentials (Dedicated Crypto Bot: @mytradingbot0312_bot)
-TELEGRAM_BOT_TOKEN = os.environ.get("CRYPTO_TELEGRAM_BOT_TOKEN") or os.environ.get("TELEGRAM_BOT_TOKEN", "8232616481:AAFnxgOYCN9WxjF-LCUM9lokJ5b5rXAbZzg")
-TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "988970998")
+# Telegram Credentials (Injected securely via GitHub Actions Secrets)
+TELEGRAM_BOT_TOKEN = os.environ.get("CRYPTO_TELEGRAM_BOT_TOKEN") or os.environ.get("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 
 # State File Paths
 DATA_DIR = "data"
