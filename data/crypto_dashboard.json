@@ -9,13 +9,13 @@
       "original_sl": 0.0761534,
       "tp": 0.06611,
       "atr": 0.0015414285714285697,
-      "peak_price": 0.07265,
+      "peak_price": 0.07233,
       "notional_usd": 200.0,
       "entry_time": "2026-10-12 13:11:51 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
       "breakeven_locked": true,
-      "peak_pnl_pct": 2.0229265003371375
+      "peak_pnl_pct": 2.4544841537423987
     },
     "SUSDT": {
       "symbol": "SUSDT",
@@ -37,14 +37,14 @@
   "total_trades": 11,
   "last_update_id": 159576186,
   "last_scan_record": {
-    "timestamp": "2026-10-12 13:56:56 UTC",
+    "timestamp": "2026-10-12 14:12:03 UTC",
     "btc_bullish": false,
-    "btc_info": "BTC=$82,916.0, EMA50=$83,423.7, RSI=37.6",
+    "btc_info": "BTC=$83,075.1, EMA50=$83,414.0, RSI=37.1",
     "pairs_scanned": 35,
     "candidates_count": 0,
     "candidates_str": "None",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T14:04:15.088007+00:00"
+  "updated_at": "2026-10-12T14:12:03.156230+00:00"
 }
