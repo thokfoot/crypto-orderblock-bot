@@ -2,7 +2,11 @@ name: USA SPY Options Spread Cloud Daemon
 
 on:
   schedule:
-    # Runs every 3 hours automatically to maintain unbroken continuous cloud runner chain
+    # 1. Exact 7:00 PM IST (13:30 UTC / 09:30 AM EST) US Market Open Trigger (Mon-Fri)
+    - cron: '30 13 * * 1-5'
+    # 2. Mid-Session Failover at 10:00 PM IST (16:30 UTC / 12:30 PM EST) (Mon-Fri)
+    - cron: '30 16 * * 1-5'
+    # 3. Continuous 3-hour backup chain
     - cron: '0 */3 * * *'
   workflow_dispatch:
     inputs:
