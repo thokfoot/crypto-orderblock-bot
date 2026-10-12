@@ -47,3 +47,4 @@ timestamp,btc_bullish,btc_info,pairs_scanned,candidates_count,candidates,filtere
 2026-10-12 21:20:10 UTC,False,"BTC=$82,936.1, EMA50=$83,232.6, RSI=33.2",35,0,None,None
 2026-10-12 21:35:15 UTC,False,"BTC=$82,968.5, EMA50=$83,234.0, RSI=33.6",35,0,None,None
 2026-10-12 21:50:18 UTC,False,"BTC=$82,561.5, EMA50=$83,216.5, RSI=29.7",35,0,None,None
+2026-10-12 22:05:22 UTC,False,"BTC=$82,673.0, EMA50=$83,194.9, RSI=36.7",35,0,None,None
