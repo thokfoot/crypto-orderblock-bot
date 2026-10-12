@@ -9,26 +9,26 @@
       "original_sl": 0.0761534,
       "tp": 0.06611,
       "atr": 0.0015414285714285697,
-      "peak_price": 0.07387,
+      "peak_price": 0.07347,
       "notional_usd": 200.0,
       "entry_time": "2026-10-12 13:11:51 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
-      "peak_pnl_pct": 0.3776129467295868
+      "peak_pnl_pct": 0.9170600134861768
     }
   },
   "total_trades": 11,
   "last_update_id": 159576186,
   "last_scan_record": {
-    "timestamp": "2026-10-12 13:26:54 UTC",
+    "timestamp": "2026-10-12 13:41:51 UTC",
     "btc_bullish": false,
-    "btc_info": "BTC=$82,561.4, EMA50=$83,408.5, RSI=32.7",
+    "btc_info": "BTC=$82,754.0, EMA50=$83,416.8, RSI=34.6",
     "pairs_scanned": 35,
     "candidates_count": 1,
-    "candidates_str": "MUBARAKUSDT:SELL@0.0740(RR:3.6)",
+    "candidates_str": "SUSDT:SELL@0.0594(RR:2.3)",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T13:26:54.209080+00:00"
+  "updated_at": "2026-10-12T13:41:51.961390+00:00"
 }
