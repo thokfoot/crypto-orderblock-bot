@@ -37,14 +37,14 @@
   "total_trades": 4,
   "last_update_id": 159576178,
   "last_scan_record": {
-    "timestamp": "2026-10-12 03:35:47 UTC",
+    "timestamp": "2026-10-12 03:50:49 UTC",
     "btc_bullish": true,
-    "btc_info": "BTC=$83,674.0, EMA50=$83,316.5, RSI=62.9",
+    "btc_info": "BTC=$83,638.0, EMA50=$83,314.9, RSI=61.9",
     "pairs_scanned": 35,
     "candidates_count": 0,
     "candidates_str": "None",
-    "filtered_count": 1,
-    "filtered_str": "SUSDT:SELL(BTC Bullish filter)"
+    "filtered_count": 0,
+    "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T03:35:47.413261+00:00"
+  "updated_at": "2026-10-12T03:50:49.173229+00:00"
 }
