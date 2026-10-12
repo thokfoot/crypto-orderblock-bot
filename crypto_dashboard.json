@@ -32,6 +32,22 @@
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
       "peak_pnl_pct": 1.1063664596273366
+    },
+    "MAGICUSDT": {
+      "symbol": "MAGICUSDT",
+      "action": "BUY",
+      "entry_price": 0.1311,
+      "current_sl": 0.12541714285714284,
+      "original_sl": 0.12541714285714284,
+      "tp": 0.1468,
+      "atr": 0.004735714285714286,
+      "peak_price": 0.1311,
+      "notional_usd": 200.0,
+      "entry_time": "2026-10-12 04:05:54 UTC",
+      "scaled_out": false,
+      "realized_pnl_usd": 0.0,
+      "breakeven_locked": false,
+      "peak_pnl_pct": 0.0
     }
   },
   "total_trades": 4,
@@ -46,5 +62,5 @@
     "filtered_count": 1,
     "filtered_str": "SUSDT:SELL(BTC Bullish filter)"
   },
-  "updated_at": "2026-10-12T04:05:53.774063+00:00"
+  "updated_at": "2026-10-12T04:05:54.839598+00:00"
 }
