@@ -21,14 +21,14 @@
   "total_trades": 8,
   "last_update_id": 159576184,
   "last_scan_record": {
-    "timestamp": "2026-10-12 08:06:27 UTC",
+    "timestamp": "2026-10-12 08:21:27 UTC",
     "btc_bullish": true,
-    "btc_info": "BTC=$83,797.0, EMA50=$83,470.6, RSI=52.3",
+    "btc_info": "BTC=$83,584.1, EMA50=$83,461.4, RSI=48.3",
     "pairs_scanned": 35,
-    "candidates_count": 1,
-    "candidates_str": "FETUSDT:BUY@0.2369(RR:2.8)",
+    "candidates_count": 0,
+    "candidates_str": "None",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T08:06:27.162695+00:00"
+  "updated_at": "2026-10-12T08:21:27.936848+00:00"
 }
