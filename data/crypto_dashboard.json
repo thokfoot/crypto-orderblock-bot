@@ -5,17 +5,17 @@
       "symbol": "MUBARAKUSDT",
       "action": "SELL",
       "entry_price": 0.07415,
-      "current_sl": 0.0761534,
+      "current_sl": 0.0738534,
       "original_sl": 0.0761534,
       "tp": 0.06611,
       "atr": 0.0015414285714285697,
-      "peak_price": 0.07316,
+      "peak_price": 0.07265,
       "notional_usd": 200.0,
       "entry_time": "2026-10-12 13:11:51 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
-      "breakeven_locked": false,
-      "peak_pnl_pct": 1.3351314902225098
+      "breakeven_locked": true,
+      "peak_pnl_pct": 2.0229265003371375
     },
     "SUSDT": {
       "symbol": "SUSDT",
@@ -46,5 +46,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T13:56:56.255666+00:00"
+  "updated_at": "2026-10-12T14:04:15.088007+00:00"
 }
