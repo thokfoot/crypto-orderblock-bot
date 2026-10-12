@@ -21,14 +21,14 @@
   "total_trades": 7,
   "last_update_id": 159576183,
   "last_scan_record": {
-    "timestamp": "2026-10-12 06:06:20 UTC",
-    "btc_bullish": true,
-    "btc_info": "BTC=$83,911.2, EMA50=$83,409.8, RSI=49.9",
+    "timestamp": "2026-10-12 06:21:16 UTC",
+    "btc_bullish": false,
+    "btc_info": "BTC=$83,790.0, EMA50=$83,404.6, RSI=47.4",
     "pairs_scanned": 35,
     "candidates_count": 0,
     "candidates_str": "None",
-    "filtered_count": 1,
-    "filtered_str": "CFXUSDT:SELL(BTC Bullish filter)"
+    "filtered_count": 0,
+    "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T06:06:20.514060+00:00"
+  "updated_at": "2026-10-12T06:21:16.743177+00:00"
 }
