@@ -9,26 +9,26 @@
       "original_sl": 0.0761534,
       "tp": 0.06611,
       "atr": 0.0015414285714285697,
-      "peak_price": 0.07116,
+      "peak_price": 0.07113,
       "notional_usd": 100.0,
       "entry_time": "2026-10-12 13:11:51 UTC",
       "scaled_out": true,
       "realized_pnl_usd": 1.871274443695213,
       "breakeven_locked": true,
-      "peak_pnl_pct": 4.032366824005385
+      "peak_pnl_pct": 4.072825354012131
     }
   },
   "total_trades": 14,
   "last_update_id": 159576187,
   "last_scan_record": {
-    "timestamp": "2026-10-12 23:05:34 UTC",
+    "timestamp": "2026-10-12 23:20:36 UTC",
     "btc_bullish": false,
-    "btc_info": "BTC=$82,163.7, EMA50=$83,130.3, RSI=29.5",
+    "btc_info": "BTC=$82,114.9, EMA50=$83,128.2, RSI=29.0",
     "pairs_scanned": 35,
     "candidates_count": 0,
     "candidates_str": "None",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T23:05:34.211174+00:00"
+  "updated_at": "2026-10-12T23:20:36.219621+00:00"
 }
