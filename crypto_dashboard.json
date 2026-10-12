@@ -9,26 +9,26 @@
       "original_sl": 0.235056,
       "tp": 0.2443,
       "atr": 0.0022357142857142853,
-      "peak_price": 0.2379,
+      "peak_price": 0.2385,
       "notional_usd": 200.0,
       "entry_time": "2026-10-12 07:36:25 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
-      "peak_pnl_pct": 0.0
+      "peak_pnl_pct": 0.25220680958385433
     }
   },
   "total_trades": 8,
   "last_update_id": 159576184,
   "last_scan_record": {
-    "timestamp": "2026-10-12 07:36:24 UTC",
+    "timestamp": "2026-10-12 07:51:25 UTC",
     "btc_bullish": true,
-    "btc_info": "BTC=$83,996.0, EMA50=$83,452.3, RSI=53.4",
+    "btc_info": "BTC=$83,973.1, EMA50=$83,451.3, RSI=52.9",
     "pairs_scanned": 35,
-    "candidates_count": 1,
-    "candidates_str": "FETUSDT:BUY@0.2379(RR:2.3)",
+    "candidates_count": 0,
+    "candidates_str": "None",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T07:36:25.670244+00:00"
+  "updated_at": "2026-10-12T07:51:25.258007+00:00"
 }
