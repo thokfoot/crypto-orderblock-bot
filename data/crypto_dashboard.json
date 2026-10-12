@@ -5,17 +5,17 @@
       "symbol": "SUSDT",
       "action": "BUY",
       "entry_price": 0.06052,
-      "current_sl": 0.0579174,
+      "current_sl": 0.060762079999999996,
       "original_sl": 0.0579174,
       "tp": 0.06901,
       "atr": 0.001402857142857142,
-      "peak_price": 0.06148,
+      "peak_price": 0.06176,
       "notional_usd": 200.0,
       "entry_time": "2026-10-12 03:05:45 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
-      "breakeven_locked": false,
-      "peak_pnl_pct": 1.586252478519502
+      "breakeven_locked": true,
+      "peak_pnl_pct": 2.048909451421026
     },
     "ONDOUSDT": {
       "symbol": "ONDOUSDT",
@@ -35,7 +35,7 @@
     }
   },
   "total_trades": 5,
-  "last_update_id": 159576179,
+  "last_update_id": 159576180,
   "last_scan_record": {
     "timestamp": "2026-10-12 04:51:02 UTC",
     "btc_bullish": true,
@@ -46,5 +46,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T04:51:02.200919+00:00"
+  "updated_at": "2026-10-12T04:53:42.663072+00:00"
 }
