@@ -46,6 +46,12 @@ ENTRY_START = dtime(10, 0)
 ENTRY_END = dtime(14, 30)
 SQUARE_OFF = dtime(15, 45)
 
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -138,6 +144,7 @@ class USAOptionsTrader:
         self.last_trade_date = None
         self.last_update_id = 0
         self.last_inbox_check = 0.0
+        self.last_spot_price = None
         self.load_state()
 
     def load_state(self):
@@ -151,6 +158,7 @@ class USAOptionsTrader:
                         self.active_trade = data.get("active_trade", None)
                         self.last_trade_date = data.get("last_trade_date", None)
                         self.last_update_id = data.get("last_update_id", 0)
+                        self.last_spot_price = data.get("last_spot_price", None)
                         break
                 except Exception:
                     pass
@@ -173,6 +181,7 @@ class USAOptionsTrader:
             "active_trade": self.active_trade,
             "last_trade_date": self.last_trade_date,
             "last_update_id": self.last_update_id,
+            "last_spot_price": self.last_spot_price,
             "updated_at": datetime.now(pytz.utc).isoformat()
         }
         os.makedirs("data", exist_ok=True)
@@ -197,19 +206,54 @@ class USAOptionsTrader:
             log.warning(f"Failed to log USA trade to CSV: {e}")
 
     def send_telegram_status_summary(self):
-        """Sends rich status summary of USA options trading account."""
+        """Sends rich status summary of USA options trading account with live floating P&L."""
         is_open, status_str = self.is_market_open()
         now_ny = datetime.now(TZ_NY)
         realized_pnl = self.capital - INITIAL_CAPITAL
         floating_pnl = 0.0
+        cur_spot = None
+        spread_pnl_pct = 0.0
+
+        # Attempt to fetch freshest live SPY quote
+        try:
+            spy_ticker = yf.Ticker("SPY")
+            df = spy_ticker.history(period="1d", interval="1m")
+            if df.empty:
+                df = spy_ticker.history(period="5d", interval="1m")
+            if not df.empty:
+                cur_spot = float(df.iloc[-1]["Close"])
+                self.last_spot_price = cur_spot
+        except Exception as e:
+            log.warning(f"Status summary live SPY fetch failed: {e}")
+
+        if not cur_spot:
+            cur_spot = self.last_spot_price
 
         pos_lines = []
         if self.active_trade:
             t = self.active_trade
+            entry_spot = float(t.get("entry_spot", 0))
+            entry_cost = float(t.get("entry_cost", 120.0))
+
+            if cur_spot and entry_spot > 0:
+                spot_move_pct = ((cur_spot - entry_spot) / entry_spot) * 100.0
+                if spot_move_pct >= 0:
+                    spread_pnl_pct = min(50.0, spot_move_pct * (50.0 / 0.60))
+                else:
+                    spread_pnl_pct = max(-30.0, spot_move_pct * (30.0 / 0.30))
+                floating_pnl = entry_cost * (spread_pnl_pct / 100.0)
+                spot_str = f"${cur_spot:,.2f} ({spot_move_pct:+.2f}%)"
+                pnl_str = f"`${floating_pnl:+.2f} USD` ({spread_pnl_pct:+.1f}%)"
+            else:
+                spot_str = "Live Market Sync"
+                pnl_str = f"`${floating_pnl:+.2f} USD`"
+
             pos_lines.extend([
                 f"• *Active Position:* `{t.get('structure')}`",
-                f"  ├ Entry Spot: `${t.get('entry_spot', 0):,.2f}`",
-                f"  ├ Cost / Risk: `${t.get('entry_cost', 0):,.2f}`",
+                f"  ├ Entry Spot: `${entry_spot:,.2f}`",
+                f"  ├ Live Spot: `{spot_str}`",
+                f"  ├ Cost / Risk: `${entry_cost:,.2f}`",
+                f"  ├ Floating P&L: {pnl_str}",
                 f"  └ Entry Time: `{t.get('entry_time')}`",
                 ""
             ])
@@ -218,14 +262,15 @@ class USAOptionsTrader:
 
         total_net_worth = self.capital + floating_pnl
         total_return_pct = ((total_net_worth - INITIAL_CAPITAL) / INITIAL_CAPITAL) * 100
+        floating_pnl_display = f"`${floating_pnl:+.2f} USD` ({spread_pnl_pct:+.1f}%)" if (self.active_trade and cur_spot) else f"`${floating_pnl:+.2f} USD`"
 
         lines = [
             "🇺🇸 *USA SPY OPTIONS LIVE STATUS SUMMARY*",
             "━━━━━━━━━━━━━━━━━━━━━━",
             f"💰 *Capital Balance:* `${self.capital:,.2f} USD`",
-            f"🌊 *Floating P&L (Live):* *`${floating_pnl:+.2f} USD`*",
-            f"💎 *Realized P&L (Banked):* *`${realized_pnl:+.2f} USD`*",
-            f"📈 *Total Portfolio Value:* *`${total_net_worth:,.2f} USD`* (`{total_return_pct:+.2f}%`)",
+            f"🌊 *Floating P&L (Live):* {floating_pnl_display}",
+            f"💎 *Realized P&L (Banked):* `${realized_pnl:+.2f} USD`",
+            f"📈 *Total Portfolio Value:* `${total_net_worth:,.2f} USD` (`{total_return_pct:+.2f}%`)",
             "━━━━━━━━━━━━━━━━━━━━━━",
             f"🕒 *Market Status:* `{status_str}` ({now_ny.strftime('%I:%M %p EST')})",
             f"🛡️ *Strategy:* 100% Hedged Bull Call Spread (Spot Stop -0.30%)",
@@ -238,6 +283,56 @@ class USAOptionsTrader:
         msg = "\n".join(lines)
         log.info("Sending USA status summary to Telegram...")
         send_telegram(msg)
+
+    def send_telegram_pnl_report(self):
+        """Sends detailed realized P&L and trade performance report for USA Options."""
+        realized_pnl = self.capital - INITIAL_CAPITAL
+        total_trades = 0
+        winning_trades = 0
+        losing_trades = 0
+        trade_rows = []
+
+        csv_p = "data/usa_paper_trades.csv"
+        if os.path.exists(csv_p):
+            try:
+                df = pd.read_csv(csv_p)
+                if not df.empty and "pnl_usd" in df.columns:
+                    total_trades = len(df)
+                    winning_trades = len(df[df["pnl_usd"] > 0])
+                    losing_trades = len(df[df["pnl_usd"] < 0])
+                    for _, row in df.tail(5).iloc[::-1].iterrows():
+                        icon = "🟢" if row["pnl_usd"] > 0 else ("🛡️" if "BREAKEVEN" in str(row.get("reason", "")) or row["pnl_usd"] == 0 else "🔴")
+                        trade_rows.append(f"{icon} *{row.get('symbol', 'SPY')}* ({row.get('action', 'SPREAD')}): `{row.get('pnl_pct', 0):+.2f}%` (*{row.get('pnl_usd', 0):+.2f} USD*) [`{row.get('reason', 'N/A')}`]")
+            except Exception:
+                pass
+
+        win_rate = (winning_trades / total_trades * 100) if total_trades > 0 else 0.0
+
+        lines = [
+            "💰 *USA OPTIONS REALIZED P&L REPORT*",
+            "━━━━━━━━━━━━━━━━━━━━━━",
+            f"💵 *Current Account Balance:* `${self.capital:,.2f} USD`",
+            f"💎 *Net Banked Realized P&L:* *`${realized_pnl:+.2f} USD`*",
+            f"📊 *Closed Trades:* `{total_trades}` | *Win Rate:* `{win_rate:.1f}%`",
+            f"🏆 *Wins:* `{winning_trades}` | 🛡️ *Losses / EOD:* `{losing_trades}`",
+            "━━━━━━━━━━━━━━━━━━━━━━"
+        ]
+        if trade_rows:
+            lines.extend([
+                "📋 *Recent Trade History:*",
+                *trade_rows,
+                "━━━━━━━━━━━━━━━━━━━━━━"
+            ])
+        else:
+            lines.extend([
+                "📋 *Recent Trade History:*",
+                "   _No closed trades banked yet today._",
+                "━━━━━━━━━━━━━━━━━━━━━━"
+            ])
+        lines.extend([
+            "👉 _Tap buttons below anytime for instant refresh_"
+        ])
+        send_telegram("\n".join(lines))
 
     def check_telegram_inbox(self):
         """Polls for Telegram commands (/status, /summary, buttons, or inline callbacks) with cold-boot replay discard and pre-execution offset advance."""
@@ -286,8 +381,11 @@ class USAOptionsTrader:
 
                     # Strict command matching (M2) to avoid false triggers
                     cmd_clean = text.strip().lower()
-                    if cmd_clean in {"📊 status summary", "status", "summary", "/status", "/summary", "/start", "💰 p&l report", "pnl", "/pnl", "profit", "report"} or cmd_clean.startswith("/status") or cmd_clean.startswith("/pnl"):
+                    if cmd_clean in {"📊 status summary", "status", "summary", "/status", "/summary", "/start"} or cmd_clean.startswith("/status"):
                         self.send_telegram_status_summary()
+                        self.save_state()
+                    elif cmd_clean in {"💰 p&l report", "pnl", "/pnl", "profit", "report"} or cmd_clean.startswith("/pnl"):
+                        self.send_telegram_pnl_report()
                         self.save_state()
         except Exception as e:
             log.warning(f"USA telegram inbox notice: {e}")
@@ -323,8 +421,11 @@ class USAOptionsTrader:
             spy_ticker = yf.Ticker("SPY")
             df = spy_ticker.history(period="1d", interval="1m")
             if df.empty:
+                df = spy_ticker.history(period="5d", interval="1m")
+            if df.empty:
                 return
             current_spot = float(df.iloc[-1]["Close"])
+            self.last_spot_price = current_spot
         except Exception as e:
             log.warning(f"Failed to fetch SPY price: {e}")
             return
