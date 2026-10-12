@@ -1,5 +1,5 @@
 {
-  "capital": 1987.27,
+  "capital": 1990.26,
   "open_positions": {
     "CKBUSDT": {
       "symbol": "CKBUSDT",
@@ -9,13 +9,13 @@
       "original_sl": 0.0016989142857142857,
       "tp": 0.0016159285714285715,
       "atr": 2.2428571428571415e-05,
-      "peak_price": 0.001634,
-      "notional_usd": 200.0,
+      "peak_price": 0.001617,
+      "notional_usd": 100.0,
       "entry_time": "2026-10-12 12:11:34 UTC",
-      "scaled_out": false,
-      "realized_pnl_usd": 0.0,
+      "scaled_out": true,
+      "realized_pnl_usd": 2.9894736842105347,
       "breakeven_locked": true,
-      "peak_pnl_pct": 2.272727272727276
+      "peak_pnl_pct": 3.2894736842105345
     },
     "MUBARAKUSDT": {
       "symbol": "MUBARAKUSDT",
@@ -25,17 +25,17 @@
       "original_sl": 0.0761534,
       "tp": 0.06611,
       "atr": 0.0015414285714285697,
-      "peak_price": 0.07415,
+      "peak_price": 0.07407,
       "notional_usd": 200.0,
       "entry_time": "2026-10-12 13:11:51 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
-      "peak_pnl_pct": 0.0
+      "peak_pnl_pct": 0.10788941335131053
     }
   },
   "total_trades": 9,
-  "last_update_id": 159576185,
+  "last_update_id": 159576186,
   "last_scan_record": {
     "timestamp": "2026-10-12 13:11:50 UTC",
     "btc_bullish": false,
@@ -46,5 +46,5 @@
     "filtered_count": 1,
     "filtered_str": "STRKUSDT:BUY(BTC Bearish filter)"
   },
-  "updated_at": "2026-10-12T13:11:51.317932+00:00"
+  "updated_at": "2026-10-12T13:15:24.661198+00:00"
 }
