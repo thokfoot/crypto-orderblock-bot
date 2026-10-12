@@ -1,21 +1,7 @@
 {
-  "capital": 2004.22,
-  "open_positions": {
-    "ARBUSDT": {
-      "symbol": "ARBUSDT",
-      "action": "BUY",
-      "entry_price": 0.19628,
-      "current_sl": 0.19706512,
-      "original_sl": 0.19344312,
-      "tp": 0.20315,
-      "notional_usd": 200.0,
-      "entry_time": "2026-10-11 13:54:38 UTC",
-      "breakeven_locked": true,
-      "peak_pnl_pct": 2.0990421846341882,
-      "peak_price": 0.2004
-    }
-  },
-  "total_trades": 3,
+  "capital": 2001.19,
+  "open_positions": {},
+  "total_trades": 4,
   "last_update_id": 159576174,
   "last_scan_record": {
     "timestamp": "2026-10-12 02:56:52 UTC",
@@ -27,5 +13,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T03:04:18.100371+00:00"
+  "updated_at": "2026-10-12T03:04:19.761741+00:00"
 }
