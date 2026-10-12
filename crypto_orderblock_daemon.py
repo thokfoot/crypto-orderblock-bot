@@ -465,6 +465,7 @@ class CryptoPaperTrader:
         self.last_scan_time = 0
         self.last_scan_record = None
         self.last_update_id = 0
+        self.last_inbox_check = 0.0
         self.last_known_prices = {}
         self.cached_btc_regime = (True, "BTC Trend Active")
         self.last_btc_check = 0
@@ -689,8 +690,17 @@ class CryptoPaperTrader:
         send_telegram("\n".join(lines))
 
     def trigger_on_demand_rescan(self):
-        """Executes an instant on-demand scan and replies immediately."""
-        send_telegram("⏳ *Initiating On-Demand Market Scan...*\nScanning 35 top Binance Futures perpetuals now...")
+        """Executes an instant on-demand scan with cooldown and prior risk-flush."""
+        now = time.time()
+        # Cooldown guard: prevent rapid button-mashing lockups
+        if now - self.last_scan_time < 30.0:
+            send_telegram("⏳ *Cooldown Active:* Last market scan was completed <30s ago. Please wait.", reply_markup=None)
+            return
+
+        # Risk-First Flush: manage positions before entering the blocking 35-pair scan
+        self.manage_positions()
+
+        send_telegram("⏳ *Initiating On-Demand Market Scan...*\nScanning 35 top Binance Futures perpetuals now...", reply_markup=None)
         candidate_setups, scan_record = scan_order_block_setups()
         self.last_scan_record = scan_record
         self.last_scan_time = time.time()
@@ -724,7 +734,7 @@ class CryptoPaperTrader:
                 losing_trades = len(df[df["pnl_usd"] < 0])
                 for _, row in df.tail(5).iloc[::-1].iterrows():
                     icon = "🟢" if row["pnl_usd"] > 0 else ("🛡️" if "BREAKEVEN" in str(row["reason"]) else "🔴")
-                    trade_rows.append(f"{icon} *{row['symbol']}* ({row['action']}): `{row['pnl_pct']:+.2f}%` (*{row['pnl_usd']:+.2f} USD*) [{row['reason']}]")
+                    trade_rows.append(f"{icon} *{row['symbol']}* ({row['action']}): `{row['pnl_pct']:+.2f}%` (*{row['pnl_usd']:+.2f} USD*) [`{row['reason']}`]")
             except Exception:
                 pass
 
@@ -749,16 +759,33 @@ class CryptoPaperTrader:
         send_telegram("\n".join(lines))
 
     def check_telegram_inbox(self):
-        """Polls for Telegram commands (/status, /summary, buttons, or inline callbacks)."""
+        """Polls for Telegram commands (/status, /summary, buttons, or inline callbacks) with cold-boot replay discard and pre-execution offset advance."""
         if not TELEGRAM_BOT_TOKEN or "placeholder" in TELEGRAM_BOT_TOKEN:
             return
         try:
+            # Cold-boot backlog discard: If last_update_id is 0, probe newest update and discard stale historical backlog
+            if self.last_update_id == 0:
+                probe_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates?offset=-1&limit=1"
+                probe_req = urllib.request.Request(probe_url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(probe_req, timeout=3) as probe_resp:
+                    probe_data = json.loads(probe_resp.read().decode("utf-8"))
+                    probe_res = probe_data.get("result", [])
+                    if probe_res:
+                        self.last_update_id = probe_res[-1].get("update_id", 0)
+                        self.save_state()
+                        log.info(f"Telegram inbox initialized on cold boot. Discarded historical backlog up to update_id {self.last_update_id}")
+
             url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates?offset={self.last_update_id + 1}&limit=10&timeout=1"
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
             with urllib.request.urlopen(req, timeout=3) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 for update in data.get("result", []):
-                    self.last_update_id = max(self.last_update_id, update.get("update_id", 0))
+                    # Advance offset & save state BEFORE executing command to guarantee idempotency
+                    up_id = update.get("update_id", 0)
+                    if up_id > self.last_update_id:
+                        self.last_update_id = up_id
+                        self.save_state()
+
                     cb = update.get("callback_query")
                     msg = update.get("message")
 
@@ -776,18 +803,19 @@ class CryptoPaperTrader:
                     if chat_id != str(TELEGRAM_CHAT_ID):
                         continue
 
-                    cmd_lower = text.lower()
-                    if any(cmd in cmd_lower for cmd in ["rescan", "⚡", "/rescan"]):
+                    # Strict intent matching (M2) to eliminate false triggers from casual text
+                    cmd_clean = text.strip().lower()
+                    if cmd_clean in {"⚡ rescan now", "rescan", "/rescan"} or cmd_clean.startswith("/rescan"):
                         self.trigger_on_demand_rescan()
-                    elif any(cmd in cmd_lower for cmd in ["scan", "🔍", "/scan", "/scanlog"]):
+                    elif cmd_clean in {"🔍 scan log", "scan", "/scan", "/scanlog"} or cmd_clean.startswith("/scan"):
                         self.send_telegram_scan_log()
-                    elif any(cmd in cmd_lower for cmd in ["pnl", "💰", "/pnl", "profit", "report"]):
+                    elif cmd_clean in {"💰 p&l report", "pnl", "/pnl", "profit", "report"} or cmd_clean.startswith("/pnl"):
                         self.send_telegram_pnl_report()
-                    elif any(cmd in cmd_lower for cmd in ["/status", "/summary", "/start", "status", "summary", "📊"]):
+                    elif cmd_clean in {"📊 status summary", "/status", "/summary", "/start", "status", "summary"} or cmd_clean.startswith("/status"):
                         self.send_telegram_status_summary()
                         self.save_state()
-        except Exception:
-            pass
+        except Exception as e:
+            log.warning(f"Telegram inbox notice: {e}")
 
     def log_trade_to_csv(self, trade_record):
         df = pd.DataFrame([trade_record])
@@ -861,7 +889,7 @@ class CryptoPaperTrader:
             f"• *Status:* Fresh Retest Confirmed"
         )
         log.info(f"Entered trade on {sym} ({action}) @ {cur_p}")
-        send_telegram(msg)
+        send_telegram(msg, reply_markup=None)
 
     def manage_positions(self):
         """Monitors active trades for Scale-Out profit taking, Chandelier trailing, TP, and SL."""
@@ -914,7 +942,7 @@ class CryptoPaperTrader:
                     f"• *Status:* Guaranteed Fee-Covered Net Scratch or Better"
                 )
                 log.info(f"Breakeven locked for {sym} at peak +{peak_pnl:.2f}% (SL: ${pos['current_sl']:.4f})")
-                send_telegram(msg)
+                send_telegram(msg, reply_markup=None)
 
             # -------------------------------------------------------------
             # 2. Tier-2: Scale-Out Profit Taking at +2.0% (50% Banked to Cash)
@@ -961,7 +989,7 @@ class CryptoPaperTrader:
                     f"• *New Account Balance:* `${self.capital:,.2f}`"
                 )
                 log.info(f"Scaled out 50% on {sym} @ +{pnl_pct:.2f}% (Banked ${partial_pnl_usd:.2f})")
-                send_telegram(msg)
+                send_telegram(msg, reply_markup=None)
 
             # -------------------------------------------------------------
             # 3. Dynamic Chandelier Trailing Stop on Remaining 50% Runner + Tier-3 Lock
@@ -1047,22 +1075,24 @@ class CryptoPaperTrader:
 
             icon = "🎉" if rec["pnl_usd"] > 0 else ("🛡️" if rec["reason"] == "BREAKEVEN_EXIT" else "🛑")
             msg = (
-                f"{icon} *TRADE CLOSED: {rec['reason']}*\n\n"
+                f"{icon} *TRADE CLOSED: `{rec['reason']}`*\n\n"
                 f"• *Coin:* `{sym}`\n"
                 f"• *Exit Price:* `${rec['exit_price']:,.4f}`\n"
                 f"• *Realized P&L:* `{rec['pnl_pct']:+.2f}%` ({rec['pnl_usd']:+.2f} USD after fees)\n"
                 f"• *Account Balance:* `${rec['balance']:,.2f}`"
             )
             log.info(f"Closed {sym}: Net PnL=${rec['pnl_usd']:.2f} ({rec['reason']})")
-            send_telegram(msg)
+            send_telegram(msg, reply_markup=None)
 
     def run_cycle(self):
         now = time.time()
-        # 1. Listen for interactive Telegram user commands (/status, /summary, buttons)
-        self.check_telegram_inbox()
-
-        # 2. Manage active positions
+        # 1. RISK FIRST - positions must be managed before any potentially blocking tasks
         self.manage_positions()
+
+        # 2. Check Telegram inbox commands (gated to every 3s to eliminate 86k calls/day)
+        if now - self.last_inbox_check >= 3.0:
+            self.last_inbox_check = now
+            self.check_telegram_inbox()
 
         # 3. Run new market scan every 15 mins (always runs to maintain continuous scan history)
         if now - self.last_scan_time >= SCAN_INTERVAL_SECS:

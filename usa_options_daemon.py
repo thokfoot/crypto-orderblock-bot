@@ -137,6 +137,7 @@ class USAOptionsTrader:
         self.active_trade = None
         self.last_trade_date = None
         self.last_update_id = 0
+        self.last_inbox_check = 0.0
         self.load_state()
 
     def load_state(self):
@@ -239,16 +240,33 @@ class USAOptionsTrader:
         send_telegram(msg)
 
     def check_telegram_inbox(self):
-        """Polls for Telegram commands (/status, /summary, buttons, or inline callbacks)."""
+        """Polls for Telegram commands (/status, /summary, buttons, or inline callbacks) with cold-boot replay discard and pre-execution offset advance."""
         if not TELEGRAM_BOT_TOKEN or "placeholder" in TELEGRAM_BOT_TOKEN:
             return
         try:
+            # Cold-boot backlog discard: If last_update_id is 0, probe newest update and discard stale historical backlog
+            if self.last_update_id == 0:
+                probe_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates?offset=-1&limit=1"
+                probe_req = urllib.request.Request(probe_url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(probe_req, timeout=3) as probe_resp:
+                    probe_data = json.loads(probe_resp.read().decode("utf-8"))
+                    probe_res = probe_data.get("result", [])
+                    if probe_res:
+                        self.last_update_id = probe_res[-1].get("update_id", 0)
+                        self.save_state()
+                        log.info(f"USA Telegram inbox initialized on cold boot. Discarded historical backlog up to update_id {self.last_update_id}")
+
             url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates?offset={self.last_update_id + 1}&limit=10&timeout=1"
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
             with urllib.request.urlopen(req, timeout=3) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 for update in data.get("result", []):
-                    self.last_update_id = max(self.last_update_id, update.get("update_id", 0))
+                    # Advance offset & save state BEFORE executing command to guarantee idempotency
+                    up_id = update.get("update_id", 0)
+                    if up_id > self.last_update_id:
+                        self.last_update_id = up_id
+                        self.save_state()
+
                     cb = update.get("callback_query")
                     msg = update.get("message")
 
@@ -266,11 +284,13 @@ class USAOptionsTrader:
                     if chat_id != str(TELEGRAM_CHAT_ID):
                         continue
 
-                    if any(cmd in text.lower() for cmd in ["/status", "/summary", "/start", "status", "summary", "📊", "💰", "report"]):
+                    # Strict command matching (M2) to avoid false triggers
+                    cmd_clean = text.strip().lower()
+                    if cmd_clean in {"📊 status summary", "status", "summary", "/status", "/summary", "/start", "💰 p&l report", "pnl", "/pnl", "profit", "report"} or cmd_clean.startswith("/status") or cmd_clean.startswith("/pnl"):
                         self.send_telegram_status_summary()
                         self.save_state()
-        except Exception:
-            pass
+        except Exception as e:
+            log.warning(f"USA telegram inbox notice: {e}")
 
     def is_market_open(self):
         now_ny = datetime.now(TZ_NY)
@@ -283,8 +303,11 @@ class USAOptionsTrader:
         return True, "Market Open"
 
     def run_cycle(self):
-        # 1. Listen for interactive Telegram user commands (/status, /summary, buttons)
-        self.check_telegram_inbox()
+        now_ts = time.time()
+        # 1. Listen for interactive Telegram user commands (gated to every 3s to eliminate unnecessary polling)
+        if now_ts - self.last_inbox_check >= 3.0:
+            self.last_inbox_check = now_ts
+            self.check_telegram_inbox()
 
         is_open, status_str = self.is_market_open()
         now_ny = datetime.now(TZ_NY)
@@ -339,13 +362,13 @@ class USAOptionsTrader:
                 self.log_trade_to_csv(record)
 
                 msg = (
-                    f"🇺🇸 *USA SPY TRADE CLOSED: {reason}*\n\n"
+                    f"🇺🇸 *USA SPY TRADE CLOSED: `{reason}`*\n\n"
                     f"• *Exit SPY Price:* `${current_spot:,.2f}`\n"
                     f"• *Realized P&L:* `${pnl:+,.2f}`\n"
                     f"• *Account Balance:* `${self.capital:,.2f}`"
                 )
                 log.info(f"Closed SPY Trade: PnL=${pnl:.2f} ({reason})")
-                send_telegram(msg)
+                send_telegram(msg, reply_markup=None)
 
                 self.active_trade = None
                 self.last_trade_date = today_str
@@ -385,7 +408,7 @@ class USAOptionsTrader:
                 f"• *Zero Overnight Risk:* Auto-exit at 3:45 PM EST"
             )
             log.info(f"Opened SPY spread @ ${current_spot:.2f}")
-            send_telegram(msg)
+            send_telegram(msg, reply_markup=None)
 
 def main():
     log.info("Starting Autonomous 24/7 USA Options Paper Trading Daemon...")
