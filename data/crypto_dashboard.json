@@ -1,22 +1,6 @@
 {
-  "capital": 1987.32,
+  "capital": 1987.52,
   "open_positions": {
-    "SUSDT": {
-      "symbol": "SUSDT",
-      "action": "BUY",
-      "entry_price": 0.06052,
-      "current_sl": 0.060762079999999996,
-      "original_sl": 0.0579174,
-      "tp": 0.06901,
-      "atr": 0.001402857142857142,
-      "peak_price": 0.06176,
-      "notional_usd": 200.0,
-      "entry_time": "2026-10-12 03:05:45 UTC",
-      "scaled_out": false,
-      "realized_pnl_usd": 0.0,
-      "breakeven_locked": true,
-      "peak_pnl_pct": 2.048909451421026
-    },
     "ONDOUSDT": {
       "symbol": "ONDOUSDT",
       "action": "BUY",
@@ -34,7 +18,7 @@
       "peak_pnl_pct": 2.1739130434782585
     }
   },
-  "total_trades": 5,
+  "total_trades": 6,
   "last_update_id": 159576180,
   "last_scan_record": {
     "timestamp": "2026-10-12 04:51:02 UTC",
@@ -46,5 +30,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T04:53:42.663072+00:00"
+  "updated_at": "2026-10-12T04:56:14.971845+00:00"
 }
