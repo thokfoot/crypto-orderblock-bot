@@ -29,6 +29,7 @@ from datetime import datetime, time as dtime
 import pytz
 import subprocess
 import yfinance as yf
+import pandas as pd
 
 # Configuration (Dedicated USA Options Bot: @trade234_bot)
 TELEGRAM_BOT_TOKEN = os.environ.get("USA_TELEGRAM_BOT_TOKEN") or os.environ.get("TELEGRAM_BOT_TOKEN", "8453830677:AAE5ufDdwU-lTyrw1taYlIFt5aoQLeErXkI")
@@ -171,6 +172,17 @@ class USAOptionsTrader:
             except Exception as e:
                 log.warning(f"Could not atomically save to {p}: {e}")
 
+    def log_trade_to_csv(self, record):
+        try:
+            csv_p = "data/usa_paper_trades.csv"
+            os.makedirs("data", exist_ok=True)
+            df = pd.DataFrame([record])
+            header = not os.path.exists(csv_p) or os.path.getsize(csv_p) == 0
+            df.to_csv(csv_p, mode="a", index=False, header=header)
+            log.info(f"Logged USA trade to {csv_p}")
+        except Exception as e:
+            log.warning(f"Failed to log USA trade to CSV: {e}")
+
     def send_telegram_status_summary(self):
         """Sends rich status summary of USA options trading account."""
         is_open, status_str = self.is_market_open()
@@ -299,6 +311,21 @@ class USAOptionsTrader:
                 pnl = (entry_cost * 0.50) if hit_tp else (-(entry_cost * 0.30) if hit_sl else 0.0)
                 self.capital += pnl
 
+                record = {
+                    "symbol": "SPY",
+                    "action": "BUY_SPREAD",
+                    "entry_time": self.active_trade["entry_time"],
+                    "exit_time": now_ny.strftime("%Y-%m-%d %H:%M:%S EST"),
+                    "entry_price": entry_spot,
+                    "exit_price": current_spot,
+                    "pnl_pct": 50.0 if hit_tp else (-30.0 if hit_sl else 0.0),
+                    "fee_usd": 1.30,
+                    "pnl_usd": round(pnl, 2),
+                    "reason": reason,
+                    "balance": round(self.capital, 2)
+                }
+                self.log_trade_to_csv(record)
+
                 msg = (
                     f"🇺🇸 *USA SPY TRADE CLOSED: {reason}*\n\n"
                     f"• *Exit SPY Price:* `${current_spot:,.2f}`\n"
@@ -311,7 +338,8 @@ class USAOptionsTrader:
                 self.active_trade = None
                 self.last_trade_date = today_str
                 self.save_state()
-            return
+                push_git_sync(f"usa closed SPY spread ({reason})")
+                return
 
         # 2. Check for New Entry (Between 10:00 AM and 2:30 PM EST)
         # Council Compliance: Max 1 trade per day to prevent re-entry death spirals
@@ -333,6 +361,7 @@ class USAOptionsTrader:
             }
             self.last_trade_date = today_str
             self.save_state()
+            push_git_sync("usa opened SPY spread")
 
             msg = (
                 f"🇺🇸 *NEW USA SPY SPREAD OPENED*\n\n"

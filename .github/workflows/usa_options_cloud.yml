@@ -2,8 +2,8 @@ name: USA SPY Options Spread Cloud Daemon
 
 on:
   schedule:
-    # Runs every 4 hours automatically to maintain unbroken continuous cloud runner chain
-    - cron: '0 */4 * * *'
+    # Runs every 3 hours automatically to maintain unbroken continuous cloud runner chain
+    - cron: '0 */3 * * *'
   workflow_dispatch:
     inputs:
       run_minutes:
