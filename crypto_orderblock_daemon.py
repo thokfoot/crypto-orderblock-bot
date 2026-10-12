@@ -932,9 +932,6 @@ class CryptoPaperTrader:
                 # Floor the trailing stop at Entry + 0.40% buffer (covers 0.30% roundtrip friction with net credit)
                 be_floor = entry_p * (1.0040 if action == "BUY" else 0.9960)
                 pos["current_sl"] = max(pos["current_sl"], be_floor) if action == "BUY" else min(pos["current_sl"], be_floor)
-                self.save_state()
-                push_git_sync(f"scaled out {sym}")
-
                 # Record partial scale-out to trade journal
                 scale_record = {
                     "symbol": sym,
@@ -951,6 +948,8 @@ class CryptoPaperTrader:
                 }
                 self.trade_history.append(scale_record)
                 self.log_trade_to_csv(scale_record)
+                self.save_state()
+                push_git_sync(f"scaled out {sym}")
 
                 msg = (
                     f"💰 *SCALE-OUT PROFIT TAKEN (50% BANKED)*\n\n"
