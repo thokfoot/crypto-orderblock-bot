@@ -37,14 +37,14 @@
   "total_trades": 5,
   "last_update_id": 159576179,
   "last_scan_record": {
-    "timestamp": "2026-10-12 04:05:53 UTC",
+    "timestamp": "2026-10-12 04:20:53 UTC",
     "btc_bullish": true,
-    "btc_info": "BTC=$83,590.0, EMA50=$83,328.0, RSI=59.9",
+    "btc_info": "BTC=$83,520.9, EMA50=$83,325.0, RSI=58.1",
     "pairs_scanned": 35,
-    "candidates_count": 1,
-    "candidates_str": "MAGICUSDT:BUY@0.1311(RR:2.8)",
-    "filtered_count": 1,
-    "filtered_str": "SUSDT:SELL(BTC Bullish filter)"
+    "candidates_count": 0,
+    "candidates_str": "None",
+    "filtered_count": 0,
+    "filtered_str": "None"
   },
-  "updated_at": "2026-10-12T04:19:17.940250+00:00"
+  "updated_at": "2026-10-12T04:20:53.707661+00:00"
 }
