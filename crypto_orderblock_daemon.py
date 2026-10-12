@@ -9,8 +9,8 @@ Key Features:
     * Scans liquid crypto perpetuals on 15m candle closes.
     * Freshness / Mitigation Audit: Rejects stale or already-tapped zones.
     * ATR Stop-Loss Protection: Minimum 1.2x 15m ATR buffer.
-    * Target Extensions: Liquidity pools or 2.5x ATR asymmetric runners.
-    * Automated Breakeven Trailing: Once in +2.0% profit, moves SL to Entry Price!
+    * Automated Breakeven Trailing: Once in +1.5% profit, moves SL to Entry + 0.40% buffer!
+    * Tier-2 Scale-Out Profit Taking: At +2.0%, banks 50% position directly to cash balance!
 - Paper Trading Engine:
     * Starts with $2,000.00 virtual capital.
     * Fixed $200 position size (10% allocation per trade, max 3 concurrent positions).
@@ -894,10 +894,10 @@ class CryptoPaperTrader:
             peak_pnl = max(pnl_pct, pos.get("peak_pnl_pct", 0.0))
 
             # -------------------------------------------------------------
-            # 1. Tier-1: Breakeven Stop Lock at +2.0% (Fee-Safe Buffer)
-            # Peak-triggered: Locks permanently once high-water mark hits +2.0%
+            # 1. Tier-1: Breakeven Stop Lock at +1.5% (Fee-Safe Buffer)
+            # Peak-triggered: Locks permanently once high-water mark hits +1.5%
             # -------------------------------------------------------------
-            if peak_pnl >= 2.0 and not pos.get("breakeven_locked") and not pos.get("scaled_out"):
+            if peak_pnl >= 1.5 and not pos.get("breakeven_locked") and not pos.get("scaled_out"):
                 be_floor = entry_p * (1.0040 if action == "BUY" else 0.9960)
                 if action == "BUY":
                     pos["current_sl"] = max(pos["current_sl"], be_floor)
@@ -917,10 +917,10 @@ class CryptoPaperTrader:
                 send_telegram(msg)
 
             # -------------------------------------------------------------
-            # 2. Tier-2: Scale-Out Profit Taking at +3.0% (50% Banked to Cash)
-            # Note: Executes at live market price >= 3.0% to lock actual cash
+            # 2. Tier-2: Scale-Out Profit Taking at +2.0% (50% Banked to Cash)
+            # Council-Approved: Intercepts 15m order block reaction impulse and books hard profit
             # -------------------------------------------------------------
-            if pnl_pct >= 3.0 and not pos.get("scaled_out"):
+            if pnl_pct >= 2.0 and not pos.get("scaled_out"):
                 partial_notional = pos["notional_usd"] * 0.5
                 fee_usd = partial_notional * (ROUNDTRIP_FEE_PCT / 100.0)
                 partial_pnl_usd = (partial_notional * (pnl_pct / 100.0)) - fee_usd
@@ -1013,7 +1013,7 @@ class CryptoPaperTrader:
                     if pos.get("scaled_out"):
                         reason = "RUNNER_TRAIL_EXIT"
                     elif pos.get("breakeven_locked"):
-                        reason = "BREAKEVEN_EXIT"
+                        reason = "BREAKEVEN_EXIT" if trade_pnl_pct >= 0 else "SLIPPAGE_EXIT"
                     else:
                         reason = "STOP_LOSS"
 
