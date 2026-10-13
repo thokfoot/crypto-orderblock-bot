@@ -53,14 +53,14 @@
   "total_trades": 14,
   "last_update_id": 159576191,
   "last_scan_record": {
-    "timestamp": "2026-10-13 04:34:30 UTC",
+    "timestamp": "2026-10-13 04:49:34 UTC",
     "btc_bullish": true,
-    "btc_info": "BTC=$83,465.1, EMA50=$83,049.1, RSI=59.2",
+    "btc_info": "BTC=$83,436.1, EMA50=$83,047.9, RSI=58.9",
     "pairs_scanned": 35,
     "candidates_count": 0,
     "candidates_str": "None",
-    "filtered_count": 9,
-    "filtered_str": "ZECUSDT:SELL(BTC Bullish filter); SUIUSDT:SELL(BTC Bullish filter); ENAUSDT:SELL(BTC Bullish filter); ADAUSDT:SELL(BTC Bullish filter); TAOUSDT:SELL(BTC Bullish filter); PEPEUSDT:SELL(BTC Bullish filter); ONDOUSDT:SELL(BTC Bullish filter); LINKUSDT:SELL(BTC Bullish filter); LTCUSDT:SELL(BTC Bullish filter)"
+    "filtered_count": 0,
+    "filtered_str": "None"
   },
-  "updated_at": "2026-10-13T04:34:30.796019+00:00"
+  "updated_at": "2026-10-13T04:49:34.278801+00:00"
 }
