@@ -21,17 +21,17 @@
       "symbol": "NEARUSDT",
       "action": "SELL",
       "entry_price": 5.25,
-      "current_sl": 5.418588000000001,
+      "current_sl": 5.229,
       "original_sl": 5.418588000000001,
       "tp": 4.89,
       "atr": 0.08492857142857144,
-      "peak_price": 5.225,
+      "peak_price": 5.169,
       "notional_usd": 200.0,
       "entry_time": "2026-10-13 02:56:41 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
-      "breakeven_locked": false,
-      "peak_pnl_pct": 0.476190476190483
+      "breakeven_locked": true,
+      "peak_pnl_pct": 1.5428571428571505
     }
   },
   "total_trades": 16,
@@ -46,5 +46,5 @@
     "filtered_count": 1,
     "filtered_str": "TAOUSDT:SELL(BTC Bullish filter)"
   },
-  "updated_at": "2026-10-13T07:20:26.078131+00:00"
+  "updated_at": "2026-10-13T07:26:23.721469+00:00"
 }
