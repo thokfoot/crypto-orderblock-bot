@@ -77,3 +77,4 @@ timestamp,btc_bullish,btc_info,pairs_scanned,candidates_count,candidates,filtere
 2026-10-13 07:05:21 UTC,True,"BTC=$83,678.6, EMA50=$83,130.7, RSI=62.3",35,0,None,None
 2026-10-13 07:20:26 UTC,True,"BTC=$83,853.9, EMA50=$83,138.3, RSI=64.1",35,0,None,TAOUSDT:SELL(BTC Bullish filter)
 2026-10-13 07:35:30 UTC,True,"BTC=$83,856.4, EMA50=$83,138.4, RSI=64.2",35,0,None,WLDUSDT:SELL(BTC Bullish filter); TAOUSDT:SELL(BTC Bullish filter)
+2026-10-13 07:50:33 UTC,True,"BTC=$83,971.8, EMA50=$83,143.4, RSI=65.0",35,0,None,TAOUSDT:SELL(BTC Bullish filter)
