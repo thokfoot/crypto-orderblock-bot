@@ -37,14 +37,14 @@
   "total_trades": 15,
   "last_update_id": 159576192,
   "last_scan_record": {
-    "timestamp": "2026-10-13 05:19:41 UTC",
+    "timestamp": "2026-10-13 05:34:40 UTC",
     "btc_bullish": true,
-    "btc_info": "BTC=$83,695.2, EMA50=$83,076.2, RSI=60.0",
+    "btc_info": "BTC=$83,664.8, EMA50=$83,074.9, RSI=59.7",
     "pairs_scanned": 35,
-    "candidates_count": 0,
-    "candidates_str": "None",
+    "candidates_count": 1,
+    "candidates_str": "SNDKBUSDT:BUY@1444.6800(RR:2.7)",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-13T05:23:50.374397+00:00"
+  "updated_at": "2026-10-13T05:34:40.455639+00:00"
 }
