@@ -21,17 +21,17 @@
       "symbol": "PUMPUSDT",
       "action": "BUY",
       "entry_price": 0.004924,
-      "current_sl": 0.004854485714285714,
+      "current_sl": 0.004943696,
       "original_sl": 0.004854485714285714,
       "tp": 0.005148,
       "atr": 5.792857142857144e-05,
-      "peak_price": 0.004995,
+      "peak_price": 0.004999,
       "notional_usd": 200.0,
       "entry_time": "2026-10-13 15:38:34 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
-      "breakeven_locked": false,
-      "peak_pnl_pct": 1.441917140536147
+      "breakeven_locked": true,
+      "peak_pnl_pct": 1.52315190901705
     },
     "UNIUSDT": {
       "symbol": "UNIUSDT",
@@ -62,5 +62,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-13T17:08:59.510857+00:00"
+  "updated_at": "2026-10-13T17:15:25.595464+00:00"
 }
