@@ -21,14 +21,14 @@
   "total_trades": 17,
   "last_update_id": 159576193,
   "last_scan_record": {
-    "timestamp": "2026-10-13 15:23:31 UTC",
+    "timestamp": "2026-10-13 15:38:33 UTC",
     "btc_bullish": true,
-    "btc_info": "BTC=$83,628.0, EMA50=$83,240.3, RSI=73.9",
+    "btc_info": "BTC=$83,439.3, EMA50=$83,232.1, RSI=70.1",
     "pairs_scanned": 35,
-    "candidates_count": 0,
-    "candidates_str": "None",
+    "candidates_count": 1,
+    "candidates_str": "PUMPUSDT:BUY@0.0049(RR:3.2)",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-13T15:23:31.623713+00:00"
+  "updated_at": "2026-10-13T15:38:33.085431+00:00"
 }
