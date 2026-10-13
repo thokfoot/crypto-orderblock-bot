@@ -5,17 +5,17 @@
       "symbol": "MUBARAKUSDT",
       "action": "SELL",
       "entry_price": 0.07415,
-      "current_sl": 0.07229624999999999,
+      "current_sl": 0.07184357142857142,
       "original_sl": 0.0761534,
       "tp": 0.06611,
       "atr": 0.0015414285714285697,
-      "peak_price": 0.07003,
+      "peak_price": 0.06799,
       "notional_usd": 100.0,
       "entry_time": "2026-10-12 13:11:51 UTC",
       "scaled_out": true,
       "realized_pnl_usd": 1.871274443695213,
       "breakeven_locked": true,
-      "peak_pnl_pct": 5.556304787592716
+      "peak_pnl_pct": 8.307484828051246
     },
     "PUMPUSDT": {
       "symbol": "PUMPUSDT",
@@ -51,16 +51,16 @@
     }
   },
   "total_trades": 17,
-  "last_update_id": 159576194,
+  "last_update_id": 159576195,
   "last_scan_record": {
-    "timestamp": "2026-10-13 16:53:55 UTC",
+    "timestamp": "2026-10-13 17:08:59 UTC",
     "btc_bullish": true,
-    "btc_info": "BTC=$83,454.4, EMA50=$83,242.3, RSI=63.0",
+    "btc_info": "BTC=$83,277.3, EMA50=$83,241.6, RSI=48.5",
     "pairs_scanned": 35,
-    "candidates_count": 0,
-    "candidates_str": "None",
+    "candidates_count": 1,
+    "candidates_str": "UNIUSDT:BUY@7.5590(RR:2.1)",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-13T16:53:55.034825+00:00"
+  "updated_at": "2026-10-13T17:08:59.510857+00:00"
 }
