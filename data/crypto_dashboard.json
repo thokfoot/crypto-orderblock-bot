@@ -16,6 +16,22 @@
       "realized_pnl_usd": 1.871274443695213,
       "breakeven_locked": true,
       "peak_pnl_pct": 4.504383007417392
+    },
+    "SOLUSDT": {
+      "symbol": "SOLUSDT",
+      "action": "SELL",
+      "entry_price": 106.69,
+      "current_sl": 108.69304000000001,
+      "original_sl": 108.69304000000001,
+      "tp": 101.69,
+      "atr": 0.9928571428571443,
+      "peak_price": 106.69,
+      "notional_usd": 200.0,
+      "entry_time": "2026-10-13 02:56:39 UTC",
+      "scaled_out": false,
+      "realized_pnl_usd": 0.0,
+      "breakeven_locked": false,
+      "peak_pnl_pct": 0.0
     }
   },
   "total_trades": 14,
@@ -30,5 +46,5 @@
     "filtered_count": 1,
     "filtered_str": "STRKUSDT:BUY(BTC Bearish filter)"
   },
-  "updated_at": "2026-10-13T02:56:38.580177+00:00"
+  "updated_at": "2026-10-13T02:56:39.574142+00:00"
 }
