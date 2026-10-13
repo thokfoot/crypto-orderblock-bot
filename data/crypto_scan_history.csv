@@ -105,3 +105,4 @@ timestamp,btc_bullish,btc_info,pairs_scanned,candidates_count,candidates,filtere
 2026-10-13 22:39:52 UTC,False,"BTC=$83,493.8, EMA50=$83,268.1, RSI=47.1",35,1,TIAUSDT:SELL@0.5687(RR:2.1),None
 2026-10-13 22:54:57 UTC,False,"BTC=$83,522.9, EMA50=$83,269.3, RSI=47.9",35,0,None,None
 2026-10-13 23:10:00 UTC,False,"BTC=$83,288.0, EMA50=$83,270.7, RSI=40.4",35,0,None,None
+2026-10-13 23:25:10 UTC,False,"BTC=$83,250.0, EMA50=$83,269.0, RSI=39.5",35,0,None,None
