@@ -25,13 +25,13 @@
       "original_sl": 108.69304000000001,
       "tp": 101.69,
       "atr": 0.9928571428571443,
-      "peak_price": 106.5,
+      "peak_price": 106.48,
       "notional_usd": 200.0,
       "entry_time": "2026-10-13 02:56:39 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
-      "peak_pnl_pct": 0.1780860436779433
+      "peak_pnl_pct": 0.19683194301246018
     },
     "NEARUSDT": {
       "symbol": "NEARUSDT",
@@ -51,16 +51,16 @@
     }
   },
   "total_trades": 14,
-  "last_update_id": 159576190,
+  "last_update_id": 159576191,
   "last_scan_record": {
-    "timestamp": "2026-10-13 03:11:43 UTC",
+    "timestamp": "2026-10-13 03:26:43 UTC",
     "btc_bullish": false,
-    "btc_info": "BTC=$82,940.0, EMA50=$83,013.4, RSI=49.7",
+    "btc_info": "BTC=$82,960.8, EMA50=$83,014.3, RSI=49.9",
     "pairs_scanned": 35,
     "candidates_count": 13,
-    "candidates_str": "ETHUSDT:SELL@2492.7600(RR:2.5); SOLUSDT:SELL@106.7800(RR:2.7); NEARUSDT:SELL@5.2860(RR:3.0); ZECUSDT:SELL@1205.3500(RR:2.6); BNBUSDT:SELL@741.2100(RR:2.2); SUIUSDT:SELL@1.0468(RR:4.3); DOGEUSDT:SELL@0.0838(RR:2.2); UNIUSDT:SELL@7.1990(RR:2.6); WLDUSDT:SELL@0.5093(RR:3.8); AVAXUSDT:SELL@10.4230(RR:4.1); PEPEUSDT:SELL@0.0000(RR:2.2); HYPEUSDT:SELL@82.4200(RR:2.4); LINKUSDT:SELL@12.8370(RR:2.3)",
-    "filtered_count": 1,
-    "filtered_str": "STRKUSDT:BUY(BTC Bearish filter)"
+    "candidates_str": "ETHUSDT:SELL@2494.8900(RR:2.8); SOLUSDT:SELL@107.0400(RR:3.2); NEARUSDT:SELL@5.3050(RR:3.7); ZECUSDT:SELL@1207.2200(RR:2.8); BNBUSDT:SELL@741.1600(RR:2.2); DOGEUSDT:SELL@0.0838(RR:2.3); UNIUSDT:SELL@7.2090(RR:2.8); WLDUSDT:SELL@0.5153(RR:4.8); AVAXUSDT:SELL@10.4190(RR:3.9); PEPEUSDT:SELL@0.0000(RR:2.2); HYPEUSDT:SELL@82.4200(RR:2.4); LINKUSDT:SELL@12.8760(RR:2.9); LTCUSDT:SELL@61.6300(RR:2.0)",
+    "filtered_count": 0,
+    "filtered_str": "None"
   },
-  "updated_at": "2026-10-13T03:11:43.300143+00:00"
+  "updated_at": "2026-10-13T03:26:43.783816+00:00"
 }
