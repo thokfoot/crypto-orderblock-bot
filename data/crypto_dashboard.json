@@ -5,17 +5,17 @@
       "symbol": "MUBARAKUSDT",
       "action": "SELL",
       "entry_price": 0.07415,
-      "current_sl": 0.07174357142857143,
+      "current_sl": 0.07094357142857143,
       "original_sl": 0.0761534,
       "tp": 0.06611,
       "atr": 0.0015414285714285697,
-      "peak_price": 0.06789,
+      "peak_price": 0.06709,
       "notional_usd": 100.0,
       "entry_time": "2026-10-12 13:11:51 UTC",
       "scaled_out": true,
       "realized_pnl_usd": 1.871274443695213,
       "breakeven_locked": true,
-      "peak_pnl_pct": 8.442346594740375
+      "peak_pnl_pct": 9.521240728253536
     },
     "PUMPUSDT": {
       "symbol": "PUMPUSDT",
@@ -53,14 +53,14 @@
   "total_trades": 17,
   "last_update_id": 159576195,
   "last_scan_record": {
-    "timestamp": "2026-10-13 18:24:23 UTC",
+    "timestamp": "2026-10-13 18:39:26 UTC",
     "btc_bullish": false,
-    "btc_info": "BTC=$83,112.0, EMA50=$83,228.8, RSI=40.6",
+    "btc_info": "BTC=$83,007.8, EMA50=$83,224.3, RSI=38.2",
     "pairs_scanned": 35,
     "candidates_count": 0,
     "candidates_str": "None",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-13T18:24:23.710523+00:00"
+  "updated_at": "2026-10-13T18:39:26.365877+00:00"
 }
