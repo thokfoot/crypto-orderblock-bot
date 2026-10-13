@@ -37,14 +37,14 @@
   "total_trades": 19,
   "last_update_id": 159576195,
   "last_scan_record": {
-    "timestamp": "2026-10-13 21:54:40 UTC",
+    "timestamp": "2026-10-13 22:09:47 UTC",
     "btc_bullish": false,
-    "btc_info": "BTC=$83,496.0, EMA50=$83,255.2, RSI=39.5",
+    "btc_info": "BTC=$83,440.0, EMA50=$83,265.8, RSI=45.5",
     "pairs_scanned": 35,
     "candidates_count": 0,
     "candidates_str": "None",
-    "filtered_count": 0,
-    "filtered_str": "None"
+    "filtered_count": 1,
+    "filtered_str": "OPUSDT:BUY(BTC Bearish filter)"
   },
-  "updated_at": "2026-10-13T21:54:40.855355+00:00"
+  "updated_at": "2026-10-13T22:09:47.604556+00:00"
 }
