@@ -17,8 +17,15 @@
     "no_sl_1030": {
       "name": "No-SL MTM 10:30/15:30",
       "capital": 2000.0,
-      "active_trade": null,
-      "last_trade_date": null
+      "active_trade": {
+        "symbol": "SPY",
+        "strategy": "no_sl_1030",
+        "structure": "Bull Call Spread (778/780)",
+        "entry_spot": 777.5,
+        "entry_cost": 120.0,
+        "entry_time": "2026-10-13 10:30:00 EDT"
+      },
+      "last_trade_date": "2026-10-13"
     },
     "no_sl_1015": {
       "name": "No-SL MTM 10:15/15:30",
@@ -34,7 +41,7 @@
       "last_trade_date": "2026-10-13"
     }
   },
-  "last_update_id": 628970425,
-  "last_spot_price": 777.5700073242188,
-  "updated_at": "2026-10-13T14:15:37.767012+00:00"
+  "last_update_id": 628970427,
+  "last_spot_price": 776.7901000976562,
+  "updated_at": "2026-10-13T16:10:39.778908+00:00"
 }
