@@ -41,26 +41,26 @@
       "original_sl": 1429.27992,
       "tp": 1486.76,
       "atr": 8.693571428571463,
-      "peak_price": 1444.68,
+      "peak_price": 1445.02,
       "notional_usd": 200.0,
       "entry_time": "2026-10-13 05:34:41 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
-      "peak_pnl_pct": 0.0
+      "peak_pnl_pct": 0.023534623584455946
     }
   },
   "total_trades": 15,
   "last_update_id": 159576192,
   "last_scan_record": {
-    "timestamp": "2026-10-13 05:34:40 UTC",
+    "timestamp": "2026-10-13 05:49:50 UTC",
     "btc_bullish": true,
-    "btc_info": "BTC=$83,664.8, EMA50=$83,074.9, RSI=59.7",
+    "btc_info": "BTC=$83,625.5, EMA50=$83,073.2, RSI=59.4",
     "pairs_scanned": 35,
-    "candidates_count": 1,
-    "candidates_str": "SNDKBUSDT:BUY@1444.6800(RR:2.7)",
+    "candidates_count": 0,
+    "candidates_str": "None",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-13T05:34:41.530053+00:00"
+  "updated_at": "2026-10-13T05:49:50.261737+00:00"
 }
