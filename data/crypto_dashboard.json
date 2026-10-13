@@ -25,26 +25,26 @@
       "original_sl": 5.418588000000001,
       "tp": 4.89,
       "atr": 0.08492857142857144,
-      "peak_price": 5.238,
+      "peak_price": 5.225,
       "notional_usd": 200.0,
       "entry_time": "2026-10-13 02:56:41 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
-      "peak_pnl_pct": 0.2285714285714203
+      "peak_pnl_pct": 0.476190476190483
     }
   },
   "total_trades": 16,
   "last_update_id": 159576192,
   "last_scan_record": {
-    "timestamp": "2026-10-13 07:05:21 UTC",
+    "timestamp": "2026-10-13 07:20:26 UTC",
     "btc_bullish": true,
-    "btc_info": "BTC=$83,678.6, EMA50=$83,130.7, RSI=62.3",
+    "btc_info": "BTC=$83,853.9, EMA50=$83,138.3, RSI=64.1",
     "pairs_scanned": 35,
     "candidates_count": 0,
     "candidates_str": "None",
-    "filtered_count": 0,
-    "filtered_str": "None"
+    "filtered_count": 1,
+    "filtered_str": "TAOUSDT:SELL(BTC Bullish filter)"
   },
-  "updated_at": "2026-10-13T07:05:21.947578+00:00"
+  "updated_at": "2026-10-13T07:20:26.078131+00:00"
 }
