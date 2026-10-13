@@ -53,14 +53,14 @@
   "total_trades": 17,
   "last_update_id": 159576195,
   "last_scan_record": {
-    "timestamp": "2026-10-13 17:39:07 UTC",
+    "timestamp": "2026-10-13 17:54:15 UTC",
     "btc_bullish": false,
-    "btc_info": "BTC=$83,235.1, EMA50=$83,239.8, RSI=47.3",
+    "btc_info": "BTC=$83,011.6, EMA50=$83,230.2, RSI=42.1",
     "pairs_scanned": 35,
     "candidates_count": 0,
     "candidates_str": "None",
     "filtered_count": 1,
     "filtered_str": "UNIUSDT:BUY(BTC Bearish filter)"
   },
-  "updated_at": "2026-10-13T17:39:07.311915+00:00"
+  "updated_at": "2026-10-13T17:54:15.666243+00:00"
 }
