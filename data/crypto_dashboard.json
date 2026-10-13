@@ -1,22 +1,6 @@
 {
-  "capital": 1994.38,
+  "capital": 2004.92,
   "open_positions": {
-    "MUBARAKUSDT": {
-      "symbol": "MUBARAKUSDT",
-      "action": "SELL",
-      "entry_price": 0.07415,
-      "current_sl": 0.07031357142857143,
-      "original_sl": 0.0761534,
-      "tp": 0.06611,
-      "atr": 0.0015414285714285697,
-      "peak_price": 0.06646,
-      "notional_usd": 100.0,
-      "entry_time": "2026-10-12 13:11:51 UTC",
-      "scaled_out": true,
-      "realized_pnl_usd": 1.871274443695213,
-      "breakeven_locked": true,
-      "peak_pnl_pct": 10.37086985839513
-    },
     "PUMPUSDT": {
       "symbol": "PUMPUSDT",
       "action": "BUY",
@@ -50,7 +34,7 @@
       "peak_pnl_pct": 1.0175763182238662
     }
   },
-  "total_trades": 18,
+  "total_trades": 19,
   "last_update_id": 159576195,
   "last_scan_record": {
     "timestamp": "2026-10-13 21:09:34 UTC",
@@ -62,5 +46,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-13T21:09:34.132987+00:00"
+  "updated_at": "2026-10-13T21:19:45.385103+00:00"
 }
