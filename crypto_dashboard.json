@@ -37,14 +37,14 @@
   "total_trades": 19,
   "last_update_id": 159576195,
   "last_scan_record": {
-    "timestamp": "2026-10-13 22:24:48 UTC",
+    "timestamp": "2026-10-13 22:39:52 UTC",
     "btc_bullish": false,
-    "btc_info": "BTC=$83,438.0, EMA50=$83,265.7, RSI=45.4",
+    "btc_info": "BTC=$83,493.8, EMA50=$83,268.1, RSI=47.1",
     "pairs_scanned": 35,
-    "candidates_count": 0,
-    "candidates_str": "None",
+    "candidates_count": 1,
+    "candidates_str": "TIAUSDT:SELL@0.5687(RR:2.1)",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-13T22:24:48.437876+00:00"
+  "updated_at": "2026-10-13T22:39:52.060862+00:00"
 }
