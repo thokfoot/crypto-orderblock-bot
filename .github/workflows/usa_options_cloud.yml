@@ -2,12 +2,18 @@ name: USA SPY Options Spread Cloud Daemon
 
 on:
   schedule:
-    # 1. Exact 7:00 PM IST (13:30 UTC / 09:30 AM EST) US Market Open Trigger (Mon-Fri)
+    # 1. US Market Open trigger (Mon-Fri).
+    #    America/New_York observes DST, so the UTC instant shifts twice a year:
+    #      13:30 UTC = 09:30 EDT (summer, UTC-4) / 08:30 EST (winter, UTC-5)
+    #      14:30 UTC = 09:30 EST (winter, UTC-5) / 10:30 EDT (summer, UTC-4)
+    #    The daemon's is_market_open() clock sleeps until the real 09:30 ET, so BOTH
+    #    triggers are added to guarantee a live run at the open in either regime.
     - cron: '30 13 * * 1-5'
-    # 2. Mid-Session Failover at 10:00 PM IST (16:30 UTC / 12:30 PM EST) (Mon-Fri)
+    - cron: '30 14 * * 1-5'
+    # 2. Mid-Session Failover at 10:00 PM IST (16:30 UTC / 12:30 PM ET) (Mon-Fri)
     - cron: '30 16 * * 1-5'
-    # 3. Continuous 3-hour backup chain
-    - cron: '0 */3 * * *'
+    # 3. Continuous weekday 3-hour backup chain (weekends handled by is_market_open)
+    - cron: '0 */3 * * 1-5'
   workflow_dispatch:
     inputs:
       run_minutes:
@@ -84,5 +90,15 @@ jobs:
             echo "No USA state changes to commit."
           else
             git commit -m "state: usa-sync $(date -u +'%Y-%m-%d %H:%M:%S UTC') [skip ci]"
-            git push origin main || (git pull --rebase origin main && git push origin main)
+            pushed=0
+            for i in 1 2 3; do
+              git fetch origin main
+              git pull --rebase --autostash origin main || true
+              if git push origin main; then pushed=1; break; fi
+              echo "Push attempt $i failed; retrying..."
+              sleep $((i * 2))
+            done
+            if [ "$pushed" -ne 1 ]; then
+              echo "::warning:: state push failed after retries (kept committed locally)"
+            fi
           fi

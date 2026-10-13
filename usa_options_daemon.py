@@ -10,8 +10,8 @@ Black-Scholes-Merton Greek engine (Delta, Gamma, Vega, intraday Theta decay)
 and real multi-leg Cboe options chain integration are completed.
 
 Features:
-- Market Clock: Automatically tracks US Market (09:30 - 16:00 EST / America/New_York).
-- Auto-Sleep: Sleeps outside market hours, wakes up Monday at 09:30 EST (19:00 IST).
+- Market Clock: Automatically tracks US Market (09:30 - 16:00 ET / America/New_York).
+- Auto-Sleep: Sleeps outside market hours, wakes up Monday at 09:30 ET (19:00 IST).
 - Strategy: 100% Hedged SPY Bull Call Spread (ATM Long Call + OTM Short Call).
 - Risk Controls: Spot-guided Stop Loss (-0.30% underlying SPY) & +50% Take-Profit.
 - Telegram Alerts: Direct alerts to @trade234_bot on Entry, Exit, and Daily P&L.
@@ -118,24 +118,70 @@ def answer_callback_query(callback_query_id: str, text: str = ""):
     except Exception:
         pass
 
+FEE_USD = 1.30  # round-trip cost for the SPY spread (brokerage + slippage estimate)
+
 def push_git_sync(comment: str = "usa-auto-sync"):
-    """Atomically commits and pushes state to Git without requiring workflow teardown."""
+    """Commits and pushes state to Git, tolerating concurrent runners via retry + rebase."""
+    if not os.path.exists(".git"):
+        return
     try:
-        if not os.path.exists(".git"):
-            return
         subprocess.run(["git", "config", "user.name", "github-actions[bot]"], capture_output=True, timeout=5)
         subprocess.run(["git", "config", "user.email", "github-actions[bot]@users.noreply.github.com"], capture_output=True, timeout=5)
-        subprocess.run(["git", "add", "data/usa_dashboard.json", "data/usa_paper_trades.csv", "usa_dashboard.json"], capture_output=True, timeout=5)
+        subprocess.run(["git", "add", "-f", "data/usa_dashboard.json", "data/usa_paper_trades.csv", "usa_dashboard.json"], capture_output=True, timeout=5)
         diff = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True, timeout=5)
-        if diff.returncode != 0:
-            subprocess.run(["git", "commit", "-m", f"state: {comment} [skip ci]"], capture_output=True, timeout=5)
-            push_res = subprocess.run(["git", "push", "origin", "main"], capture_output=True, timeout=10)
-            if push_res.returncode != 0:
-                subprocess.run(["git", "pull", "--rebase", "origin", "main"], capture_output=True, timeout=10)
-                subprocess.run(["git", "push", "origin", "main"], capture_output=True, timeout=10)
-            log.info("In-flight USA Git state push succeeded.")
+        if diff.returncode == 0:
+            return  # nothing to sync
+        subprocess.run(["git", "commit", "-m", f"state: {comment} [skip ci]"], capture_output=True, timeout=10)
     except Exception as e:
-        log.warning(f"USA Git push notice: {e}")
+        log.warning(f"USA Git commit notice: {e}")
+        return
+
+    for attempt in range(3):
+        try:
+            subprocess.run(["git", "fetch", "origin", "main"], capture_output=True, timeout=15)
+            subprocess.run(["git", "pull", "--rebase", "--autostash", "origin", "main"], capture_output=True, timeout=20)
+            push_res = subprocess.run(["git", "push", "origin", "main"], capture_output=True, timeout=20)
+            if push_res.returncode == 0:
+                log.info("In-flight USA Git state push succeeded.")
+                return
+            log.warning(f"USA push attempt {attempt + 1} failed; retrying...")
+        except Exception as e:
+            log.warning(f"USA Git push notice (attempt {attempt + 1}): {e}")
+        time.sleep(2 * (attempt + 1))
+    log.warning("USA Git state push exhausted retries; state kept locally.")
+
+def _yahoo_chart_price(symbol: str):
+    """Direct Yahoo chart API fallback (independent of yfinance session handling)."""
+    try:
+        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?interval=1m&range=1d"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        res = data["chart"]["result"][0]
+        closes = [c for c in res["indicators"]["quote"][0]["close"] if c]
+        if closes:
+            p = float(closes[-1])
+            if p > 0:
+                return p
+    except Exception as e:
+        log.warning(f"Yahoo chart fallback failed for {symbol}: {e}")
+    return None
+
+def get_spy_spot():
+    """Robust live SPY spot: yfinance with retries, then direct Yahoo chart fallback."""
+    for attempt in range(3):
+        try:
+            df = yf.Ticker("SPY").history(period="1d", interval="1m")
+            if df is None or df.empty:
+                df = yf.Ticker("SPY").history(period="5d", interval="1m")
+            if df is not None and not df.empty:
+                p = float(df.iloc[-1]["Close"])
+                if p > 0:
+                    return p
+        except Exception as e:
+            log.warning(f"yfinance SPY fetch failed (attempt {attempt + 1}): {e}")
+        time.sleep(1.5 * (attempt + 1))
+    return _yahoo_chart_price("SPY")
 
 class USAOptionsTrader:
     def __init__(self):
@@ -194,6 +240,27 @@ class USAOptionsTrader:
             except Exception as e:
                 log.warning(f"Could not atomically save to {p}: {e}")
 
+    def _remote_trade_exists_today(self, today_str):
+        """Concurrent-runner guard: re-check ORIGIN state before opening a new trade.
+        Closes the race where a fresh runner checks out before a peer's state push lands."""
+        try:
+            subprocess.run(["git", "fetch", "origin", "main"], capture_output=True, timeout=15)
+            r = subprocess.run(["git", "show", "origin/main:data/usa_dashboard.json"],
+                               capture_output=True, text=True, timeout=10)
+            if r.returncode == 0 and r.stdout.strip():
+                data = json.loads(r.stdout)
+                if data.get("active_trade"):
+                    return True
+                if data.get("last_trade_date") == today_str:
+                    return True
+            r2 = subprocess.run(["git", "show", "origin/main:data/usa_paper_trades.csv"],
+                                capture_output=True, text=True, timeout=10)
+            if r2.returncode == 0 and today_str in (r2.stdout or ""):
+                return True
+        except Exception as e:
+            log.warning(f"Remote daily-guard check failed: {e}")
+        return False
+
     def log_trade_to_csv(self, record):
         try:
             csv_p = "data/usa_paper_trades.csv"
@@ -214,17 +281,10 @@ class USAOptionsTrader:
         cur_spot = None
         spread_pnl_pct = 0.0
 
-        # Attempt to fetch freshest live SPY quote
-        try:
-            spy_ticker = yf.Ticker("SPY")
-            df = spy_ticker.history(period="1d", interval="1m")
-            if df.empty:
-                df = spy_ticker.history(period="5d", interval="1m")
-            if not df.empty:
-                cur_spot = float(df.iloc[-1]["Close"])
-                self.last_spot_price = cur_spot
-        except Exception as e:
-            log.warning(f"Status summary live SPY fetch failed: {e}")
+        # Attempt to fetch freshest live SPY quote (robust, with fallback)
+        cur_spot = get_spy_spot()
+        if cur_spot:
+            self.last_spot_price = cur_spot
 
         if not cur_spot:
             cur_spot = self.last_spot_price
@@ -258,7 +318,7 @@ class USAOptionsTrader:
                 ""
             ])
         else:
-            pos_lines.append("💤 *Open Positions:* No active spread. Market opens Mon-Fri 09:30 AM EST.")
+            pos_lines.append("💤 *Open Positions:* No active spread. Market opens Mon-Fri 09:30 AM ET.")
 
         total_net_worth = self.capital + floating_pnl
         total_return_pct = ((total_net_worth - INITIAL_CAPITAL) / INITIAL_CAPITAL) * 100
@@ -272,7 +332,7 @@ class USAOptionsTrader:
             f"💎 *Realized P&L (Banked):* `${realized_pnl:+.2f} USD`",
             f"📈 *Total Portfolio Value:* `${total_net_worth:,.2f} USD` (`{total_return_pct:+.2f}%`)",
             "━━━━━━━━━━━━━━━━━━━━━━",
-            f"🕒 *Market Status:* `{status_str}` ({now_ny.strftime('%I:%M %p EST')})",
+            f"🕒 *Market Status:* `{status_str}` ({now_ny.strftime('%I:%M %p %Z')})",
             f"🛡️ *Strategy:* 100% Hedged Bull Call Spread (Spot Stop -0.30%)",
             "",
             *pos_lines,
@@ -416,19 +476,12 @@ class USAOptionsTrader:
             log.info(f"[USA CLOCK] {status_str}. Sleeping until market open...")
             return
 
-        # Fetch live SPY spot
-        try:
-            spy_ticker = yf.Ticker("SPY")
-            df = spy_ticker.history(period="1d", interval="1m")
-            if df.empty:
-                df = spy_ticker.history(period="5d", interval="1m")
-            if df.empty:
-                return
-            current_spot = float(df.iloc[-1]["Close"])
-            self.last_spot_price = current_spot
-        except Exception as e:
-            log.warning(f"Failed to fetch SPY price: {e}")
+        # Fetch live SPY spot (robust, with fallback)
+        current_spot = get_spy_spot()
+        if not current_spot:
+            log.warning("SPY spot unavailable this cycle (all sources failed); skipping.")
             return
+        self.last_spot_price = current_spot
 
         # 1. Manage Active Trade
         if self.active_trade:
@@ -439,23 +492,24 @@ class USAOptionsTrader:
             hit_sl = current_spot <= entry_spot * 0.9970
             # Spot Take Profit: +0.60% underlying move (~ +50% on option spread)
             hit_tp = current_spot >= entry_spot * 1.0060
-            # End of day square-off (3:45 PM EST)
+            # End of day square-off (3:45 PM ET)
             hit_eod = t >= SQUARE_OFF
 
             if hit_sl or hit_tp or hit_eod:
                 reason = "TAKE_PROFIT" if hit_tp else ("STOP_LOSS" if hit_sl else "EOD_SQUARE_OFF")
-                pnl = (entry_cost * 0.50) if hit_tp else (-(entry_cost * 0.30) if hit_sl else 0.0)
+                gross_pnl = (entry_cost * 0.50) if hit_tp else (-(entry_cost * 0.30) if hit_sl else 0.0)
+                pnl = gross_pnl - FEE_USD
                 self.capital += pnl
 
                 record = {
                     "symbol": "SPY",
                     "action": "BUY_SPREAD",
                     "entry_time": self.active_trade["entry_time"],
-                    "exit_time": now_ny.strftime("%Y-%m-%d %H:%M:%S EST"),
+                    "exit_time": now_ny.strftime("%Y-%m-%d %H:%M:%S %Z"),
                     "entry_price": entry_spot,
                     "exit_price": current_spot,
                     "pnl_pct": 50.0 if hit_tp else (-30.0 if hit_sl else 0.0),
-                    "fee_usd": 1.30,
+                    "fee_usd": FEE_USD,
                     "pnl_usd": round(pnl, 2),
                     "reason": reason,
                     "balance": round(self.capital, 2)
@@ -477,11 +531,19 @@ class USAOptionsTrader:
                 push_git_sync(f"usa closed SPY spread ({reason})")
                 return
 
-        # 2. Check for New Entry (Between 10:00 AM and 2:30 PM EST)
+        # 2. Check for New Entry (Between 10:00 AM and 2:30 PM ET)
         # Council Compliance: Max 1 trade per day to prevent re-entry death spirals
         if ENTRY_START <= t <= ENTRY_END and not self.active_trade:
             if self.last_trade_date == today_str:
                 log.info("Daily trade limit reached for SPY (1 trade/day). Skipping entry.")
+                return
+
+            # Concurrent-runner guard: re-check ORIGIN state (closes the race where a peer
+            # runner's state push landed AFTER this runner checked out the repo).
+            if self._remote_trade_exists_today(today_str):
+                log.info("Remote guard: a trade already exists for today on origin. Skipping entry.")
+                self.last_trade_date = today_str
+                self.save_state()
                 return
 
             strike_long = round(current_spot)
@@ -493,7 +555,7 @@ class USAOptionsTrader:
                 "structure": f"Bull Call Spread ({strike_long}/{strike_short})",
                 "entry_spot": current_spot,
                 "entry_cost": est_cost,
-                "entry_time": now_ny.strftime("%Y-%m-%d %H:%M:%S EST")
+                "entry_time": now_ny.strftime("%Y-%m-%d %H:%M:%S %Z")
             }
             self.last_trade_date = today_str
             self.save_state()
@@ -506,7 +568,7 @@ class USAOptionsTrader:
                 f"• *Cost / Max Risk:* `${est_cost:,.2f}`\n"
                 f"• *Take Profit:* `+50%` ($60.00)\n"
                 f"• *Stop Loss:* `Spot -0.30%` (Hedging protected)\n"
-                f"• *Zero Overnight Risk:* Auto-exit at 3:45 PM EST"
+                f"• *Zero Overnight Risk:* Auto-exit at 3:45 PM ET"
             )
             log.info(f"Opened SPY spread @ ${current_spot:.2f}")
             send_telegram(msg, reply_markup=None)
@@ -514,7 +576,7 @@ class USAOptionsTrader:
 def main():
     log.info("Starting Autonomous 24/7 USA Options Paper Trading Daemon...")
     trader = USAOptionsTrader()
-    send_telegram("🚀 *USA SPY Options 24/7 Paper Trading Daemon Started*\nClock configured for New York Market (Mon-Fri 09:30-16:00 EST).")
+    send_telegram("🚀 *USA SPY Options 24/7 Paper Trading Daemon Started*\nClock configured for New York Market (Mon-Fri 09:30-16:00 ET).")
 
     if RUN_MINUTES > 0:
         log.info(f"Cloud Runner Mode: Active for {RUN_MINUTES} minutes.")
