@@ -32,6 +32,22 @@
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
       "peak_pnl_pct": 0.0
+    },
+    "NEARUSDT": {
+      "symbol": "NEARUSDT",
+      "action": "SELL",
+      "entry_price": 5.25,
+      "current_sl": 5.418588000000001,
+      "original_sl": 5.418588000000001,
+      "tp": 4.89,
+      "atr": 0.08492857142857144,
+      "peak_price": 5.25,
+      "notional_usd": 200.0,
+      "entry_time": "2026-10-13 02:56:41 UTC",
+      "scaled_out": false,
+      "realized_pnl_usd": 0.0,
+      "breakeven_locked": false,
+      "peak_pnl_pct": 0.0
     }
   },
   "total_trades": 14,
@@ -46,5 +62,5 @@
     "filtered_count": 1,
     "filtered_str": "STRKUSDT:BUY(BTC Bearish filter)"
   },
-  "updated_at": "2026-10-13T02:56:39.574142+00:00"
+  "updated_at": "2026-10-13T02:56:41.028948+00:00"
 }
