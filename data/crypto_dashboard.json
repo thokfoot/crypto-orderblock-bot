@@ -32,6 +32,22 @@
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
       "peak_pnl_pct": 0.0
+    },
+    "SNDKBUSDT": {
+      "symbol": "SNDKBUSDT",
+      "action": "BUY",
+      "entry_price": 1444.68,
+      "current_sl": 1429.27992,
+      "original_sl": 1429.27992,
+      "tp": 1486.76,
+      "atr": 8.693571428571463,
+      "peak_price": 1444.68,
+      "notional_usd": 200.0,
+      "entry_time": "2026-10-13 05:34:41 UTC",
+      "scaled_out": false,
+      "realized_pnl_usd": 0.0,
+      "breakeven_locked": false,
+      "peak_pnl_pct": 0.0
     }
   },
   "total_trades": 15,
@@ -46,5 +62,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-13T05:34:40.455639+00:00"
+  "updated_at": "2026-10-13T05:34:41.530053+00:00"
 }
