@@ -53,14 +53,14 @@
   "total_trades": 15,
   "last_update_id": 159576192,
   "last_scan_record": {
-    "timestamp": "2026-10-13 06:04:56 UTC",
+    "timestamp": "2026-10-13 06:20:04 UTC",
     "btc_bullish": true,
-    "btc_info": "BTC=$83,619.5, EMA50=$83,099.3, RSI=61.9",
+    "btc_info": "BTC=$83,607.9, EMA50=$83,098.8, RSI=61.7",
     "pairs_scanned": 35,
     "candidates_count": 0,
     "candidates_str": "None",
-    "filtered_count": 1,
-    "filtered_str": "GTCUSDT:SELL(BTC Bullish filter)"
+    "filtered_count": 0,
+    "filtered_str": "None"
   },
-  "updated_at": "2026-10-13T06:04:56.833845+00:00"
+  "updated_at": "2026-10-13T06:20:04.531482+00:00"
 }
