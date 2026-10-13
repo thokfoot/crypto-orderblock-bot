@@ -9,23 +9,35 @@ Live capital deployment is quarantined per Council Consensus until a full
 Black-Scholes-Merton Greek engine (Delta, Gamma, Vega, intraday Theta decay)
 and real multi-leg Cboe options chain integration are completed.
 
-Features:
-- Market Clock: Automatically tracks US Market (09:30 - 16:00 ET / America/New_York).
-- Auto-Sleep: Sleeps outside market hours, wakes up Monday at 09:30 ET (19:00 IST).
-- Strategy: 100% Hedged SPY Bull Call Spread (ATM Long Call + OTM Short Call).
-- Risk Controls: Spot-guided Stop Loss (-0.30% underlying SPY) & +50% Take-Profit.
-- Telegram Alerts: Direct alerts to @trade234_bot on Entry, Exit, and Daily P&L.
-- Virtual Capital: $2,000.00 initial capital.
+=== COUNCIL AUDIT 2026-10-13 — MULTI-STRATEGY REFACTOR ===
+Backtest verdict from 60 real trading days (2026-07-20 → 2026-10-12, 5-min bars):
+the legacy bot (-0.30% spot SL, EOD forced $0) bled -33.9%/60d. Root causes
+(the peer diagnosis, confirmed independently):
+  1. Asymmetric first-hitting-time: SL at -0.30% is 2x closer than TP at +0.60%
+     -> morning noise stops out before afternoon recovery (P(SL)~2/3).
+  2. EOD "SQUARE_OFF = $0.00" throws away real gains on up-flat days (+0.25..0.37%
+     closed days banked nothing).
+Fix (now deployed here): EOD settlement = proportional mark-to-market (real MTM),
+and the artificial synthetic 0.30% spot-SL is either widened (0.75%) or removed
+(defined-risk only). Three top-3 configurations by net% (876-combo grid +
+both-half + drop-top-3 robustness):
+    wide_sl_1015  entry 10:15 / sq 15:30  SL 0.75%  EOD-MTM   +13.57%/60d
+    no_sl_1030    entry 10:30 / sq 15:30  no SL     EOD-MTM   +12.32%/60d
+    no_sl_1015    entry 10:15 / sq 15:30  no SL     EOD-MTM   +10.95%/60d
+Each strategy owns an independent ledger + state + daily trade guard (paper).
+This replaced the single-strategy daemon; legacy behavior now lives only in
+data/usa_paper_trades.csv as an aggregate of the three ledgers.
 """
 
 import os
 import sys
 import time
 import json
+import glob
 import logging
 import urllib.request
 import urllib.parse
-from datetime import datetime, time as dtime
+from datetime import datetime, time as dtime, timedelta
 import pytz
 import subprocess
 import yfinance as yf
@@ -34,7 +46,7 @@ import pandas as pd
 # Configuration (Injected securely via GitHub Actions Secrets)
 TELEGRAM_BOT_TOKEN = os.environ.get("USA_TELEGRAM_BOT_TOKEN") or os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
-INITIAL_CAPITAL = 2000.0
+DEFAULT_CAPITAL = 2000.0
 POLL_INTERVAL_SECS = int(os.environ.get("POLL_INTERVAL_SECS", "2"))
 RUN_MINUTES = int(os.environ.get("RUN_MINUTES", "0"))  # 0 = infinite loop, >0 = bounded cloud run
 
@@ -42,9 +54,57 @@ RUN_MINUTES = int(os.environ.get("RUN_MINUTES", "0"))  # 0 = infinite loop, >0 =
 TZ_NY = pytz.timezone("America/New_York")
 MARKET_OPEN = dtime(9, 30)
 MARKET_CLOSE = dtime(16, 0)
-ENTRY_START = dtime(10, 0)
-ENTRY_END = dtime(14, 30)
-SQUARE_OFF = dtime(15, 45)
+ENTRY_END_DEFAULT = dtime(14, 30)
+
+
+def _t(h, m):
+    return dtime(h, m)
+
+
+def _t_add(base, minutes):
+    return (datetime(2000, 1, 1, base.hour, base.minute) + timedelta(minutes=minutes)).time()
+
+
+# ---------------------------------------------------------------------------
+# MULTI-STRATEGY CONFIGURATION (top-3 from audit, EOD real-MTM)
+# ---------------------------------------------------------------------------
+STRATEGY_CONFIGS = [
+    {
+        "key": "wide_sl_1015",
+        "name": "Wide-SL MTM 10:15/15:30",
+        "entry_start": _t(10, 15),
+        "entry_end": _t_add(_t(10, 15), 30),
+        "square_off": _t(15, 30),
+        "tp_pct": 0.0060,          # +0.60% spot move -> +50% debit
+        "sl_pct": 0.0075,          # wide 0.75% spot guard (no morning-noise trap)
+        "eod_mode": "mtm",         # real proportional MTP at square-off
+        "initial_capital": DEFAULT_CAPITAL,
+    },
+    {
+        "key": "no_sl_1030",
+        "name": "No-SL MTM 10:30/15:30",
+        "entry_start": _t(10, 30),
+        "entry_end": _t_add(_t(10, 30), 30),
+        "square_off": _t(15, 30),
+        "tp_pct": 0.0060,
+        "sl_pct": None,            # defined-risk only
+        "eod_mode": "mtm",
+        "initial_capital": DEFAULT_CAPITAL,
+    },
+    {
+        "key": "no_sl_1015",
+        "name": "No-SL MTM 10:15/15:30",
+        "entry_start": _t(10, 15),
+        "entry_end": _t_add(_t(10, 15), 30),
+        "square_off": _t(15, 30),
+        "tp_pct": 0.0060,
+        "sl_pct": None,
+        "eod_mode": "mtm",
+        "initial_capital": DEFAULT_CAPITAL,
+    },
+]
+
+FEE_USD = 1.30  # round-trip cost for the SPY spread (brokerage + slippage estimate)
 
 if hasattr(sys.stdout, "reconfigure"):
     try:
@@ -69,6 +129,7 @@ STATUS_KEYBOARD = json.dumps({
     "resize_keyboard": True,
     "is_persistent": True
 })
+
 
 def send_telegram(msg: str, reply_markup=STATUS_KEYBOARD):
     if not TELEGRAM_BOT_TOKEN or "placeholder" in TELEGRAM_BOT_TOKEN:
@@ -102,6 +163,7 @@ def send_telegram(msg: str, reply_markup=STATUS_KEYBOARD):
         except Exception as e2:
             log.warning(f"Telegram failed: {e2}")
 
+
 def answer_callback_query(callback_query_id: str, text: str = ""):
     """Acknowledges an inline button callback to dismiss spinning client loader."""
     if not TELEGRAM_BOT_TOKEN or "placeholder" in TELEGRAM_BOT_TOKEN:
@@ -118,16 +180,20 @@ def answer_callback_query(callback_query_id: str, text: str = ""):
     except Exception:
         pass
 
-FEE_USD = 1.30  # round-trip cost for the SPY spread (brokerage + slippage estimate)
 
 def push_git_sync(comment: str = "usa-auto-sync"):
-    """Commits and pushes state to Git, tolerating concurrent runners via retry + rebase."""
+    """Commits and pushes all USA state to Git, tolerating concurrent runners via retry + rebase."""
     if not os.path.exists(".git"):
         return
     try:
+        files = sorted(glob.glob("data/usa_*_state.json") + glob.glob("data/usa_*_trades.csv"))
+        files += ["data/usa_dashboard.json", "usa_dashboard.json"]
+        files = [f for f in files if os.path.exists(f)]
+        if not files:
+            return
         subprocess.run(["git", "config", "user.name", "github-actions[bot]"], capture_output=True, timeout=5)
         subprocess.run(["git", "config", "user.email", "github-actions[bot]@users.noreply.github.com"], capture_output=True, timeout=5)
-        subprocess.run(["git", "add", "-f", "data/usa_dashboard.json", "data/usa_paper_trades.csv", "usa_dashboard.json"], capture_output=True, timeout=5)
+        subprocess.run(["git", "add", "-f"] + files, capture_output=True, timeout=5)
         diff = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True, timeout=5)
         if diff.returncode == 0:
             return  # nothing to sync
@@ -150,6 +216,7 @@ def push_git_sync(comment: str = "usa-auto-sync"):
         time.sleep(2 * (attempt + 1))
     log.warning("USA Git state push exhausted retries; state kept locally.")
 
+
 def _yahoo_chart_price(symbol: str):
     """Direct Yahoo chart API fallback (independent of yfinance session handling)."""
     try:
@@ -167,6 +234,7 @@ def _yahoo_chart_price(symbol: str):
         log.warning(f"Yahoo chart fallback failed for {symbol}: {e}")
     return None
 
+
 def get_spy_spot():
     """Robust live SPY spot: yfinance with retries, then direct Yahoo chart fallback."""
     for attempt in range(3):
@@ -183,49 +251,195 @@ def get_spy_spot():
         time.sleep(1.5 * (attempt + 1))
     return _yahoo_chart_price("SPY")
 
-class USAOptionsTrader:
-    def __init__(self):
-        self.capital = INITIAL_CAPITAL
+
+def spread_pnl_pct_from_move(move_pct):
+    """Synthetic spread P&L % for a given % spot move (audit model).
+    +: caps at +50% at +0.60%; -: proportional down to full debit (-100%)."""
+    if move_pct >= 0:
+        return min(50.0, move_pct * (50.0 / 0.60))
+    return max(-100.0, move_pct * (50.0 / 0.60))
+
+
+class StrategyAccount:
+    """Independent paper strategy: own capital, own active trade, own ledger + state."""
+
+    def __init__(self, cfg):
+        self.cfg = cfg
+        self.key = cfg["key"]
+        self.name = cfg["name"]
+        self.initial_capital = float(cfg.get("initial_capital", DEFAULT_CAPITAL))
+        self.capital = self.initial_capital
         self.active_trade = None
         self.last_trade_date = None
+        self.state_path = f"data/usa_{self.key}_state.json"
+        self.ledger_path = f"data/usa_{self.key}_trades.csv"
+        self.load_state()
+
+    def load_state(self):
+        try:
+            if os.path.exists(self.state_path) and os.path.getsize(self.state_path) > 5:
+                with open(self.state_path, "r") as f:
+                    data = json.load(f)
+                    self.capital = float(data.get("capital", self.initial_capital))
+                    self.active_trade = data.get("active_trade", None)
+                    self.last_trade_date = data.get("last_trade_date", None)
+        except Exception as e:
+            log.warning(f"Could not load state for {self.key}: {e}")
+        # Ledger robustness: recover daily guard if today already traded
+        if not self.last_trade_date and os.path.exists(self.ledger_path):
+            try:
+                df_csv = pd.read_csv(self.ledger_path)
+                today_ny = datetime.now(TZ_NY).strftime("%Y-%m-%d")
+                if not df_csv.empty and "entry_time" in df_csv.columns:
+                    if df_csv["entry_time"].astype(str).str.contains(today_ny).any():
+                        self.last_trade_date = today_ny
+            except Exception:
+                pass
+
+    def save_state(self):
+        os.makedirs("data", exist_ok=True)
+        data = {
+            "capital": round(self.capital, 2),
+            "active_trade": self.active_trade,
+            "last_trade_date": self.last_trade_date,
+            "updated_at": datetime.now(pytz.utc).isoformat()
+        }
+        try:
+            temp_p = f"{self.state_path}.tmp.{os.getpid()}"
+            with open(temp_p, "w") as f:
+                json.dump(data, f, indent=2)
+            os.replace(temp_p, self.state_path)
+        except Exception as e:
+            log.warning(f"Could not atomically save {self.key} state: {e}")
+
+    def log_trade(self, record):
+        try:
+            os.makedirs("data", exist_ok=True)
+            df = pd.DataFrame([record])
+            header = not os.path.exists(self.ledger_path) or os.path.getsize(self.ledger_path) == 0
+            df.to_csv(self.ledger_path, mode="a", index=False, header=header)
+            # Aggregate legacy file (backward compat + single overview)
+            agg_p = "data/usa_paper_trades.csv"
+            header_a = not os.path.exists(agg_p) or os.path.getsize(agg_p) == 0
+            df.to_csv(agg_p, mode="a", index=False, header=header_a)
+            log.info(f"[{self.key}] Logged trade to {self.ledger_path}")
+        except Exception as e:
+            log.warning(f"[{self.key}] Failed to log trade: {e}")
+
+    def open_trade(self, current_spot, now_ny):
+        strike_long = round(current_spot)
+        strike_short = strike_long + 2
+        est_cost = 120.0  # $120 estimated spread debit
+        self.active_trade = {
+            "symbol": "SPY",
+            "strategy": self.key,
+            "structure": f"Bull Call Spread ({strike_long}/{strike_short})",
+            "entry_spot": current_spot,
+            "entry_cost": est_cost,
+            "entry_time": now_ny.strftime("%Y-%m-%d %H:%M:%S %Z")
+        }
+        self.last_trade_date = now_ny.strftime("%Y-%m-%d")
+        self.save_state()
+        return strike_long, strike_short, est_cost
+
+    def floating_pnl_pct(self, cur_spot):
+        if not self.active_trade or not cur_spot:
+            return 0.0, 0.0
+        entry_spot = float(self.active_trade.get("entry_spot", 0))
+        if entry_spot <= 0:
+            return 0.0, 0.0
+        move = ((cur_spot - entry_spot) / entry_spot) * 100.0
+        return move, spread_pnl_pct_from_move(move)
+
+    def manage_exit(self, current_spot, now_ny, today_str):
+        """Returns (closed_bool, reason_or_None). Applies TP / SL / EOD+MTM."""
+        if not self.active_trade:
+            return False, None
+        entry_spot = float(self.active_trade["entry_spot"])
+        entry_cost = float(self.active_trade["entry_cost"])
+        t = now_ny.time()
+        sl_pct = self.cfg.get("sl_pct")
+        tp_pct = self.cfg.get("tp_pct", 0.0060)
+
+        hit_sl = sl_pct and current_spot <= entry_spot * (1 - sl_pct)
+        hit_tp = current_spot >= entry_spot * (1 + tp_pct)
+        hit_eod = t >= self.cfg["square_off"]
+
+        if not (hit_sl or hit_tp or hit_eod):
+            return False, None
+
+        if hit_tp:
+            reason = "TAKE_PROFIT"
+            gross_pnl = entry_cost * 0.50
+            pnl_pct = 50.0
+        elif hit_sl:
+            reason = "STOP_LOSS"
+            gross_pnl = -(entry_cost * 0.30)
+            pnl_pct = -30.0
+        else:  # EOD square-off -> real mark-to-market (audit fix: no more forced $0)
+            reason = "EOD_MTM"
+            move = ((current_spot - entry_spot) / entry_spot) * 100.0
+            pnl_pct = spread_pnl_pct_from_move(move)
+            gross_pnl = entry_cost * (pnl_pct / 100.0)
+
+        pnl = gross_pnl - FEE_USD
+        self.capital += pnl
+
+        record = {
+            "symbol": "SPY",
+            "strategy": self.key,
+            "action": "BUY_SPREAD",
+            "entry_time": self.active_trade["entry_time"],
+            "exit_time": now_ny.strftime("%Y-%m-%d %H:%M:%S %Z"),
+            "entry_price": entry_spot,
+            "exit_price": current_spot,
+            "pnl_pct": round(pnl_pct, 2),
+            "fee_usd": FEE_USD,
+            "pnl_usd": round(pnl, 2),
+            "reason": reason,
+            "balance": round(self.capital, 2)
+        }
+        self.log_trade(record)
+        log.info(f"[{self.key}] Closed trade: PnL=${pnl:.2f} ({reason})")
+        self.active_trade = None
+        self.last_trade_date = today_str
+        self.save_state()
+        return True, reason
+
+
+class USAOptionsTrader:
+    def __init__(self):
+        self.accounts = [StrategyAccount(c) for c in STRATEGY_CONFIGS]
         self.last_update_id = 0
         self.last_inbox_check = 0.0
         self.last_spot_price = None
         self.load_state()
 
     def load_state(self):
+        # Telegram cursor persists in legacy dashboard for backward compat
         paths = ["data/usa_dashboard.json", "usa_dashboard.json"]
         for p in paths:
             if os.path.exists(p) and os.path.getsize(p) > 5:
                 try:
                     with open(p, "r") as f:
                         data = json.load(f)
-                        self.capital = data.get("capital", INITIAL_CAPITAL)
-                        self.active_trade = data.get("active_trade", None)
-                        self.last_trade_date = data.get("last_trade_date", None)
                         self.last_update_id = data.get("last_update_id", 0)
-                        self.last_spot_price = data.get("last_spot_price", None)
                         break
                 except Exception:
                     pass
 
-        # Robustness Guard: Verify from CSV if a trade was already executed today
-        if not self.last_trade_date and os.path.exists("data/usa_paper_trades.csv"):
-            try:
-                df_csv = pd.read_csv("data/usa_paper_trades.csv")
-                if not df_csv.empty and "entry_time" in df_csv.columns:
-                    today_ny = datetime.now(TZ_NY).strftime("%Y-%m-%d")
-                    if df_csv["entry_time"].astype(str).str.contains(today_ny).any():
-                        self.last_trade_date = today_ny
-                        log.info(f"Recovered daily trade guard from CSV for date: {today_ny}")
-            except Exception:
-                pass
-
     def save_state(self):
         data = {
-            "capital": round(self.capital, 2),
-            "active_trade": self.active_trade,
-            "last_trade_date": self.last_trade_date,
+            "capital": round(sum(a.capital for a in self.accounts), 2),
+            "strategies": {
+                a.key: {
+                    "name": a.name,
+                    "capital": round(a.capital, 2),
+                    "active_trade": a.active_trade,
+                    "last_trade_date": a.last_trade_date
+                }
+                for a in self.accounts
+            },
             "last_update_id": self.last_update_id,
             "last_spot_price": self.last_spot_price,
             "updated_at": datetime.now(pytz.utc).isoformat()
@@ -238,14 +452,15 @@ class USAOptionsTrader:
                     json.dump(data, f, indent=2)
                 os.replace(temp_p, p)
             except Exception as e:
-                log.warning(f"Could not atomically save to {p}: {e}")
+                log.warning(f"Could not atomically save aggregate dashboard to {p}: {e}")
+        for a in self.accounts:
+            a.save_state()
 
-    def _remote_trade_exists_today(self, today_str):
-        """Concurrent-runner guard: re-check ORIGIN state before opening a new trade.
-        Closes the race where a fresh runner checks out before a peer's state push lands."""
+    def _remote_trade_exists_today(self, today_str, key):
+        """Concurrent-runner guard per strategy: check ORIGIN state before opening a new trade."""
         try:
             subprocess.run(["git", "fetch", "origin", "main"], capture_output=True, timeout=15)
-            r = subprocess.run(["git", "show", "origin/main:data/usa_dashboard.json"],
+            r = subprocess.run(["git", "show", f"origin/main:data/usa_{key}_state.json"],
                                capture_output=True, text=True, timeout=10)
             if r.returncode == 0 and r.stdout.strip():
                 data = json.loads(r.stdout)
@@ -253,153 +468,80 @@ class USAOptionsTrader:
                     return True
                 if data.get("last_trade_date") == today_str:
                     return True
-            r2 = subprocess.run(["git", "show", "origin/main:data/usa_paper_trades.csv"],
+            r2 = subprocess.run(["git", "show", f"origin/main:data/usa_{key}_trades.csv"],
                                 capture_output=True, text=True, timeout=10)
             if r2.returncode == 0 and today_str in (r2.stdout or ""):
                 return True
         except Exception as e:
-            log.warning(f"Remote daily-guard check failed: {e}")
+            log.warning(f"[{key}] Remote daily-guard check failed: {e}")
         return False
 
-    def log_trade_to_csv(self, record):
-        try:
-            csv_p = "data/usa_paper_trades.csv"
-            os.makedirs("data", exist_ok=True)
-            df = pd.DataFrame([record])
-            header = not os.path.exists(csv_p) or os.path.getsize(csv_p) == 0
-            df.to_csv(csv_p, mode="a", index=False, header=header)
-            log.info(f"Logged USA trade to {csv_p}")
-        except Exception as e:
-            log.warning(f"Failed to log USA trade to CSV: {e}")
-
     def send_telegram_status_summary(self):
-        """Sends rich status summary of USA options trading account with live floating P&L."""
         is_open, status_str = self.is_market_open()
         now_ny = datetime.now(TZ_NY)
-        realized_pnl = self.capital - INITIAL_CAPITAL
-        floating_pnl = 0.0
-        cur_spot = None
-        spread_pnl_pct = 0.0
-
-        # Attempt to fetch freshest live SPY quote (robust, with fallback)
+        realized_pnl = sum(a.capital for a in self.accounts) - DEFAULT_CAPITAL * len(self.accounts)
         cur_spot = get_spy_spot()
         if cur_spot:
             self.last_spot_price = cur_spot
 
-        if not cur_spot:
-            cur_spot = self.last_spot_price
-
-        pos_lines = []
-        if self.active_trade:
-            t = self.active_trade
-            entry_spot = float(t.get("entry_spot", 0))
-            entry_cost = float(t.get("entry_cost", 120.0))
-
-            if cur_spot and entry_spot > 0:
-                spot_move_pct = ((cur_spot - entry_spot) / entry_spot) * 100.0
-                if spot_move_pct >= 0:
-                    spread_pnl_pct = min(50.0, spot_move_pct * (50.0 / 0.60))
-                else:
-                    spread_pnl_pct = max(-30.0, spot_move_pct * (30.0 / 0.30))
-                floating_pnl = entry_cost * (spread_pnl_pct / 100.0)
-                spot_str = f"${cur_spot:,.2f} ({spot_move_pct:+.2f}%)"
-                pnl_str = f"`${floating_pnl:+.2f} USD` ({spread_pnl_pct:+.1f}%)"
-            else:
-                spot_str = "Live Market Sync"
-                pnl_str = f"`${floating_pnl:+.2f} USD`"
-
-            pos_lines.extend([
-                f"• *Active Position:* `{t.get('structure')}`",
-                f"  ├ Entry Spot: `${entry_spot:,.2f}`",
-                f"  ├ Live Spot: `{spot_str}`",
-                f"  ├ Cost / Risk: `${entry_cost:,.2f}`",
-                f"  ├ Floating P&L: {pnl_str}",
-                f"  └ Entry Time: `{t.get('entry_time')}`",
-                ""
-            ])
-        else:
-            pos_lines.append("💤 *Open Positions:* No active spread. Market opens Mon-Fri 09:30 AM ET.")
-
-        total_net_worth = self.capital + floating_pnl
-        total_return_pct = ((total_net_worth - INITIAL_CAPITAL) / INITIAL_CAPITAL) * 100
-        floating_pnl_display = f"`${floating_pnl:+.2f} USD` ({spread_pnl_pct:+.1f}%)" if (self.active_trade and cur_spot) else f"`${floating_pnl:+.2f} USD`"
-
         lines = [
             "🇺🇸 *USA SPY OPTIONS LIVE STATUS SUMMARY*",
             "━━━━━━━━━━━━━━━━━━━━━━",
-            f"💰 *Capital Balance:* `${self.capital:,.2f} USD`",
-            f"🌊 *Floating P&L (Live):* {floating_pnl_display}",
+            f"💰 *Total Capital:* `${sum(a.capital for a in self.accounts):,.2f} USD`",
             f"💎 *Realized P&L (Banked):* `${realized_pnl:+.2f} USD`",
-            f"📈 *Total Portfolio Value:* `${total_net_worth:,.2f} USD` (`{total_return_pct:+.2f}%`)",
-            "━━━━━━━━━━━━━━━━━━━━━━",
             f"🕒 *Market Status:* `{status_str}` ({now_ny.strftime('%I:%M %p %Z')})",
-            f"🛡️ *Strategy:* 100% Hedged Bull Call Spread (Spot Stop -0.30%)",
-            "",
-            *pos_lines,
             "━━━━━━━━━━━━━━━━━━━━━━",
+        ]
+        for a in self.accounts:
+            if a.active_trade:
+                t = a.active_trade
+                entry_spot = float(t.get("entry_spot", 0))
+                entry_cost = float(t.get("entry_cost", 120.0))
+                if cur_spot and entry_spot > 0:
+                    move, sp = a.floating_pnl_pct(cur_spot)
+                    floating_pnl = entry_cost * (sp / 100.0)
+                    pnl_str = f"`${floating_pnl:+.2f} USD` ({sp:+.1f}%)"
+                else:
+                    pnl_str = "`Syncing...`"
+                lines.append(f"• *{a.name}*  —  ESG `{a.capital:,.2f}` · {pnl_str}")
+                lines.append(f"  └ Entry `${entry_spot:,.2f}` @ `{t.get('entry_time')}`")
+            else:
+                lines.append(f"• *{a.name}*  —  `{a.capital:,.2f}` · 💤 no active spread")
+        lines += [
+            "━━━━━━━━━━━━━━━━━━━━━━",
+            "``🛡️ EOD = real mark-to-market``",
             "⏱️ *System:* 24/7 Cloud Daemon (Fast 2s Polling)",
             "👉 _Tap buttons below anytime for instant refresh_"
         ]
-        msg = "\n".join(lines)
-        log.info("Sending USA status summary to Telegram...")
-        send_telegram(msg)
+        send_telegram("\n".join(lines))
 
     def send_telegram_pnl_report(self):
-        """Sends detailed realized P&L and trade performance report for USA Options."""
-        realized_pnl = self.capital - INITIAL_CAPITAL
-        total_trades = 0
-        winning_trades = 0
-        losing_trades = 0
-        trade_rows = []
-
-        csv_p = "data/usa_paper_trades.csv"
-        if os.path.exists(csv_p):
-            try:
-                df = pd.read_csv(csv_p)
-                if not df.empty and "pnl_usd" in df.columns:
-                    total_trades = len(df)
-                    winning_trades = len(df[df["pnl_usd"] > 0])
-                    losing_trades = len(df[df["pnl_usd"] < 0])
-                    for _, row in df.tail(5).iloc[::-1].iterrows():
-                        icon = "🟢" if row["pnl_usd"] > 0 else ("🛡️" if "BREAKEVEN" in str(row.get("reason", "")) or row["pnl_usd"] == 0 else "🔴")
-                        trade_rows.append(f"{icon} *{row.get('symbol', 'SPY')}* ({row.get('action', 'SPREAD')}): `{row.get('pnl_pct', 0):+.2f}%` (*{row.get('pnl_usd', 0):+.2f} USD*) [`{row.get('reason', 'N/A')}`]")
-            except Exception:
-                pass
-
-        win_rate = (winning_trades / total_trades * 100) if total_trades > 0 else 0.0
-
+        realized_pnl = sum(a.capital for a in self.accounts) - DEFAULT_CAPITAL * len(self.accounts)
         lines = [
             "💰 *USA OPTIONS REALIZED P&L REPORT*",
             "━━━━━━━━━━━━━━━━━━━━━━",
-            f"💵 *Current Account Balance:* `${self.capital:,.2f} USD`",
             f"💎 *Net Banked Realized P&L:* *`${realized_pnl:+.2f} USD`*",
-            f"📊 *Closed Trades:* `{total_trades}` | *Win Rate:* `{win_rate:.1f}%`",
-            f"🏆 *Wins:* `{winning_trades}` | 🛡️ *Losses / EOD:* `{losing_trades}`",
-            "━━━━━━━━━━━━━━━━━━━━━━"
         ]
-        if trade_rows:
-            lines.extend([
-                "📋 *Recent Trade History:*",
-                *trade_rows,
-                "━━━━━━━━━━━━━━━━━━━━━━"
-            ])
-        else:
-            lines.extend([
-                "📋 *Recent Trade History:*",
-                "   _No closed trades banked yet today._",
-                "━━━━━━━━━━━━━━━━━━━━━━"
-            ])
-        lines.extend([
-            "👉 _Tap buttons below anytime for instant refresh_"
-        ])
+        for a in self.accounts:
+            n = w = l = 0
+            if os.path.exists(a.ledger_path):
+                try:
+                    df = pd.read_csv(a.ledger_path)
+                    if not df.empty and "pnl_usd" in df.columns:
+                        n = len(df)
+                        w = len(df[df["pnl_usd"] > 0])
+                        l = len(df[df["pnl_usd"] < 0])
+                except Exception:
+                    pass
+            wr = (w / n * 100) if n else 0.0
+            lines.append(f"• *{a.name}* — Cap `${a.capital:,.2f}` · {n} trades · `{wr:.0f}%` WR")
+        lines += ["━━━━━━━━━━━━━━━━━━━━━━", "👉 _Tap buttons below anytime for instant refresh_"]
         send_telegram("\n".join(lines))
 
     def check_telegram_inbox(self):
-        """Polls for Telegram commands (/status, /summary, buttons, or inline callbacks) with cold-boot replay discard and pre-execution offset advance."""
         if not TELEGRAM_BOT_TOKEN or "placeholder" in TELEGRAM_BOT_TOKEN:
             return
         try:
-            # Cold-boot backlog discard: If last_update_id is 0, probe newest update and discard stale historical backlog
             if self.last_update_id == 0:
                 probe_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates?offset=-1&limit=1"
                 probe_req = urllib.request.Request(probe_url, headers={"User-Agent": "Mozilla/5.0"})
@@ -409,22 +551,18 @@ class USAOptionsTrader:
                     if probe_res:
                         self.last_update_id = probe_res[-1].get("update_id", 0)
                         self.save_state()
-                        log.info(f"USA Telegram inbox initialized on cold boot. Discarded historical backlog up to update_id {self.last_update_id}")
-
+                        log.info("USA Telegram inbox initialized on cold boot.")
             url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates?offset={self.last_update_id + 1}&limit=10&timeout=1"
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
             with urllib.request.urlopen(req, timeout=3) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 for update in data.get("result", []):
-                    # Advance offset & save state BEFORE executing command to guarantee idempotency
                     up_id = update.get("update_id", 0)
                     if up_id > self.last_update_id:
                         self.last_update_id = up_id
                         self.save_state()
-
                     cb = update.get("callback_query")
                     msg = update.get("message")
-
                     if cb:
                         cb_id = cb.get("id")
                         answer_callback_query(cb_id)
@@ -435,11 +573,8 @@ class USAOptionsTrader:
                         chat_id = str(msg.get("chat", {}).get("id", ""))
                     else:
                         continue
-
                     if chat_id != str(TELEGRAM_CHAT_ID):
                         continue
-
-                    # Strict command matching (M2) to avoid false triggers
                     cmd_clean = text.strip().lower()
                     if cmd_clean in {"📊 status summary", "status", "summary", "/status", "/summary", "/start"} or cmd_clean.startswith("/status"):
                         self.send_telegram_status_summary()
@@ -452,7 +587,6 @@ class USAOptionsTrader:
 
     def is_market_open(self):
         now_ny = datetime.now(TZ_NY)
-        # Weekday check (0 = Mon, 4 = Fri, 5/6 = Sat/Sun)
         if now_ny.weekday() >= 5:
             return False, "Weekend (Market Closed)"
         t = now_ny.time()
@@ -462,7 +596,6 @@ class USAOptionsTrader:
 
     def run_cycle(self):
         now_ts = time.time()
-        # 1. Listen for interactive Telegram user commands (gated to every 3s to eliminate unnecessary polling)
         if now_ts - self.last_inbox_check >= 3.0:
             self.last_inbox_check = now_ts
             self.check_telegram_inbox()
@@ -476,107 +609,55 @@ class USAOptionsTrader:
             log.info(f"[USA CLOCK] {status_str}. Sleeping until market open...")
             return
 
-        # Fetch live SPY spot (robust, with fallback)
         current_spot = get_spy_spot()
         if not current_spot:
             log.warning("SPY spot unavailable this cycle (all sources failed); skipping.")
             return
         self.last_spot_price = current_spot
 
-        # 1. Manage Active Trade
-        if self.active_trade:
-            entry_spot = self.active_trade["entry_spot"]
-            entry_cost = self.active_trade["entry_cost"]
-
-            # Spot Stop Loss: Exit if SPY moves against trade by 0.30%
-            hit_sl = current_spot <= entry_spot * 0.9970
-            # Spot Take Profit: +0.60% underlying move (~ +50% on option spread)
-            hit_tp = current_spot >= entry_spot * 1.0060
-            # End of day square-off (3:45 PM ET)
-            hit_eod = t >= SQUARE_OFF
-
-            if hit_sl or hit_tp or hit_eod:
-                reason = "TAKE_PROFIT" if hit_tp else ("STOP_LOSS" if hit_sl else "EOD_SQUARE_OFF")
-                gross_pnl = (entry_cost * 0.50) if hit_tp else (-(entry_cost * 0.30) if hit_sl else 0.0)
-                pnl = gross_pnl - FEE_USD
-                self.capital += pnl
-
-                record = {
-                    "symbol": "SPY",
-                    "action": "BUY_SPREAD",
-                    "entry_time": self.active_trade["entry_time"],
-                    "exit_time": now_ny.strftime("%Y-%m-%d %H:%M:%S %Z"),
-                    "entry_price": entry_spot,
-                    "exit_price": current_spot,
-                    "pnl_pct": 50.0 if hit_tp else (-30.0 if hit_sl else 0.0),
-                    "fee_usd": FEE_USD,
-                    "pnl_usd": round(pnl, 2),
-                    "reason": reason,
-                    "balance": round(self.capital, 2)
-                }
-                self.log_trade_to_csv(record)
-
+        # Manage active trades + new entries per strategy independently
+        for account in self.accounts:
+            closed, reason = account.manage_exit(current_spot, now_ny, today_str)
+            if closed:
                 msg = (
-                    f"🇺🇸 *USA SPY TRADE CLOSED: `{reason}`*\n\n"
+                    f"🇺🇸 *{account.name}* — TRADE CLOSED: `{reason}`\n\n"
                     f"• *Exit SPY Price:* `${current_spot:,.2f}`\n"
-                    f"• *Realized P&L:* `${pnl:+,.2f}`\n"
-                    f"• *Account Balance:* `${self.capital:,.2f}`"
+                    f"• *Realized P&L:* `${account.capital:,.2f}` (bal)\n"
+                    f"• *EOD:* real mark-to-market"
                 )
-                log.info(f"Closed SPY Trade: PnL=${pnl:.2f} ({reason})")
+                send_telegram(msg, reply_markup=None)
+                push_git_sync(f"usa closed {account.key} ({reason})")
+                continue
+
+            es = account.cfg["entry_start"]
+            ee = account.cfg["entry_end"]
+            if es <= t <= ee and not account.active_trade:
+                if account.last_trade_date == today_str:
+                    continue
+                if self._remote_trade_exists_today(today_str, account.key):
+                    log.info(f"[{account.key}] Remote guard: trade already exists today on origin.")
+                    account.last_trade_date = today_str
+                    account.save_state()
+                    continue
+                sl, sk, cost = account.open_trade(current_spot, now_ny)
+                push_git_sync(f"usa opened {account.key} spread")
+                msg = (
+                    f"🇺🇸 *{account.name}* — NEW SPREAD OPENED\n\n"
+                    f"• *Underlying:* `SPY @ ${current_spot:,.2f}`\n"
+                    f"• *Structure:* `Bull Call Spread {sl}/{sk}`\n"
+                    f"• *Cost / Max Risk:* `${cost:,.2f}`\n"
+                    f"• *Take Profit:* `+50%` ($60.00)\n"
+                    f"• *Audit fix:* EOD = real MTP · SL `{account.cfg.get('sl_pct') or 'off'}`"
+                )
+                log.info(f"[{account.key}] Opened SPY spread @ ${current_spot:.2f}")
                 send_telegram(msg, reply_markup=None)
 
-                self.active_trade = None
-                self.last_trade_date = today_str
-                self.save_state()
-                push_git_sync(f"usa closed SPY spread ({reason})")
-                return
-
-        # 2. Check for New Entry (Between 10:00 AM and 2:30 PM ET)
-        # Council Compliance: Max 1 trade per day to prevent re-entry death spirals
-        if ENTRY_START <= t <= ENTRY_END and not self.active_trade:
-            if self.last_trade_date == today_str:
-                log.info("Daily trade limit reached for SPY (1 trade/day). Skipping entry.")
-                return
-
-            # Concurrent-runner guard: re-check ORIGIN state (closes the race where a peer
-            # runner's state push landed AFTER this runner checked out the repo).
-            if self._remote_trade_exists_today(today_str):
-                log.info("Remote guard: a trade already exists for today on origin. Skipping entry.")
-                self.last_trade_date = today_str
-                self.save_state()
-                return
-
-            strike_long = round(current_spot)
-            strike_short = strike_long + 2
-            est_cost = 120.0  # $120 estimated spread debit
-
-            self.active_trade = {
-                "symbol": "SPY",
-                "structure": f"Bull Call Spread ({strike_long}/{strike_short})",
-                "entry_spot": current_spot,
-                "entry_cost": est_cost,
-                "entry_time": now_ny.strftime("%Y-%m-%d %H:%M:%S %Z")
-            }
-            self.last_trade_date = today_str
-            self.save_state()
-            push_git_sync("usa opened SPY spread")
-
-            msg = (
-                f"🇺🇸 *NEW USA SPY SPREAD OPENED*\n\n"
-                f"• *Underlying:* `SPY @ ${current_spot:,.2f}`\n"
-                f"• *Structure:* `Bull Call Spread {strike_long}/{strike_short}`\n"
-                f"• *Cost / Max Risk:* `${est_cost:,.2f}`\n"
-                f"• *Take Profit:* `+50%` ($60.00)\n"
-                f"• *Stop Loss:* `Spot -0.30%` (Hedging protected)\n"
-                f"• *Zero Overnight Risk:* Auto-exit at 3:45 PM ET"
-            )
-            log.info(f"Opened SPY spread @ ${current_spot:.2f}")
-            send_telegram(msg, reply_markup=None)
 
 def main():
-    log.info("Starting Autonomous 24/7 USA Options Paper Trading Daemon...")
+    log.info("Starting Autonomous Multi-Strategy USA Options Paper Trading Daemon...")
     trader = USAOptionsTrader()
-    send_telegram("🚀 *USA SPY Options 24/7 Paper Trading Daemon Started*\nClock configured for New York Market (Mon-Fri 09:30-16:00 ET).")
+    names = " · ".join(a.name for a in trader.accounts)
+    send_telegram(f"🚀 *USA SPY Options Multi-Strategy Paper Daemon Started*\n{names}\nClock: New York (Mon-Fri 09:30-16:00 ET).")
 
     if RUN_MINUTES > 0:
         log.info(f"Cloud Runner Mode: Active for {RUN_MINUTES} minutes.")
@@ -603,5 +684,6 @@ def main():
                 log.error(f"Error in USA loop: {e}")
                 time.sleep(10)
 
+
 if __name__ == "__main__":
-    main()
+    main()

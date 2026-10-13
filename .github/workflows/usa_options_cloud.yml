@@ -68,9 +68,11 @@ jobs:
         if: always()
         run: |
           mkdir -p /tmp/state_backup
-          cp data/usa_dashboard.json /tmp/state_backup/ 2>/dev/null || true
-          cp data/usa_paper_trades.csv /tmp/state_backup/ 2>/dev/null || true
-          cp usa_dashboard.json /tmp/state_backup/ 2>/dev/null || true
+          cp data/usa_dashboard.json /tmp/state_backup/usa_dashboard.json 2>/dev/null || true
+          cp data/usa_paper_trades.csv /tmp/state_backup/usa_paper_trades.csv 2>/dev/null || true
+          cp usa_dashboard.json /tmp/state_backup/usa_dashboard_root.json 2>/dev/null || true
+          cp data/usa_*_state.json /tmp/state_backup/ 2>/dev/null || true
+          cp data/usa_*_trades.csv /tmp/state_backup/ 2>/dev/null || true
 
           git fetch origin main
           git reset --hard origin/main
@@ -78,14 +80,16 @@ jobs:
           mkdir -p data
           cp /tmp/state_backup/usa_dashboard.json data/ 2>/dev/null || true
           cp /tmp/state_backup/usa_paper_trades.csv data/ 2>/dev/null || true
-          if [ -f /tmp/state_backup/usa_dashboard.json ]; then
-            cp /tmp/state_backup/usa_dashboard.json .
+          if [ -f /tmp/state_backup/usa_dashboard_root.json ]; then
+            cp /tmp/state_backup/usa_dashboard_root.json usa_dashboard.json
           fi
+          cp /tmp/state_backup/usa_*_state.json data/ 2>/dev/null || true
+          cp /tmp/state_backup/usa_*_trades.csv data/ 2>/dev/null || true
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           touch data/usa_paper_trades.csv 2>/dev/null || true
-          git add data/usa_dashboard.json usa_dashboard.json data/usa_paper_trades.csv -f
+          git add -f data/usa_dashboard.json usa_dashboard.json data/usa_paper_trades.csv data/usa_*_state.json data/usa_*_trades.csv
           if git diff --cached --quiet; then
             echo "No USA state changes to commit."
           else
