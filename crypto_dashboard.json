@@ -53,14 +53,14 @@
   "total_trades": 14,
   "last_update_id": 159576191,
   "last_scan_record": {
-    "timestamp": "2026-10-13 03:26:43 UTC",
-    "btc_bullish": false,
-    "btc_info": "BTC=$82,960.8, EMA50=$83,014.3, RSI=49.9",
+    "timestamp": "2026-10-13 03:41:49 UTC",
+    "btc_bullish": true,
+    "btc_info": "BTC=$83,281.6, EMA50=$83,028.1, RSI=53.2",
     "pairs_scanned": 35,
-    "candidates_count": 13,
-    "candidates_str": "ETHUSDT:SELL@2494.8900(RR:2.8); SOLUSDT:SELL@107.0400(RR:3.2); NEARUSDT:SELL@5.3050(RR:3.7); ZECUSDT:SELL@1207.2200(RR:2.8); BNBUSDT:SELL@741.1600(RR:2.2); DOGEUSDT:SELL@0.0838(RR:2.3); UNIUSDT:SELL@7.2090(RR:2.8); WLDUSDT:SELL@0.5153(RR:4.8); AVAXUSDT:SELL@10.4190(RR:3.9); PEPEUSDT:SELL@0.0000(RR:2.2); HYPEUSDT:SELL@82.4200(RR:2.4); LINKUSDT:SELL@12.8760(RR:2.9); LTCUSDT:SELL@61.6300(RR:2.0)",
-    "filtered_count": 0,
-    "filtered_str": "None"
+    "candidates_count": 0,
+    "candidates_str": "None",
+    "filtered_count": 13,
+    "filtered_str": "SOLUSDT:SELL(BTC Bullish filter); NEARUSDT:SELL(BTC Bullish filter); ZECUSDT:SELL(BTC Bullish filter); DOGEUSDT:SELL(BTC Bullish filter); ENAUSDT:SELL(BTC Bullish filter); UNIUSDT:SELL(BTC Bullish filter); UNIUSDT:SELL(BTC Bullish filter); AVAXUSDT:SELL(BTC Bullish filter); TAOUSDT:SELL(BTC Bullish filter); PEPEUSDT:SELL(BTC Bullish filter); HYPEUSDT:SELL(BTC Bullish filter); LINKUSDT:SELL(BTC Bullish filter); LTCUSDT:SELL(BTC Bullish filter)"
   },
-  "updated_at": "2026-10-13T03:26:43.783816+00:00"
+  "updated_at": "2026-10-13T03:41:49.030962+00:00"
 }
