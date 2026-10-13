@@ -9,13 +9,13 @@
       "original_sl": 0.0761534,
       "tp": 0.06611,
       "atr": 0.0015414285714285697,
-      "peak_price": 0.07064,
+      "peak_price": 0.07057,
       "notional_usd": 100.0,
       "entry_time": "2026-10-12 13:11:51 UTC",
       "scaled_out": true,
       "realized_pnl_usd": 1.871274443695213,
       "breakeven_locked": true,
-      "peak_pnl_pct": 4.733648010788941
+      "peak_pnl_pct": 4.8280512474713415
     },
     "PUMPUSDT": {
       "symbol": "PUMPUSDT",
@@ -37,14 +37,14 @@
   "total_trades": 17,
   "last_update_id": 159576194,
   "last_scan_record": {
-    "timestamp": "2026-10-13 16:23:43 UTC",
+    "timestamp": "2026-10-13 16:38:47 UTC",
     "btc_bullish": true,
-    "btc_info": "BTC=$83,617.3, EMA50=$83,249.3, RSI=65.8",
+    "btc_info": "BTC=$83,470.9, EMA50=$83,243.0, RSI=63.3",
     "pairs_scanned": 35,
-    "candidates_count": 0,
-    "candidates_str": "None",
+    "candidates_count": 1,
+    "candidates_str": "UNIUSDT:BUY@7.5670(RR:2.1)",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-13T16:23:43.320619+00:00"
+  "updated_at": "2026-10-13T16:38:47.481509+00:00"
 }
