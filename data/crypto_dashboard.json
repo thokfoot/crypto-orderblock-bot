@@ -21,14 +21,14 @@
   "total_trades": 17,
   "last_update_id": 159576193,
   "last_scan_record": {
-    "timestamp": "2026-10-13 07:50:33 UTC",
+    "timestamp": "2026-10-13 08:05:32 UTC",
     "btc_bullish": true,
-    "btc_info": "BTC=$83,971.8, EMA50=$83,143.4, RSI=65.0",
+    "btc_info": "BTC=$83,968.0, EMA50=$83,175.2, RSI=65.7",
     "pairs_scanned": 35,
     "candidates_count": 0,
     "candidates_str": "None",
     "filtered_count": 1,
     "filtered_str": "TAOUSDT:SELL(BTC Bullish filter)"
   },
-  "updated_at": "2026-10-13T07:50:33.582557+00:00"
+  "updated_at": "2026-10-13T08:05:32.475897+00:00"
 }
