@@ -32,6 +32,22 @@
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
       "peak_pnl_pct": 1.441917140536147
+    },
+    "UNIUSDT": {
+      "symbol": "UNIUSDT",
+      "action": "BUY",
+      "entry_price": 7.567,
+      "current_sl": 7.446096,
+      "original_sl": 7.446096,
+      "tp": 7.816821428571428,
+      "atr": 0.09992857142857137,
+      "peak_price": 7.567,
+      "notional_usd": 200.0,
+      "entry_time": "2026-10-13 16:38:48 UTC",
+      "scaled_out": false,
+      "realized_pnl_usd": 0.0,
+      "breakeven_locked": false,
+      "peak_pnl_pct": 0.0
     }
   },
   "total_trades": 17,
@@ -46,5 +62,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-13T16:38:47.481509+00:00"
+  "updated_at": "2026-10-13T16:38:48.655876+00:00"
 }
