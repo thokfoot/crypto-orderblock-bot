@@ -32,6 +32,22 @@
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
       "peak_pnl_pct": 1.0175763182238662
+    },
+    "TIAUSDT": {
+      "symbol": "TIAUSDT",
+      "action": "SELL",
+      "entry_price": 0.5687,
+      "current_sl": 0.5760971428571429,
+      "original_sl": 0.5760971428571429,
+      "tp": 0.5532892857142857,
+      "atr": 0.0061642857142857254,
+      "peak_price": 0.5687,
+      "notional_usd": 200.0,
+      "entry_time": "2026-10-13 22:39:53 UTC",
+      "scaled_out": false,
+      "realized_pnl_usd": 0.0,
+      "breakeven_locked": false,
+      "peak_pnl_pct": 0.0
     }
   },
   "total_trades": 19,
@@ -46,5 +62,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-13T22:39:52.060862+00:00"
+  "updated_at": "2026-10-13T22:39:53.355894+00:00"
 }
