@@ -19,16 +19,16 @@
     }
   },
   "total_trades": 14,
-  "last_update_id": 159576187,
+  "last_update_id": 159576190,
   "last_scan_record": {
-    "timestamp": "2026-10-13 00:20:46 UTC",
+    "timestamp": "2026-10-13 02:56:38 UTC",
     "btc_bullish": false,
-    "btc_info": "BTC=$81,330.8, EMA50=$83,041.0, RSI=23.9",
+    "btc_info": "BTC=$82,924.0, EMA50=$83,016.6, RSI=51.7",
     "pairs_scanned": 35,
-    "candidates_count": 0,
-    "candidates_str": "None",
-    "filtered_count": 0,
-    "filtered_str": "None"
+    "candidates_count": 9,
+    "candidates_str": "SOLUSDT:SELL@106.6900(RR:2.5); NEARUSDT:SELL@5.2500(RR:2.1); SUIUSDT:SELL@1.0408(RR:3.0); UNIUSDT:SELL@7.1670(RR:2.1); WLDUSDT:SELL@0.5077(RR:3.1); AVAXUSDT:SELL@10.3510(RR:2.4); HYPEUSDT:SELL@82.3300(RR:2.1); LINKUSDT:SELL@12.8020(RR:3.6); FILUSDT:SELL@1.1273(RR:2.8)",
+    "filtered_count": 1,
+    "filtered_str": "STRKUSDT:BUY(BTC Bearish filter)"
   },
-  "updated_at": "2026-10-13T00:23:33.066931+00:00"
+  "updated_at": "2026-10-13T02:56:38.580177+00:00"
 }
