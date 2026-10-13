@@ -41,26 +41,26 @@
       "original_sl": 0.5760971428571429,
       "tp": 0.5532892857142857,
       "atr": 0.0061642857142857254,
-      "peak_price": 0.5687,
+      "peak_price": 0.566,
       "notional_usd": 200.0,
       "entry_time": "2026-10-13 22:39:53 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
-      "peak_pnl_pct": 0.0
+      "peak_pnl_pct": 0.47476701248462033
     }
   },
   "total_trades": 19,
   "last_update_id": 159576195,
   "last_scan_record": {
-    "timestamp": "2026-10-13 22:39:52 UTC",
+    "timestamp": "2026-10-13 22:54:57 UTC",
     "btc_bullish": false,
-    "btc_info": "BTC=$83,493.8, EMA50=$83,268.1, RSI=47.1",
+    "btc_info": "BTC=$83,522.9, EMA50=$83,269.3, RSI=47.9",
     "pairs_scanned": 35,
-    "candidates_count": 1,
-    "candidates_str": "TIAUSDT:SELL@0.5687(RR:2.1)",
+    "candidates_count": 0,
+    "candidates_str": "None",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-13T22:39:53.355894+00:00"
+  "updated_at": "2026-10-13T22:54:57.313545+00:00"
 }
