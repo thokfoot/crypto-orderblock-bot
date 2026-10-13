@@ -1,5 +1,5 @@
 {
-  "capital": 1999.6,
+  "capital": 1995.21,
   "open_positions": {
     "MUBARAKUSDT": {
       "symbol": "MUBARAKUSDT",
@@ -16,22 +16,6 @@
       "realized_pnl_usd": 1.871274443695213,
       "breakeven_locked": true,
       "peak_pnl_pct": 4.504383007417392
-    },
-    "SOLUSDT": {
-      "symbol": "SOLUSDT",
-      "action": "SELL",
-      "entry_price": 106.69,
-      "current_sl": 108.69304000000001,
-      "original_sl": 108.69304000000001,
-      "tp": 101.69,
-      "atr": 0.9928571428571443,
-      "peak_price": 106.48,
-      "notional_usd": 200.0,
-      "entry_time": "2026-10-13 02:56:39 UTC",
-      "scaled_out": false,
-      "realized_pnl_usd": 0.0,
-      "breakeven_locked": false,
-      "peak_pnl_pct": 0.19683194301246018
     },
     "NEARUSDT": {
       "symbol": "NEARUSDT",
@@ -50,7 +34,7 @@
       "peak_pnl_pct": 0.0
     }
   },
-  "total_trades": 14,
+  "total_trades": 15,
   "last_update_id": 159576192,
   "last_scan_record": {
     "timestamp": "2026-10-13 05:19:41 UTC",
@@ -62,5 +46,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-13T05:19:41.487755+00:00"
+  "updated_at": "2026-10-13T05:23:50.374397+00:00"
 }
