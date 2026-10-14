@@ -5,17 +5,17 @@
       "symbol": "PUMPUSDT",
       "action": "BUY",
       "entry_price": 0.004924,
-      "current_sl": 0.004945178571428572,
+      "current_sl": 0.004954178571428572,
       "original_sl": 0.004854485714285714,
       "tp": 0.005148,
       "atr": 5.792857142857144e-05,
-      "peak_price": 0.00509,
+      "peak_price": 0.005099,
       "notional_usd": 100.0,
       "entry_time": "2026-10-13 15:38:34 UTC",
       "scaled_out": true,
       "realized_pnl_usd": 1.7511779041429636,
       "breakeven_locked": true,
-      "peak_pnl_pct": 3.3712428919577473
+      "peak_pnl_pct": 3.5540211210398005
     },
     "UNIUSDT": {
       "symbol": "UNIUSDT",
@@ -37,14 +37,14 @@
   "total_trades": 21,
   "last_update_id": 159576195,
   "last_scan_record": {
-    "timestamp": "2026-10-14 00:25:30 UTC",
+    "timestamp": "2026-10-14 00:40:31 UTC",
     "btc_bullish": true,
-    "btc_info": "BTC=$83,402.0, EMA50=$83,272.0, RSI=51.7",
+    "btc_info": "BTC=$83,622.5, EMA50=$83,281.5, RSI=56.9",
     "pairs_scanned": 35,
-    "candidates_count": 1,
-    "candidates_str": "TIAUSDT:BUY@0.5746(RR:2.0)",
+    "candidates_count": 0,
+    "candidates_str": "None",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-14T00:36:05.171987+00:00"
+  "updated_at": "2026-10-14T00:40:31.056190+00:00"
 }
