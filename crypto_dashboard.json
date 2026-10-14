@@ -21,14 +21,14 @@
   "total_trades": 25,
   "last_update_id": 159576197,
   "last_scan_record": {
-    "timestamp": "2026-10-14 10:22:43 UTC",
+    "timestamp": "2026-10-14 10:37:44 UTC",
     "btc_bullish": true,
-    "btc_info": "BTC=$83,362.1, EMA50=$83,338.8, RSI=48.7",
+    "btc_info": "BTC=$83,390.2, EMA50=$83,340.1, RSI=49.4",
     "pairs_scanned": 35,
     "candidates_count": 0,
     "candidates_str": "None",
-    "filtered_count": 1,
-    "filtered_str": "BATUSDT:SELL(BTC Bullish filter)"
+    "filtered_count": 0,
+    "filtered_str": "None"
   },
-  "updated_at": "2026-10-14T10:22:43.888142+00:00"
+  "updated_at": "2026-10-14T10:37:44.380471+00:00"
 }
