@@ -37,14 +37,14 @@
   "total_trades": 20,
   "last_update_id": 159576195,
   "last_scan_record": {
-    "timestamp": "2026-10-13 23:55:22 UTC",
+    "timestamp": "2026-10-14 00:10:26 UTC",
     "btc_bullish": false,
-    "btc_info": "BTC=$83,158.0, EMA50=$83,265.1, RSI=37.6",
+    "btc_info": "BTC=$83,242.0, EMA50=$83,265.1, RSI=47.0",
     "pairs_scanned": 35,
     "candidates_count": 1,
-    "candidates_str": "SOXLBUSDT:SELL@127.9100(RR:4.4)",
+    "candidates_str": "SOXLBUSDT:SELL@128.2400(RR:5.4)",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-14T00:07:27.195960+00:00"
+  "updated_at": "2026-10-14T00:10:26.090257+00:00"
 }
