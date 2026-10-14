@@ -4,14 +4,14 @@
   "total_trades": 27,
   "last_update_id": 159576197,
   "last_scan_record": {
-    "timestamp": "2026-10-14 16:07:31 UTC",
+    "timestamp": "2026-10-14 16:22:31 UTC",
     "btc_bullish": false,
-    "btc_info": "BTC=$81,719.1, EMA50=$83,081.2, RSI=17.8",
+    "btc_info": "BTC=$81,644.7, EMA50=$83,078.0, RSI=15.7",
     "pairs_scanned": 35,
-    "candidates_count": 0,
-    "candidates_str": "None",
+    "candidates_count": 1,
+    "candidates_str": "NEARUSDT:SELL@4.8570(RR:2.1)",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-14T16:07:31.086024+00:00"
+  "updated_at": "2026-10-14T16:22:31.364511+00:00"
 }
