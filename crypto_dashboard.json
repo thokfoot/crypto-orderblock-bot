@@ -9,26 +9,26 @@
       "original_sl": 5.091514285714285,
       "tp": 4.904928571428571,
       "atr": 0.050428571428571524,
-      "peak_price": 5.031,
+      "peak_price": 5.013,
       "notional_usd": 200.0,
       "entry_time": "2026-10-14 09:52:36 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
-      "peak_pnl_pct": 0.0
+      "peak_pnl_pct": 0.35778175313058624
     }
   },
   "total_trades": 25,
-  "last_update_id": 159576196,
+  "last_update_id": 159576197,
   "last_scan_record": {
-    "timestamp": "2026-10-14 09:52:34 UTC",
+    "timestamp": "2026-10-14 10:07:41 UTC",
     "btc_bullish": false,
-    "btc_info": "BTC=$83,269.0, EMA50=$83,339.8, RSI=49.3",
+    "btc_info": "BTC=$83,119.2, EMA50=$83,328.4, RSI=43.1",
     "pairs_scanned": 35,
-    "candidates_count": 1,
-    "candidates_str": "NEARUSDT:SELL@5.0310(RR:2.1)",
+    "candidates_count": 0,
+    "candidates_str": "None",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-14T09:52:36.097268+00:00"
+  "updated_at": "2026-10-14T10:07:41.409070+00:00"
 }
