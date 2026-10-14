@@ -4,8 +4,15 @@
     "wide_sl_1015": {
       "name": "Wide-SL MTM 10:15/15:30",
       "capital": 2004.23,
-      "active_trade": null,
-      "last_trade_date": "2026-10-13"
+      "active_trade": {
+        "symbol": "SPY",
+        "strategy": "wide_sl_1015",
+        "structure": "Bull Call Spread (773/775)",
+        "entry_spot": 773.22998046875,
+        "entry_cost": 120.0,
+        "entry_time": "2026-10-14 10:16:12 EDT"
+      },
+      "last_trade_date": "2026-10-14"
     },
     "no_sl_1030": {
       "name": "No-SL MTM 10:30/15:30",
@@ -16,11 +23,18 @@
     "no_sl_1015": {
       "name": "No-SL MTM 10:15/15:30",
       "capital": 2004.23,
-      "active_trade": null,
-      "last_trade_date": "2026-10-13"
+      "active_trade": {
+        "symbol": "SPY",
+        "strategy": "no_sl_1015",
+        "structure": "Bull Call Spread (773/775)",
+        "entry_spot": 773.22998046875,
+        "entry_cost": 120.0,
+        "entry_time": "2026-10-14 10:16:12 EDT"
+      },
+      "last_trade_date": "2026-10-14"
     }
   },
-  "last_update_id": 628970429,
-  "last_spot_price": 778.0399780273438,
-  "updated_at": "2026-10-14T11:07:52.156781+00:00"
+  "last_update_id": 628970430,
+  "last_spot_price": 772.9000244140625,
+  "updated_at": "2026-10-14T14:17:34.784811+00:00"
 }
