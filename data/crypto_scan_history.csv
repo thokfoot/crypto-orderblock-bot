@@ -152,3 +152,4 @@ timestamp,btc_bullish,btc_info,pairs_scanned,candidates_count,candidates,filtere
 2026-10-14 16:37:37 UTC,False,"BTC=$81,810.1, EMA50=$83,085.2, RSI=20.2",35,2,NEARUSDT:SELL@4.8990(RR:2.1); SNDKBUSDT:SELL@1419.8000(RR:2.1),None
 2026-10-14 16:52:38 UTC,False,"BTC=$81,922.0, EMA50=$83,090.0, RSI=23.0",35,1,ENAUSDT:SELL@0.1995(RR:3.1),None
 2026-10-14 17:07:48 UTC,False,"BTC=$82,044.3, EMA50=$83,045.0, RSI=24.7",35,0,None,None
+2026-10-14 17:22:51 UTC,False,"BTC=$81,924.0, EMA50=$83,039.8, RSI=23.3",35,0,None,None
