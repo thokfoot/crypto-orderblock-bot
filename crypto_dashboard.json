@@ -1,5 +1,5 @@
 {
-  "capital": 1994.13,
+  "capital": 1989.78,
   "open_positions": {
     "PUMPUSDT": {
       "symbol": "PUMPUSDT",
@@ -32,26 +32,10 @@
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
       "peak_pnl_pct": 0.27717283706197254
-    },
-    "STRKUSDT": {
-      "symbol": "STRKUSDT",
-      "action": "BUY",
-      "entry_price": 0.0832,
-      "current_sl": 0.081658,
-      "original_sl": 0.081658,
-      "tp": 0.08661,
-      "atr": 0.0012849999999999995,
-      "peak_price": 0.0832,
-      "notional_usd": 200.0,
-      "entry_time": "2026-10-14 05:15:31 UTC",
-      "scaled_out": false,
-      "realized_pnl_usd": 0.0,
-      "breakeven_locked": false,
-      "peak_pnl_pct": 0.0
     }
   },
-  "total_trades": 22,
-  "last_update_id": 159576195,
+  "total_trades": 23,
+  "last_update_id": 159576196,
   "last_scan_record": {
     "timestamp": "2026-10-14 05:30:35 UTC",
     "btc_bullish": true,
@@ -62,5 +46,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-14T05:30:35.677919+00:00"
+  "updated_at": "2026-10-14T05:34:13.384741+00:00"
 }
