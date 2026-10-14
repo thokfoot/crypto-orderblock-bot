@@ -1,0 +1,2 @@
+symbol,strategy,action,entry_time,exit_time,entry_price,exit_price,pnl_pct,fee_usd,pnl_usd,reason,balance
+SPY,no_sl_1030,BUY_SPREAD,2026-10-13 10:30:00 EDT,2026-10-13 15:55:36 EDT,777.5,777.8800048828125,4.07,1.3,3.59,EOD_MTM,2003.59
