@@ -1,6 +1,23 @@
 {
   "capital": 1984.67,
-  "open_positions": {},
+  "open_positions": {
+    "NEARUSDT": {
+      "symbol": "NEARUSDT",
+      "action": "SELL",
+      "entry_price": 4.857,
+      "current_sl": 4.962942857142857,
+      "original_sl": 4.962942857142857,
+      "tp": 4.636285714285714,
+      "atr": 0.0882857142857144,
+      "peak_price": 4.857,
+      "notional_usd": 200.0,
+      "entry_time": "2026-10-14 16:22:33 UTC",
+      "scaled_out": false,
+      "realized_pnl_usd": 0.0,
+      "breakeven_locked": false,
+      "peak_pnl_pct": 0.0
+    }
+  },
   "total_trades": 27,
   "last_update_id": 159576197,
   "last_scan_record": {
@@ -13,5 +30,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-14T16:22:31.364511+00:00"
+  "updated_at": "2026-10-14T16:22:33.751257+00:00"
 }
