@@ -1,24 +1,7 @@
 {
-  "capital": 1986.92,
-  "open_positions": {
-    "PUMPUSDT": {
-      "symbol": "PUMPUSDT",
-      "action": "BUY",
-      "entry_price": 0.004924,
-      "current_sl": 0.004978178571428572,
-      "original_sl": 0.004854485714285714,
-      "tp": 0.005148,
-      "atr": 5.792857142857144e-05,
-      "peak_price": 0.005123,
-      "notional_usd": 100.0,
-      "entry_time": "2026-10-13 15:38:34 UTC",
-      "scaled_out": true,
-      "realized_pnl_usd": 1.7511779041429636,
-      "breakeven_locked": true,
-      "peak_pnl_pct": 4.041429731925255
-    }
-  },
-  "total_trades": 24,
+  "capital": 1987.59,
+  "open_positions": {},
+  "total_trades": 25,
   "last_update_id": 159576196,
   "last_scan_record": {
     "timestamp": "2026-10-14 09:22:32 UTC",
@@ -30,5 +13,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-14T09:22:32.295250+00:00"
+  "updated_at": "2026-10-14T09:25:50.728995+00:00"
 }
