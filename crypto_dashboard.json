@@ -1,24 +1,7 @@
 {
-  "capital": 1987.59,
-  "open_positions": {
-    "NEARUSDT": {
-      "symbol": "NEARUSDT",
-      "action": "SELL",
-      "entry_price": 5.031,
-      "current_sl": 5.091514285714285,
-      "original_sl": 5.091514285714285,
-      "tp": 4.904928571428571,
-      "atr": 0.050428571428571524,
-      "peak_price": 5.013,
-      "notional_usd": 200.0,
-      "entry_time": "2026-10-14 09:52:36 UTC",
-      "scaled_out": false,
-      "realized_pnl_usd": 0.0,
-      "breakeven_locked": false,
-      "peak_pnl_pct": 0.35778175313058624
-    }
-  },
-  "total_trades": 25,
+  "capital": 1984.49,
+  "open_positions": {},
+  "total_trades": 26,
   "last_update_id": 159576197,
   "last_scan_record": {
     "timestamp": "2026-10-14 11:22:55 UTC",
@@ -30,5 +13,5 @@
     "filtered_count": 1,
     "filtered_str": "BATUSDT:SELL(BTC Bullish filter)"
   },
-  "updated_at": "2026-10-14T11:22:55.691943+00:00"
+  "updated_at": "2026-10-14T11:23:45.931604+00:00"
 }
