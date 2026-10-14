@@ -134,3 +134,4 @@ timestamp,btc_bullish,btc_info,pairs_scanned,candidates_count,candidates,filtere
 2026-10-14 10:07:41 UTC,False,"BTC=$83,119.2, EMA50=$83,328.4, RSI=43.1",35,0,None,None
 2026-10-14 10:22:43 UTC,True,"BTC=$83,362.1, EMA50=$83,338.8, RSI=48.7",35,0,None,BATUSDT:SELL(BTC Bullish filter)
 2026-10-14 10:37:44 UTC,True,"BTC=$83,390.2, EMA50=$83,340.1, RSI=49.4",35,0,None,None
+2026-10-14 10:52:44 UTC,True,"BTC=$83,438.0, EMA50=$83,342.1, RSI=50.5",34,0,None,None
