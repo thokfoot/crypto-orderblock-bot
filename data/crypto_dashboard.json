@@ -32,6 +32,22 @@
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
       "peak_pnl_pct": 0.03239892942668238
+    },
+    "ENAUSDT": {
+      "symbol": "ENAUSDT",
+      "action": "SELL",
+      "entry_price": 0.1995,
+      "current_sl": 0.20331000000000002,
+      "original_sl": 0.20331000000000002,
+      "tp": 0.1875,
+      "atr": 0.00266428571428571,
+      "peak_price": 0.1995,
+      "notional_usd": 200.0,
+      "entry_time": "2026-10-14 16:52:40 UTC",
+      "scaled_out": false,
+      "realized_pnl_usd": 0.0,
+      "breakeven_locked": false,
+      "peak_pnl_pct": 0.0
     }
   },
   "total_trades": 27,
@@ -46,5 +62,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-14T16:52:38.750534+00:00"
+  "updated_at": "2026-10-14T16:52:40.932569+00:00"
 }
