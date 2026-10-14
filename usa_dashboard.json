@@ -1,17 +1,10 @@
 {
-  "capital": 6012.05,
+  "capital": 5974.75,
   "strategies": {
     "wide_sl_1015": {
       "name": "Wide-SL MTM 10:15/15:30",
-      "capital": 2004.23,
-      "active_trade": {
-        "symbol": "SPY",
-        "strategy": "wide_sl_1015",
-        "structure": "Bull Call Spread (773/775)",
-        "entry_spot": 773.22998046875,
-        "entry_cost": 120.0,
-        "entry_time": "2026-10-14 10:16:12 EDT"
-      },
+      "capital": 1966.93,
+      "active_trade": null,
       "last_trade_date": "2026-10-14"
     },
     "no_sl_1030": {
@@ -42,6 +35,6 @@
     }
   },
   "last_update_id": 628970430,
-  "last_spot_price": 769.5999755859375,
-  "updated_at": "2026-10-14T17:06:13.775435+00:00"
+  "last_spot_price": 767.4299926757812,
+  "updated_at": "2026-10-14T18:09:34.239125+00:00"
 }
