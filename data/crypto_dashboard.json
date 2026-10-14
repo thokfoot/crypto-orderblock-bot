@@ -25,13 +25,13 @@
       "original_sl": 1437.3662857142858,
       "tp": 1383.2035714285712,
       "atr": 14.638571428571465,
-      "peak_price": 1410.11,
+      "peak_price": 1407.17,
       "notional_usd": 200.0,
       "entry_time": "2026-10-14 16:37:38 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
-      "peak_pnl_pct": 0.6824904916185417
+      "peak_pnl_pct": 0.8895619101281788
     },
     "ENAUSDT": {
       "symbol": "ENAUSDT",
@@ -41,26 +41,26 @@
       "original_sl": 0.20331000000000002,
       "tp": 0.1875,
       "atr": 0.00266428571428571,
-      "peak_price": 0.1968,
+      "peak_price": 0.1967,
       "notional_usd": 200.0,
       "entry_time": "2026-10-14 16:52:40 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
-      "peak_pnl_pct": 1.3533834586466205
+      "peak_pnl_pct": 1.403508771929823
     }
   },
   "total_trades": 27,
   "last_update_id": 159576199,
   "last_scan_record": {
-    "timestamp": "2026-10-14 17:53:00 UTC",
+    "timestamp": "2026-10-14 18:08:05 UTC",
     "btc_bullish": false,
-    "btc_info": "BTC=$81,632.5, EMA50=$83,027.2, RSI=21.4",
+    "btc_info": "BTC=$81,666.0, EMA50=$82,962.0, RSI=21.9",
     "pairs_scanned": 35,
     "candidates_count": 0,
     "candidates_str": "None",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-14T17:53:00.961618+00:00"
+  "updated_at": "2026-10-14T18:08:05.800810+00:00"
 }
