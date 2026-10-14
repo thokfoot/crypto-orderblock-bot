@@ -1,7 +1,7 @@
 """
 usa_options_daemon.py
 =====================
-Autonomous Production Daemon for SPY Hedged Options Spread (US Market).
+Autonomous Production Daemon for USA Defined-Risk Debit Spreads (SPY + QQQ).
 
 [QUANT AUDIT COUNCIL CONSENSUS NOTICE]:
 This module is running in PAPER-SIMULATION SANDBOX ONLY.
@@ -9,24 +9,23 @@ Live capital deployment is quarantined per Council Consensus until a full
 Black-Scholes-Merton Greek engine (Delta, Gamma, Vega, intraday Theta decay)
 and real multi-leg Cboe options chain integration are completed.
 
-=== COUNCIL AUDIT 2026-10-13 — MULTI-STRATEGY REFACTOR ===
-Backtest verdict from 60 real trading days (2026-07-20 → 2026-10-12, 5-min bars):
-the legacy bot (-0.30% spot SL, EOD forced $0) bled -33.9%/60d. Root causes
-(the peer diagnosis, confirmed independently):
-  1. Asymmetric first-hitting-time: SL at -0.30% is 2x closer than TP at +0.60%
-     -> morning noise stops out before afternoon recovery (P(SL)~2/3).
-  2. EOD "SQUARE_OFF = $0.00" throws away real gains on up-flat days (+0.25..0.37%
-     closed days banked nothing).
-Fix (now deployed here): EOD settlement = proportional mark-to-market (real MTM),
-and the artificial synthetic 0.30% spot-SL is either widened (0.75%) or removed
-(defined-risk only). Three top-3 configurations by net% (876-combo grid +
-both-half + drop-top-3 robustness):
-    wide_sl_1015  entry 10:15 / sq 15:30  SL 0.75%  EOD-MTM   +13.57%/60d
-    no_sl_1030    entry 10:30 / sq 15:30  no SL     EOD-MTM   +12.32%/60d
-    no_sl_1015    entry 10:15 / sq 15:30  no SL     EOD-MTM   +10.95%/60d
-Each strategy owns an independent ledger + state + daily trade guard (paper).
-This replaced the single-strategy daemon; legacy behavior now lives only in
-data/usa_paper_trades.csv as an aggregate of the three ledgers.
+=== DEPLOY 2026-10-14 — QQQ + SPY LONG-ONLY REFACTOR ===
+Mandate: two tickers, $1,000 each ($2,000 total), one bull-call debit spread
+per ticker, entry 10:15-10:30 ET, take-profit +50% of debit (13-Oct +0.60% spot),
+no stop-loss (defined-risk only), square-off 15:30 ET via real proportional MTM.
+No gap filter.
+
+VERIFIED MODEL (60d, 5-min, 2026-07-22 -> 2026-10-14, real yfinance):
+    QQQ bull-call 10:15/15:30  +$479.99  (+24.0% of $2,000-cap, 55.0% WR, PF 1.56)
+    SPY bull-call 10:15/15:30  +$197.44  ( +9.9%,                 50.0% WR, PF 1.27)
+CAVEAT: LONG-ONLY, 60-day, single bull regime, synthetic linear-delta spread
+(P&L = ±0.8333 * spot-move%, capped +50% / -100%). NOT an out-of-sample proof,
+NOT a real options chain. Forward-validation paper run only.
+
+MANDATE RULE REJECTED: the proposed "Bull Call if price>VWAP/EMA50 else Bear Put"
+direction rule was tested and REMOVED -- it cut QQQ from +24.0% to +0.8% (VWAP)
+/ +4.8% (EMA) over the same 60 days. QQQ's edge is a long-drift; flipping short
+on down-days trades into noise. Deployed as LONG-ONLY bull-call per user approval.
 """
 
 import os
@@ -66,45 +65,37 @@ def _t_add(base, minutes):
 
 
 # ---------------------------------------------------------------------------
-# MULTI-STRATEGY CONFIGURATION (top-3 from audit, EOD real-MTM)
+# MULTI-TICKER CONFIGURATION (SPY + QQQ long-only bull-call, EOD real-MTM)
+# $1,000 per ticker ($2,000 total). Verified 60d: QQQ +24.0%, SPY +9.9%.
 # ---------------------------------------------------------------------------
 STRATEGY_CONFIGS = [
     {
-        "key": "wide_sl_1015",
-        "name": "Wide-SL MTM 10:15/15:30",
+        "key": "spy_bullcall",
+        "name": "SPY Bull-Call 10:15/15:30",
+        "symbol": "SPY",
         "entry_start": _t(10, 15),
-        "entry_end": _t_add(_t(10, 15), 30),
+        "entry_end": _t_add(_t(10, 15), 15),
         "square_off": _t(15, 30),
         "tp_pct": 0.0060,          # +0.60% spot move -> +50% debit
-        "sl_pct": 0.0075,          # wide 0.75% spot guard (no morning-noise trap)
-        "eod_mode": "mtm",         # real proportional MTP at square-off
-        "initial_capital": DEFAULT_CAPITAL,
+        "sl_pct": None,            # defined-risk only (no synthetic spot-SL)
+        "eod_mode": "mtm",         # real proportional MTM at square-off
+        "initial_capital": 1000.0,
     },
     {
-        "key": "no_sl_1030",
-        "name": "No-SL MTM 10:30/15:30",
-        "entry_start": _t(10, 30),
-        "entry_end": _t_add(_t(10, 30), 30),
-        "square_off": _t(15, 30),
-        "tp_pct": 0.0060,
-        "sl_pct": None,            # defined-risk only
-        "eod_mode": "mtm",
-        "initial_capital": DEFAULT_CAPITAL,
-    },
-    {
-        "key": "no_sl_1015",
-        "name": "No-SL MTM 10:15/15:30",
+        "key": "qqq_bullcall",
+        "name": "QQQ Bull-Call 10:15/15:30",
+        "symbol": "QQQ",
         "entry_start": _t(10, 15),
-        "entry_end": _t_add(_t(10, 15), 30),
+        "entry_end": _t_add(_t(10, 15), 15),
         "square_off": _t(15, 30),
         "tp_pct": 0.0060,
         "sl_pct": None,
         "eod_mode": "mtm",
-        "initial_capital": DEFAULT_CAPITAL,
+        "initial_capital": 1000.0,
     },
 ]
 
-FEE_USD = 1.30  # round-trip cost for the SPY spread (brokerage + slippage estimate)
+FEE_USD = 1.30  # round-trip cost for one debit spread (brokerage + slippage estimate)
 
 if hasattr(sys.stdout, "reconfigure"):
     try:
@@ -235,21 +226,26 @@ def _yahoo_chart_price(symbol: str):
     return None
 
 
-def get_spy_spot():
-    """Robust live SPY spot: yfinance with retries, then direct Yahoo chart fallback."""
+def get_spot(symbol: str = "SPY"):
+    """Robust live spot for any ticker: yfinance with retries, then Yahoo chart fallback."""
     for attempt in range(3):
         try:
-            df = yf.Ticker("SPY").history(period="1d", interval="1m")
+            df = yf.Ticker(symbol).history(period="1d", interval="1m")
             if df is None or df.empty:
-                df = yf.Ticker("SPY").history(period="5d", interval="1m")
+                df = yf.Ticker(symbol).history(period="5d", interval="1m")
             if df is not None and not df.empty:
                 p = float(df.iloc[-1]["Close"])
                 if p > 0:
                     return p
         except Exception as e:
-            log.warning(f"yfinance SPY fetch failed (attempt {attempt + 1}): {e}")
+            log.warning(f"yfinance {symbol} fetch failed (attempt {attempt + 1}): {e}")
         time.sleep(1.5 * (attempt + 1))
-    return _yahoo_chart_price("SPY")
+    return _yahoo_chart_price(symbol)
+
+
+def get_spy_spot():
+    """Backward-compatible SPY spot wrapper."""
+    return get_spot("SPY")
 
 
 def spread_pnl_pct_from_move(move_pct):
@@ -327,11 +323,12 @@ class StrategyAccount:
             log.warning(f"[{self.key}] Failed to log trade: {e}")
 
     def open_trade(self, current_spot, now_ny):
+        symbol = self.cfg.get("symbol", "SPY")
         strike_long = round(current_spot)
         strike_short = strike_long + 2
         est_cost = 120.0  # $120 estimated spread debit
         self.active_trade = {
-            "symbol": "SPY",
+            "symbol": symbol,
             "strategy": self.key,
             "structure": f"Bull Call Spread ({strike_long}/{strike_short})",
             "entry_spot": current_spot,
@@ -386,7 +383,7 @@ class StrategyAccount:
         self.capital += pnl
 
         record = {
-            "symbol": "SPY",
+            "symbol": self.cfg.get("symbol", "SPY"),
             "strategy": self.key,
             "action": "BUY_SPREAD",
             "entry_time": self.active_trade["entry_time"],
@@ -479,13 +476,18 @@ class USAOptionsTrader:
     def send_telegram_status_summary(self):
         is_open, status_str = self.is_market_open()
         now_ny = datetime.now(TZ_NY)
-        realized_pnl = sum(a.capital for a in self.accounts) - DEFAULT_CAPITAL * len(self.accounts)
-        cur_spot = get_spy_spot()
-        if cur_spot:
-            self.last_spot_price = cur_spot
+        invested = sum(a.initial_capital for a in self.accounts)
+        realized_pnl = sum(a.capital for a in self.accounts) - invested
+        spot_prices = {}
+        for a in self.accounts:
+            sym = a.cfg.get("symbol", "SPY")
+            if sym not in spot_prices:
+                spot_prices[sym] = get_spot(sym)
+        if spot_prices.get("SPY"):
+            self.last_spot_price = spot_prices["SPY"]
 
         lines = [
-            "🇺🇸 *USA SPY OPTIONS LIVE STATUS SUMMARY*",
+            "🇺🇸 *USA OPTIONS LIVE STATUS SUMMARY (SPY + QQQ)*",
             "━━━━━━━━━━━━━━━━━━━━━━",
             f"💰 *Total Capital:* `${sum(a.capital for a in self.accounts):,.2f} USD`",
             f"💎 *Realized P&L (Banked):* `${realized_pnl:+.2f} USD`",
@@ -493,6 +495,8 @@ class USAOptionsTrader:
             "━━━━━━━━━━━━━━━━━━━━━━",
         ]
         for a in self.accounts:
+            sym = a.cfg.get("symbol", "SPY")
+            cur_spot = spot_prices.get(sym)
             if a.active_trade:
                 t = a.active_trade
                 entry_spot = float(t.get("entry_spot", 0))
@@ -503,20 +507,20 @@ class USAOptionsTrader:
                     pnl_str = f"`${floating_pnl:+.2f} USD` ({sp:+.1f}%)"
                 else:
                     pnl_str = "`Syncing...`"
-                lines.append(f"• *{a.name}*  —  ESG `{a.capital:,.2f}` · {pnl_str}")
+                lines.append(f"• *{a.name}*  —  `${a.capital:,.2f}` · {pnl_str}")
                 lines.append(f"  └ Entry `${entry_spot:,.2f}` @ `{t.get('entry_time')}`")
             else:
-                lines.append(f"• *{a.name}*  —  `{a.capital:,.2f}` · 💤 no active spread")
+                lines.append(f"• *{a.name}*  —  `${a.capital:,.2f}` · 💤 no active spread")
         lines += [
             "━━━━━━━━━━━━━━━━━━━━━━",
             "``🛡️ EOD = real mark-to-market``",
-            "⏱️ *System:* 24/7 Cloud Daemon (Fast 2s Polling)",
+            "⏱️ *System:* Cloud Daemon (Fast 2s Polling)",
             "👉 _Tap buttons below anytime for instant refresh_"
         ]
         send_telegram("\n".join(lines))
 
     def send_telegram_pnl_report(self):
-        realized_pnl = sum(a.capital for a in self.accounts) - DEFAULT_CAPITAL * len(self.accounts)
+        realized_pnl = sum(a.capital for a in self.accounts) - sum(a.initial_capital for a in self.accounts)
         lines = [
             "💰 *USA OPTIONS REALIZED P&L REPORT*",
             "━━━━━━━━━━━━━━━━━━━━━━",
@@ -609,20 +613,32 @@ class USAOptionsTrader:
             log.info(f"[USA CLOCK] {status_str}. Sleeping until market open...")
             return
 
-        current_spot = get_spy_spot()
-        if not current_spot:
-            log.warning("SPY spot unavailable this cycle (all sources failed); skipping.")
+        # Fetch spot per ticker once per cycle (SPY + QQQ)
+        spot_prices = {}
+        for account in self.accounts:
+            sym = account.cfg.get("symbol", "SPY")
+            if sym not in spot_prices:
+                spot_prices[sym] = get_spot(sym)
+        if all(v is None for v in spot_prices.values()):
+            log.warning("No spot available for any ticker this cycle (all sources failed); skipping.")
             return
-        self.last_spot_price = current_spot
+        self.last_spot_price = spot_prices.get("SPY") or next(
+            (v for v in spot_prices.values() if v), None)
 
         # Manage active trades + new entries per strategy independently
         for account in self.accounts:
+            sym = account.cfg.get("symbol", "SPY")
+            current_spot = spot_prices.get(sym)
+            if not current_spot:
+                log.warning(f"[{account.key}] {sym} spot unavailable this cycle; skipping.")
+                continue
+
             closed, reason = account.manage_exit(current_spot, now_ny, today_str)
             if closed:
                 self.save_state()
                 msg = (
                     f"🇺🇸 *{account.name}* — TRADE CLOSED: `{reason}`\n\n"
-                    f"• *Exit SPY Price:* `${current_spot:,.2f}`\n"
+                    f"• *Exit {sym} Price:* `${current_spot:,.2f}`\n"
                     f"• *Realized P&L:* `${account.capital:,.2f}` (bal)\n"
                     f"• *EOD:* real mark-to-market"
                 )
@@ -646,21 +662,21 @@ class USAOptionsTrader:
                 push_git_sync(f"usa opened {account.key} spread")
                 msg = (
                     f"🇺🇸 *{account.name}* — NEW SPREAD OPENED\n\n"
-                    f"• *Underlying:* `SPY @ ${current_spot:,.2f}`\n"
+                    f"• *Underlying:* `{sym} @ ${current_spot:,.2f}`\n"
                     f"• *Structure:* `Bull Call Spread {sl}/{sk}`\n"
                     f"• *Cost / Max Risk:* `${cost:,.2f}`\n"
                     f"• *Take Profit:* `+50%` ($60.00)\n"
-                    f"• *Audit fix:* EOD = real MTP · SL `{account.cfg.get('sl_pct') or 'off'}`"
+                    f"• *Note:* defined-risk only · EOD real MTM · SL `{account.cfg.get('sl_pct') or 'off'}`"
                 )
-                log.info(f"[{account.key}] Opened SPY spread @ ${current_spot:.2f}")
+                log.info(f"[{account.key}] Opened {sym} spread @ ${current_spot:.2f}")
                 send_telegram(msg, reply_markup=None)
 
 
 def main():
-    log.info("Starting Autonomous Multi-Strategy USA Options Paper Trading Daemon...")
+    log.info("Starting Autonomous USA SPY+QQQ Options Paper Trading Daemon...")
     trader = USAOptionsTrader()
     names = " · ".join(a.name for a in trader.accounts)
-    send_telegram(f"🚀 *USA SPY Options Multi-Strategy Paper Daemon Started*\n{names}\nClock: New York (Mon-Fri 09:30-16:00 ET).")
+    send_telegram(f"🚀 *USA SPY+QQQ Options Paper Daemon Started*\n{names}\nClock: New York (Mon-Fri 09:30-16:00 ET). LONG-ONLY bull-call, defined-risk.")
 
     if RUN_MINUTES > 0:
         log.info(f"Cloud Runner Mode: Active for {RUN_MINUTES} minutes.")

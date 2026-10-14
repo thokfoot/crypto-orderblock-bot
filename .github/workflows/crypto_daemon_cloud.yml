@@ -1,4 +1,4 @@
-name: Crypto Order Block 24-7 Cloud Daemon
+name: Crypto Carry + Trend 24-7 Cloud Daemon
 
 on:
   schedule:
@@ -40,7 +40,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Crypto Order Block Daemon
+      - name: Run Crypto Carry + Trend Daemon
         env:
           CRYPTO_TELEGRAM_BOT_TOKEN: ${{ secrets.CRYPTO_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -49,10 +49,10 @@ jobs:
           POLL_INTERVAL_SECS: 1
         run: |
           echo "========================================================"
-          echo "Starting Crypto Order Block SMC Daemon in Cloud..."
+          echo "Starting Crypto Carry + Trend Daemon in Cloud..."
           echo "Timestamp: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
           echo "========================================================"
-          python crypto_orderblock_daemon.py
+          python crypto_carry_trend_daemon.py
 
       - name: Persist Dashboard & Trade Journal State
         if: always()

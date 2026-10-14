@@ -1,66 +1,38 @@
 {
-  "capital": 1984.67,
-  "open_positions": {
-    "NEARUSDT": {
-      "symbol": "NEARUSDT",
-      "action": "SELL",
-      "entry_price": 4.857,
-      "current_sl": 4.962942857142857,
-      "original_sl": 4.962942857142857,
-      "tp": 4.636285714285714,
-      "atr": 0.0882857142857144,
-      "peak_price": 4.813,
-      "notional_usd": 200.0,
-      "entry_time": "2026-10-14 16:22:33 UTC",
-      "scaled_out": false,
-      "realized_pnl_usd": 0.0,
-      "breakeven_locked": false,
-      "peak_pnl_pct": 0.9059089973234606
+  "capital": 2000.0,
+  "funding_capital": 1000.0,
+  "funding_yield_accrued": 0.0,
+  "funding_last_settlement_ms": 1792002453451,
+  "carry_notional": {
+    "BTCUSDT": 500.0,
+    "ETHUSDT": 500.0
+  },
+  "trend_capital": 1000.0,
+  "trend_positions": {
+    "BTCUSDT": {
+      "in_position": false,
+      "entry_price": null,
+      "equity": 500.0,
+      "last_price": null
     },
-    "SNDKBUSDT": {
-      "symbol": "SNDKBUSDT",
-      "action": "SELL",
-      "entry_price": 1419.8,
-      "current_sl": 1437.3662857142858,
-      "original_sl": 1437.3662857142858,
-      "tp": 1383.2035714285712,
-      "atr": 14.638571428571465,
-      "peak_price": 1407.17,
-      "notional_usd": 200.0,
-      "entry_time": "2026-10-14 16:37:38 UTC",
-      "scaled_out": false,
-      "realized_pnl_usd": 0.0,
-      "breakeven_locked": false,
-      "peak_pnl_pct": 0.8895619101281788
-    },
-    "ENAUSDT": {
-      "symbol": "ENAUSDT",
-      "action": "SELL",
-      "entry_price": 0.1995,
-      "current_sl": 0.19870200000000002,
-      "original_sl": 0.20331000000000002,
-      "tp": 0.1875,
-      "atr": 0.00266428571428571,
-      "peak_price": 0.1965,
-      "notional_usd": 200.0,
-      "entry_time": "2026-10-14 16:52:40 UTC",
-      "scaled_out": false,
-      "realized_pnl_usd": 0.0,
-      "breakeven_locked": true,
-      "peak_pnl_pct": 1.5037593984962419
+    "ETHUSDT": {
+      "in_position": false,
+      "entry_price": null,
+      "equity": 500.0,
+      "last_price": null
     }
   },
-  "total_trades": 27,
-  "last_update_id": 159576199,
-  "last_scan_record": {
-    "timestamp": "2026-10-14 18:23:06 UTC",
-    "btc_bullish": false,
-    "btc_info": "BTC=$81,639.5, EMA50=$82,960.8, RSI=21.4",
-    "pairs_scanned": 35,
-    "candidates_count": 0,
-    "candidates_str": "None",
-    "filtered_count": 0,
-    "filtered_str": "None"
+  "trend_regime": {
+    "BTCUSDT": "CASH",
+    "ETHUSDT": "CASH"
   },
-  "updated_at": "2026-10-14T18:23:06.767214+00:00"
+  "trend_last_eval_ms": {
+    "BTCUSDT": 0,
+    "ETHUSDT": 0
+  },
+  "open_positions": {},
+  "total_trades": 0,
+  "last_update_id": 0,
+  "engine": "carry+trend v1",
+  "updated_at": "2026-10-14T18:27:58.143395+00:00"
 }
