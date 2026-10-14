@@ -619,6 +619,7 @@ class USAOptionsTrader:
         for account in self.accounts:
             closed, reason = account.manage_exit(current_spot, now_ny, today_str)
             if closed:
+                self.save_state()
                 msg = (
                     f"🇺🇸 *{account.name}* — TRADE CLOSED: `{reason}`\n\n"
                     f"• *Exit SPY Price:* `${current_spot:,.2f}`\n"
@@ -638,8 +639,10 @@ class USAOptionsTrader:
                     log.info(f"[{account.key}] Remote guard: trade already exists today on origin.")
                     account.last_trade_date = today_str
                     account.save_state()
+                    self.save_state()
                     continue
                 sl, sk, cost = account.open_trade(current_spot, now_ny)
+                self.save_state()
                 push_git_sync(f"usa opened {account.key} spread")
                 msg = (
                     f"🇺🇸 *{account.name}* — NEW SPREAD OPENED\n\n"
