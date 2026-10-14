@@ -25,13 +25,13 @@
       "original_sl": 4.995285714285714,
       "tp": 5.19,
       "atr": 0.04642857142857139,
-      "peak_price": 5.051,
+      "peak_price": 5.065,
       "notional_usd": 200.0,
       "entry_time": "2026-10-14 05:15:29 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
-      "peak_pnl_pct": 0.0
+      "peak_pnl_pct": 0.27717283706197254
     },
     "STRKUSDT": {
       "symbol": "STRKUSDT",
@@ -53,14 +53,14 @@
   "total_trades": 22,
   "last_update_id": 159576195,
   "last_scan_record": {
-    "timestamp": "2026-10-14 05:15:28 UTC",
+    "timestamp": "2026-10-14 05:30:35 UTC",
     "btc_bullish": true,
-    "btc_info": "BTC=$83,528.0, EMA50=$83,330.9, RSI=52.2",
+    "btc_info": "BTC=$83,589.3, EMA50=$83,333.6, RSI=53.8",
     "pairs_scanned": 35,
-    "candidates_count": 2,
-    "candidates_str": "NEARUSDT:BUY@5.0510(RR:2.5); STRKUSDT:BUY@0.0832(RR:2.2)",
+    "candidates_count": 0,
+    "candidates_str": "None",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-14T05:15:31.396396+00:00"
+  "updated_at": "2026-10-14T05:30:35.677919+00:00"
 }
