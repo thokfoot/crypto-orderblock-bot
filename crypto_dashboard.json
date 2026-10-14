@@ -32,6 +32,22 @@
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
       "peak_pnl_pct": 1.0175763182238662
+    },
+    "SOXLBUSDT": {
+      "symbol": "SOXLBUSDT",
+      "action": "SELL",
+      "entry_price": 128.24,
+      "current_sl": 130.15856,
+      "original_sl": 130.15856,
+      "tp": 117.94,
+      "atr": 0.605000000000001,
+      "peak_price": 128.24,
+      "notional_usd": 200.0,
+      "entry_time": "2026-10-14 00:10:27 UTC",
+      "scaled_out": false,
+      "realized_pnl_usd": 0.0,
+      "breakeven_locked": false,
+      "peak_pnl_pct": 0.0
     }
   },
   "total_trades": 20,
@@ -46,5 +62,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-14T00:10:26.090257+00:00"
+  "updated_at": "2026-10-14T00:10:27.362694+00:00"
 }
