@@ -1,24 +1,7 @@
 {
-  "capital": 1984.49,
-  "open_positions": {
-    "STRKUSDT": {
-      "symbol": "STRKUSDT",
-      "action": "BUY",
-      "entry_price": 0.07919,
-      "current_sl": 0.07950676,
-      "original_sl": 0.07716012,
-      "tp": 0.08564,
-      "atr": 0.0012457142857142875,
-      "peak_price": 0.08058,
-      "notional_usd": 200.0,
-      "entry_time": "2026-10-14 12:22:56 UTC",
-      "scaled_out": false,
-      "realized_pnl_usd": 0.0,
-      "breakeven_locked": true,
-      "peak_pnl_pct": 1.7552721303194878
-    }
-  },
-  "total_trades": 26,
+  "capital": 1984.67,
+  "open_positions": {},
+  "total_trades": 27,
   "last_update_id": 159576197,
   "last_scan_record": {
     "timestamp": "2026-10-14 12:22:55 UTC",
@@ -30,5 +13,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-14T12:28:06.040245+00:00"
+  "updated_at": "2026-10-14T12:30:20.033335+00:00"
 }
