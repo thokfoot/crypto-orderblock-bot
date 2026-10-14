@@ -1,40 +1,20 @@
 {
-  "capital": 5974.75,
+  "capital": 2000.0,
   "strategies": {
-    "wide_sl_1015": {
-      "name": "Wide-SL MTM 10:15/15:30",
-      "capital": 1966.93,
+    "spy_bullcall": {
+      "name": "SPY Bull-Call 10:15/15:30",
+      "capital": 1000.0,
       "active_trade": null,
-      "last_trade_date": "2026-10-14"
+      "last_trade_date": null
     },
-    "no_sl_1030": {
-      "name": "No-SL MTM 10:30/15:30",
-      "capital": 2003.59,
-      "active_trade": {
-        "symbol": "SPY",
-        "strategy": "no_sl_1030",
-        "structure": "Bull Call Spread (773/775)",
-        "entry_spot": 772.9749755859375,
-        "entry_cost": 120.0,
-        "entry_time": "2026-10-14 10:30:00 EDT"
-      },
-      "last_trade_date": "2026-10-14"
-    },
-    "no_sl_1015": {
-      "name": "No-SL MTM 10:15/15:30",
-      "capital": 2004.23,
-      "active_trade": {
-        "symbol": "SPY",
-        "strategy": "no_sl_1015",
-        "structure": "Bull Call Spread (773/775)",
-        "entry_spot": 773.22998046875,
-        "entry_cost": 120.0,
-        "entry_time": "2026-10-14 10:16:12 EDT"
-      },
-      "last_trade_date": "2026-10-14"
+    "qqq_bullcall": {
+      "name": "QQQ Bull-Call 10:15/15:30",
+      "capital": 1000.0,
+      "active_trade": null,
+      "last_trade_date": null
     }
   },
   "last_update_id": 628970430,
-  "last_spot_price": 767.4299926757812,
-  "updated_at": "2026-10-14T18:09:34.239125+00:00"
+  "last_spot_price": null,
+  "updated_at": "2026-10-14T23:08:23.745670+00:00"
 }
