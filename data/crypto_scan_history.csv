@@ -140,3 +140,4 @@ timestamp,btc_bullish,btc_info,pairs_scanned,candidates_count,candidates,filtere
 2026-10-14 11:37:52 UTC,True,"BTC=$83,450.0, EMA50=$83,346.4, RSI=48.1",35,0,None,None
 2026-10-14 11:52:55 UTC,False,"BTC=$83,444.0, EMA50=$83,346.2, RSI=47.9",35,0,None,None
 2026-10-14 12:07:56 UTC,True,"BTC=$83,650.0, EMA50=$83,357.8, RSI=52.7",35,0,None,None
+2026-10-14 12:22:55 UTC,True,"BTC=$83,702.9, EMA50=$83,360.0, RSI=53.8",35,1,STRKUSDT:BUY@0.0792(RR:3.2),None

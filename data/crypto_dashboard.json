@@ -4,14 +4,14 @@
   "total_trades": 26,
   "last_update_id": 159576197,
   "last_scan_record": {
-    "timestamp": "2026-10-14 12:07:56 UTC",
+    "timestamp": "2026-10-14 12:22:55 UTC",
     "btc_bullish": true,
-    "btc_info": "BTC=$83,650.0, EMA50=$83,357.8, RSI=52.7",
+    "btc_info": "BTC=$83,702.9, EMA50=$83,360.0, RSI=53.8",
     "pairs_scanned": 35,
-    "candidates_count": 0,
-    "candidates_str": "None",
+    "candidates_count": 1,
+    "candidates_str": "STRKUSDT:BUY@0.0792(RR:3.2)",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-14T12:07:56.291815+00:00"
+  "updated_at": "2026-10-14T12:22:55.633922+00:00"
 }
