@@ -16,6 +16,22 @@
       "realized_pnl_usd": 1.7511779041429636,
       "breakeven_locked": true,
       "peak_pnl_pct": 4.041429731925255
+    },
+    "NEARUSDT": {
+      "symbol": "NEARUSDT",
+      "action": "BUY",
+      "entry_price": 5.051,
+      "current_sl": 4.995285714285714,
+      "original_sl": 4.995285714285714,
+      "tp": 5.19,
+      "atr": 0.04642857142857139,
+      "peak_price": 5.051,
+      "notional_usd": 200.0,
+      "entry_time": "2026-10-14 05:15:29 UTC",
+      "scaled_out": false,
+      "realized_pnl_usd": 0.0,
+      "breakeven_locked": false,
+      "peak_pnl_pct": 0.0
     }
   },
   "total_trades": 22,
@@ -30,5 +46,5 @@
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-14T05:15:28.455888+00:00"
+  "updated_at": "2026-10-14T05:15:29.564231+00:00"
 }
