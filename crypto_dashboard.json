@@ -9,13 +9,13 @@
       "original_sl": 4.962942857142857,
       "tp": 4.636285714285714,
       "atr": 0.0882857142857144,
-      "peak_price": 4.852,
+      "peak_price": 4.817,
       "notional_usd": 200.0,
       "entry_time": "2026-10-14 16:22:33 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
-      "peak_pnl_pct": 0.10294420424129902
+      "peak_pnl_pct": 0.8235536339304104
     },
     "SNDKBUSDT": {
       "symbol": "SNDKBUSDT",
@@ -25,13 +25,13 @@
       "original_sl": 1437.3662857142858,
       "tp": 1383.2035714285712,
       "atr": 14.638571428571465,
-      "peak_price": 1417.37,
+      "peak_price": 1412.89,
       "notional_usd": 200.0,
       "entry_time": "2026-10-14 16:37:38 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
-      "peak_pnl_pct": 0.1711508663192044
+      "peak_pnl_pct": 0.4866882659529409
     },
     "ENAUSDT": {
       "symbol": "ENAUSDT",
@@ -41,26 +41,26 @@
       "original_sl": 0.20331000000000002,
       "tp": 0.1875,
       "atr": 0.00266428571428571,
-      "peak_price": 0.1978,
+      "peak_price": 0.1969,
       "notional_usd": 200.0,
       "entry_time": "2026-10-14 16:52:40 UTC",
       "scaled_out": false,
       "realized_pnl_usd": 0.0,
       "breakeven_locked": false,
-      "peak_pnl_pct": 0.8521303258145398
+      "peak_pnl_pct": 1.303258145363418
     }
   },
   "total_trades": 27,
   "last_update_id": 159576198,
   "last_scan_record": {
-    "timestamp": "2026-10-14 17:22:51 UTC",
+    "timestamp": "2026-10-14 17:37:53 UTC",
     "btc_bullish": false,
-    "btc_info": "BTC=$81,924.0, EMA50=$83,039.8, RSI=23.3",
+    "btc_info": "BTC=$81,820.1, EMA50=$83,035.3, RSI=22.6",
     "pairs_scanned": 35,
     "candidates_count": 0,
     "candidates_str": "None",
     "filtered_count": 0,
     "filtered_str": "None"
   },
-  "updated_at": "2026-10-14T17:22:51.392793+00:00"
+  "updated_at": "2026-10-14T17:37:53.643680+00:00"
 }
