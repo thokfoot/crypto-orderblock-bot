@@ -210,11 +210,25 @@ def get_klines_df(symbol: str, interval="1d", limit=80):
     return None
 
 
+FUNDING_HOSTS = ("https://fapi.binance.com", "https://www.binance.com")
+_funding_host = None
+
+
 def get_funding_history(symbol: str, limit=20):
-    """Settled funding-rate history (fields: fundingTime ms, fundingRate str)."""
-    data = fetch_json(f"https://fapi.binance.com/fapi/v1/fundingRate?symbol={symbol}&limit={limit}")
-    if data and isinstance(data, list):
-        return data
+    """Settled funding-rate history (fields: fundingTime ms, fundingRate str).
+
+    fapi.binance.com is geo-blocked (HTTP 451) from some CI runners (e.g. GitHub
+    Actions), which silently returned no funding -> zero carry accrual. Fall back
+    to www.binance.com/fapi (same futures API, reachable from US) and cache the
+    first host that works so later polls stay cheap.
+    """
+    global _funding_host
+    hosts = ([_funding_host] if _funding_host else []) + [h for h in FUNDING_HOSTS if h != _funding_host]
+    for host in hosts:
+        data = fetch_json(f"{host}/fapi/v1/fundingRate?symbol={symbol}&limit={limit}")
+        if isinstance(data, list) and len(data) > 0:
+            _funding_host = host
+            return data
     return []
 
 
