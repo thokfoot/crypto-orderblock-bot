@@ -598,6 +598,33 @@ class USAOptionsTrader:
             return False, f"Outside Market Hours ({t.strftime('%H:%M')} NY)"
         return True, "Market Open"
 
+    def force_eod_safety_close(self, now_ny, t, today_str):
+        """Never carry a spread overnight. If a trade is still open at/after its
+        square-off time, force an EOD mark-to-market close even when the market
+        clock reads closed (e.g. a delayed runner started after 16:00 ET, or a
+        weekend carry). Idempotent: once flat, later cycles skip."""
+        for account in self.accounts:
+            if not account.active_trade:
+                continue
+            if t < account.cfg["square_off"]:
+                continue
+            sym = account.cfg.get("symbol", "SPY")
+            spot = get_spot(sym)
+            if not spot:
+                log.warning(f"[{account.key}] EOD safety close pending: no {sym} spot available.")
+                continue
+            closed, reason = account.manage_exit(spot, now_ny, today_str)
+            if closed:
+                self.save_state()
+                msg = (
+                    f"🇺🇸 *{account.name}* — EOD SAFETY CLOSE: `{reason}`\n\n"
+                    f"• *Exit {sym} Price:* `${spot:,.2f}`\n"
+                    f"• *Realized P&L:* `${account.capital:,.2f}` (bal)\n"
+                    f"• *Guard:* forced square-off (no overnight carry)"
+                )
+                send_telegram(msg, reply_markup=None)
+                push_git_sync(f"usa closed {account.key} ({reason} safety)")
+
     def run_cycle(self):
         now_ts = time.time()
         if now_ts - self.last_inbox_check >= 3.0:
@@ -610,6 +637,7 @@ class USAOptionsTrader:
         today_str = now_ny.strftime("%Y-%m-%d")
 
         if not is_open:
+            self.force_eod_safety_close(now_ny, t, today_str)
             log.info(f"[USA CLOCK] {status_str}. Sleeping until market open...")
             return
 

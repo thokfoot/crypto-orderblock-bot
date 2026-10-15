@@ -286,11 +286,18 @@ class CarryTrendTrader:
                     log.warning(f"Could not load state from {path}: {e}")
         log.info("No prior valid state; initializing fresh dual-engine book ($2,000).")
 
+    def _trend_equity(self):
+        """Realized trend-sleeve equity = sum of per-position equity, which is
+        compounded on every closed trade. Ensures realized P&L stays in the
+        books even while a position is flat (previously it vanished because
+        total_equity() summed the static trend_capital)."""
+        return sum(float(p.get("equity", 0.0)) for p in self.trend_positions.values())
+
     def total_equity(self):
-        eq = self.funding_capital + self.funding_accrued + self.trend_capital
+        eq = self.funding_capital + self.funding_accrued + self._trend_equity()
         for s, p in self.trend_positions.items():
             if p.get("in_position") and p.get("entry_price") and p.get("last_price"):
-                eq += p["equity"] * (p["last_price"] / p["entry_price"] - 1.0)
+                eq += float(p["equity"]) * (p["last_price"] / p["entry_price"] - 1.0)
         return eq
 
     def save_state(self):
@@ -300,7 +307,7 @@ class CarryTrendTrader:
             "funding_yield_accrued": round(self.funding_accrued, 2),
             "funding_last_settlement_ms": self.funding_last_settlement_ms,
             "carry_notional": self.carry_notional,
-            "trend_capital": round(self.trend_capital, 2),
+            "trend_capital": round(self._trend_equity(), 2),
             "trend_positions": self.trend_positions,
             "trend_regime": self.trend_regime,
             "trend_last_eval_ms": self.trend_last_eval_ms,
@@ -401,18 +408,22 @@ class CarryTrendTrader:
             elif regime == "CASH" and pos["in_position"]:
                 entry = pos.get("entry_price") or last_close
                 ret = (last_close / entry - 1.0)
-                pos["equity"] = pos["equity"] * (1.0 + ret)
+                start_equity = float(pos["equity"])
+                realized_usd = start_equity * ret
+                pos["equity"] = start_equity * (1.0 + ret)
                 pos["in_position"] = False
                 pos["entry_price"] = None
                 log.info(f"[{sym}] TREND EXIT @ {last_close:.4f} (ret {ret*100:+.2f}%)")
-                self.log_row(self._trend_row(sym, "TREND_EXIT", entry, last_close, ret * 100, "SMA50_CROSS_DOWN"))
+                self.log_row(self._trend_row(sym, "TREND_EXIT", entry, last_close, ret * 100, "SMA50_CROSS_DOWN", pnl_usd=realized_usd))
                 send_telegram(f"📉 *Crypto Trend* — {sym} EXIT @ `${last_close:,.4f}` ({ret*100:+.2f}%)")
 
             self.trend_regime[sym] = regime
             self.trend_last_eval_ms[sym] = bar_close_ms
 
-    def _trend_row(self, sym, action, entry, exit_p, pnl_pct, reason):
+    def _trend_row(self, sym, action, entry, exit_p, pnl_pct, reason, pnl_usd=None):
         pos = self.trend_positions[sym]
+        if pnl_usd is None:
+            pnl_usd = float(pos["equity"]) * float(pnl_pct) / 100.0
         return {
             "symbol": sym,
             "action": action,
@@ -422,7 +433,7 @@ class CarryTrendTrader:
             "exit_price": round(float(exit_p), 6),
             "pnl_pct": round(float(pnl_pct), 4),
             "fee_usd": 0.0,
-            "pnl_usd": round(pos["equity"] * float(pnl_pct) / 100.0, 4),
+            "pnl_usd": round(float(pnl_usd), 4),
             "reason": reason,
             "balance": round(self.total_equity(), 2),
         }
@@ -467,7 +478,7 @@ class CarryTrendTrader:
             f"💎 *Net Banked Equity:* `${eq:,.2f}`",
             f"📈 *Total P&L:* `${pnl:+.2f}` ({(pnl/INITIAL_CAPITAL*100):+.2f}%)",
             f"💵 *Funding Accrued:* `${self.funding_accrued:+.4f}`",
-            f"📊 *Trend Equity:* `${self.trend_capital:,.2f}`",
+            f"📊 *Trend Equity:* `${self._trend_equity():,.2f}`",
             "━━━━━━━━━━━━━━━━━━━━━━",
         ]
         send_telegram("\n".join(lines))

@@ -12,6 +12,11 @@ on:
     - cron: '30 14 * * 1-5'
     # 2. Mid-Session Failover at 10:00 PM IST (16:30 UTC / 12:30 PM ET) (Mon-Fri)
     - cron: '30 16 * * 1-5'
+    # 2b. Square-off guard (15:30 ET) — guarantees a live runner at EOD so no
+    #     spread is ever carried overnight. 19:30 UTC = 15:30 EDT (summer) and
+    #     20:30 UTC = 15:30 EST (winter); a 170-min run starting 19:30 UTC covers
+    #     both regimes, and force_eod_safety_close() backstops any missed window.
+    - cron: '30 19 * * 1-5'
     # 3. Continuous weekday 3-hour backup chain (weekends handled by is_market_open)
     - cron: '0 */3 * * 1-5'
   workflow_dispatch:
