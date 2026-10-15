@@ -1,2 +1,2 @@
 ﻿symbol,action,entry_time,exit_time,entry_price,exit_price,pnl_pct,fee_usd,pnl_usd,reason,balance
-BTCUSDT,TREND_LONG,2026-10-14 22:47:07 UTC,2026-10-14 22:47:07 UTC,83169.0,83169.0,0.0,0.0,0.0,SMA50_CROSS_UP,2000.0
+BTCUSDT,TREND_LONG,2026-10-15 02:10:32 UTC,2026-10-15 02:10:32 UTC,81682.01,81682.01,0.0,0.0,0.0,SMA50_CROSS_UP,2000.0
