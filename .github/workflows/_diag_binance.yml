@@ -1,0 +1,36 @@
+name: _diag binance
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: pip install pandas
+      - name: Probe endpoints (curl)
+        run: |
+          for u in \
+            "https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=2" \
+            "https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1d&limit=2" \
+            "https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=2" \
+            "https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT" ; do
+            code=$(curl -s -o /tmp/body -w "%{http_code}" "$u")
+            echo "HTTP $code :: $u"; head -c 160 /tmp/body; echo; echo "----"
+          done
+      - name: Probe via daemon functions
+        run: |
+          python - <<'PY'
+          import importlib.util as u
+          spec=u.spec_from_file_location('m','crypto_carry_trend_daemon.py')
+          m=u.module_from_spec(spec); spec.loader.exec_module(m)
+          for s in ['BTCUSDT','ETHUSDT']:
+              ev=m.get_funding_history(s)
+              print(s,'funding events:',len(ev), ev[-1] if ev else None)
+          print('raw funding fetch_json:', m.fetch_json('https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=2'))
+          PY
