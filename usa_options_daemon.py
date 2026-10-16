@@ -579,11 +579,13 @@ class USAOptionsTrader:
                         continue
                     if chat_id != str(TELEGRAM_CHAT_ID):
                         continue
-                    cmd_clean = text.strip().lower()
-                    if cmd_clean in {"📊 status summary", "status", "summary", "/status", "/summary", "/start"} or cmd_clean.startswith("/status"):
+                    # Normalize away the emoji prefix on reply-keyboard labels so
+                    # button taps ("Status Summary"/"P&L Report") and typed commands match.
+                    cmd_clean = "".join(ch for ch in text.strip().lower() if ord(ch) < 128).strip()
+                    if cmd_clean in {"status", "summary", "status summary", "/status", "/summary", "/start"} or cmd_clean.startswith("/status"):
                         self.send_telegram_status_summary()
                         self.save_state()
-                    elif cmd_clean in {"💰 p&l report", "pnl", "/pnl", "profit", "report"} or cmd_clean.startswith("/pnl"):
+                    elif cmd_clean in {"pnl", "p&l", "profit", "report", "p&l report", "pnl report", "/pnl"} or cmd_clean.startswith("/pnl"):
                         self.send_telegram_pnl_report()
                         self.save_state()
         except Exception as e:

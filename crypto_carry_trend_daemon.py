@@ -508,11 +508,16 @@ class CarryTrendTrader:
                     continue
                 if chat_id != str(TELEGRAM_CHAT_ID):
                     continue
-                cmd = text.strip().lower()
-                if cmd in {"status", "summary", "/status", "/summary", "/start"} or cmd.startswith("/status"):
+                # Reply-keyboard buttons send their label as plain text, e.g. an
+                # emoji-prefixed "Status Summary" / "P&L Report". Strip non-ASCII
+                # so both button taps and typed commands match the same branches.
+                cmd = "".join(ch for ch in text.strip().lower() if ord(ch) < 128).strip()
+                if cmd in {"status", "summary", "status summary", "/status", "/summary", "/start"} or cmd.startswith("/status"):
                     self.send_status()
-                elif cmd in {"pnl", "/pnl", "profit", "report"} or cmd.startswith("/pnl"):
+                    self.save_state()
+                elif cmd in {"pnl", "p&l", "profit", "report", "p&l report", "pnl report", "/pnl"} or cmd.startswith("/pnl"):
                     self.send_pnl_report()
+                    self.save_state()
         except Exception as e:
             log.warning(f"Telegram inbox notice: {e}")
 
