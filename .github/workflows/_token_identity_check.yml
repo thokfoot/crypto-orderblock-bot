@@ -1,0 +1,48 @@
+name: Token Identity Check (manual, one-shot)
+
+# Verifies whether the CRYPTO / USA / legacy Telegram bot tokens are the SAME bot.
+# Prints ONLY: set/empty flags, equality booleans, and each bot's getMe id/username.
+# It NEVER prints a token value. Safe to run; delete after use.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  token-identity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: getMe comparison (prints NO secrets)
+        env:
+          CRYPTO: ${{ secrets.CRYPTO_TELEGRAM_BOT_TOKEN }}
+          USA: ${{ secrets.USA_TELEGRAM_BOT_TOKEN }}
+          LEGACY: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          python - <<'PY'
+          import os, json, urllib.request
+          toks = {
+              "CRYPTO_TELEGRAM_BOT_TOKEN": os.environ.get("CRYPTO", ""),
+              "USA_TELEGRAM_BOT_TOKEN":    os.environ.get("USA", ""),
+              "TELEGRAM_BOT_TOKEN":        os.environ.get("LEGACY", ""),
+          }
+          print("=== set flags ===")
+          for k, v in toks.items():
+              print(f"  {k}: set={bool(v)} len={len(v)}")
+          print("=== VALUE equality ===")
+          print(f"  CRYPTO == USA     : {toks['CRYPTO_TELEGRAM_BOT_TOKEN'] == toks['USA_TELEGRAM_BOT_TOKEN']}")
+          print(f"  CRYPTO == LEGACY  : {toks['CRYPTO_TELEGRAM_BOT_TOKEN'] == toks['TELEGRAM_BOT_TOKEN']}")
+          print(f"  USA    == LEGACY  : {toks['USA_TELEGRAM_BOT_TOKEN'] == toks['TELEGRAM_BOT_TOKEN']}")
+          print("=== getMe (bot identity) ===")
+          for k, v in toks.items():
+              if not v:
+                  print(f"  {k}: (empty)")
+                  continue
+              try:
+                  with urllib.request.urlopen(f"https://api.telegram.org/bot{v}/getMe", timeout=15) as r:
+                      res = json.load(r).get("result", {})
+                  print(f"  {k}: id={res.get('id')} username=@{res.get('username')} name={res.get('first_name')}")
+              except Exception as e:
+                  print(f"  {k}: getMe ERROR -> {e}")
+          PY
