@@ -26,6 +26,18 @@ MANDATE RULE REJECTED: the proposed "Bull Call if price>VWAP/EMA50 else Bear Put
 direction rule was tested and REMOVED -- it cut QQQ from +24.0% to +0.8% (VWAP)
 / +4.8% (EMA) over the same 60 days. QQQ's edge is a long-drift; flipping short
 on down-days trades into noise. Deployed as LONG-ONLY bull-call per user approval.
+
+=== PER-SYMBOL EXIT REFACTOR (2026-10-17) — walk-forward validated ===
+Walk-forward (Black-Scholes priced, ~729 sessions, 7 half-year buckets; see
+research/USA_PAPER_WALKFORWARD.md) tested removing SPY's +50% upside cap:
+    SPY  live(cap) -$85.70  ->  cap-off +$219.60   (6/7 half-years favour cap-off)
+    QQQ  live(cap) +$769.10 ->  cap-off +$817.60   (total +$48.6 only; the 3 MOST
+                                                    RECENT half-years favour LIVE)
+=> Symbol-specific exit (fix the losing leg, do not touch the winning leg):
+    SPY "spy_bullcall" : tp_mode="run_eod" (cap-off: no +0.6% spot TP; hold to EOD;
+                         upside uncapped to the structural full-width max +66.7%)
+    QQQ "qqq_bullcall" : tp_mode="spot_tp" (UNCHANGED: +0.6% spot -> +50% of debit)
+CAVEAT: BS + ^VIX proxy (not real intraday IV); PAPER SANDBOX only.
 """
 
 import os
@@ -67,6 +79,7 @@ def _t_add(base, minutes):
 # ---------------------------------------------------------------------------
 # MULTI-TICKER CONFIGURATION (SPY + QQQ long-only bull-call, EOD real-MTM)
 # $1,000 per ticker ($2,000 total). Verified 60d: QQQ +24.0%, SPY +9.9%.
+# Per-symbol exit (2026-10-17 walk-forward): SPY cap-off / QQQ keep live cap.
 # ---------------------------------------------------------------------------
 STRATEGY_CONFIGS = [
     {
@@ -76,7 +89,12 @@ STRATEGY_CONFIGS = [
         "entry_start": _t(10, 15),
         "entry_end": _t_add(_t(10, 15), 15),
         "square_off": _t(15, 30),
-        "tp_pct": 0.0060,          # +0.60% spot move -> +50% debit
+        # Walk-forward: SPY is a SLOW mover -> the +0.6% spot cap only cuts its
+        # winners. Cap-off (hold to EOD, uncapped upside) is robust in 6/7
+        # half-years: live -$85.70 -> cap-off +$219.60.
+        "tp_mode": "run_eod",      # cap-off: no +0.6% spot TP; hold to EOD
+        "upside_cap_pct": 66.7,    # structural max = (width*100 - debit)/debit
+        "tp_pct": 0.0060,          # unused in run_eod mode (kept for reference)
         "sl_pct": None,            # defined-risk only (no synthetic spot-SL)
         "eod_mode": "mtm",         # real proportional MTM at square-off
         "initial_capital": 1000.0,
@@ -88,6 +106,11 @@ STRATEGY_CONFIGS = [
         "entry_start": _t(10, 15),
         "entry_end": _t_add(_t(10, 15), 15),
         "square_off": _t(15, 30),
+        # Walk-forward: QQQ is a FAST mover -> locking +0.6% beats holding into
+        # afternoon reversals. Cap-off did NOT help QQQ (recent 3 half-years
+        # favour LIVE). Keep live behaviour UNCHANGED.
+        "tp_mode": "spot_tp",      # +0.6% spot -> +50% of debit
+        "upside_cap_pct": 50.0,
         "tp_pct": 0.0060,
         "sl_pct": None,
         "eod_mode": "mtm",
@@ -248,11 +271,12 @@ def get_spy_spot():
     return get_spot("SPY")
 
 
-def spread_pnl_pct_from_move(move_pct):
+def spread_pnl_pct_from_move(move_pct, upside_cap=50.0):
     """Synthetic spread P&L % for a given % spot move (audit model).
-    +: caps at +50% at +0.60%; -: proportional down to full debit (-100%)."""
+    +: linear to `upside_cap` (50% live-cap / 66.7% cap-off structural max).
+    -: proportional down to full debit (-100%)."""
     if move_pct >= 0:
-        return min(50.0, move_pct * (50.0 / 0.60))
+        return min(upside_cap, move_pct * (50.0 / 0.60))
     return max(-100.0, move_pct * (50.0 / 0.60))
 
 
@@ -346,7 +370,7 @@ class StrategyAccount:
         if entry_spot <= 0:
             return 0.0, 0.0
         move = ((cur_spot - entry_spot) / entry_spot) * 100.0
-        return move, spread_pnl_pct_from_move(move)
+        return move, spread_pnl_pct_from_move(move, self.cfg.get("upside_cap_pct", 50.0))
 
     def manage_exit(self, current_spot, now_ny, today_str):
         """Returns (closed_bool, reason_or_None). Applies TP / SL / EOD+MTM."""
@@ -357,9 +381,11 @@ class StrategyAccount:
         t = now_ny.time()
         sl_pct = self.cfg.get("sl_pct")
         tp_pct = self.cfg.get("tp_pct", 0.0060)
+        tp_mode = self.cfg.get("tp_mode", "spot_tp")
+        upside_cap = self.cfg.get("upside_cap_pct", 50.0)
 
         hit_sl = sl_pct and current_spot <= entry_spot * (1 - sl_pct)
-        hit_tp = current_spot >= entry_spot * (1 + tp_pct)
+        hit_tp = tp_mode == "spot_tp" and current_spot >= entry_spot * (1 + tp_pct)
         hit_eod = t >= self.cfg["square_off"]
 
         if not (hit_sl or hit_tp or hit_eod):
@@ -376,7 +402,7 @@ class StrategyAccount:
         else:  # EOD square-off -> real mark-to-market (audit fix: no more forced $0)
             reason = "EOD_MTM"
             move = ((current_spot - entry_spot) / entry_spot) * 100.0
-            pnl_pct = spread_pnl_pct_from_move(move)
+            pnl_pct = spread_pnl_pct_from_move(move, upside_cap)
             gross_pnl = entry_cost * (pnl_pct / 100.0)
 
         pnl = gross_pnl - FEE_USD
@@ -690,12 +716,16 @@ class USAOptionsTrader:
                 sl, sk, cost = account.open_trade(current_spot, now_ny)
                 self.save_state()
                 push_git_sync(f"usa opened {account.key} spread")
+                if account.cfg.get("tp_mode") == "run_eod":
+                    tp_txt = f"cap-off \u00b7 hold to EOD (max +{account.cfg.get('upside_cap_pct', 66.7):.1f}%)"
+                else:
+                    tp_txt = "+50% ($60.00)"
                 msg = (
                     f"🇺🇸 *{account.name}* — NEW SPREAD OPENED\n\n"
                     f"• *Underlying:* `{sym} @ ${current_spot:,.2f}`\n"
                     f"• *Structure:* `Bull Call Spread {sl}/{sk}`\n"
                     f"• *Cost / Max Risk:* `${cost:,.2f}`\n"
-                    f"• *Take Profit:* `+50%` ($60.00)\n"
+                    f"• *Take Profit:* `{tp_txt}`\n"
                     f"• *Note:* defined-risk only · EOD real MTM · SL `{account.cfg.get('sl_pct') or 'off'}`"
                 )
                 log.info(f"[{account.key}] Opened {sym} spread @ ${current_spot:.2f}")
