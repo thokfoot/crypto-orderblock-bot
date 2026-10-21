@@ -1,13 +1,6 @@
 {
-  "capital": 940.54,
-  "active_trade": {
-    "symbol": "SPY",
-    "strategy": "spy_bullcall",
-    "structure": "Bull Call Spread (769/771)",
-    "entry_spot": 768.8099975585938,
-    "entry_cost": 120.0,
-    "entry_time": "2026-10-21 10:17:45 EDT"
-  },
+  "capital": 996.15,
+  "active_trade": null,
   "last_trade_date": "2026-10-21",
-  "updated_at": "2026-10-21T15:29:38.487660+00:00"
+  "updated_at": "2026-10-21T19:30:00.209308+00:00"
 }
