@@ -1,6 +1,13 @@
 {
   "capital": 870.3,
-  "active_trade": null,
-  "last_trade_date": "2026-10-22",
-  "updated_at": "2026-10-23T14:15:01.874436+00:00"
+  "active_trade": {
+    "symbol": "QQQ",
+    "strategy": "qqq_bullcall",
+    "structure": "Bull Call Spread (706/708)",
+    "entry_spot": 705.5050048828125,
+    "entry_cost": 120.0,
+    "entry_time": "2026-10-23 10:15:01 EDT"
+  },
+  "last_trade_date": "2026-10-23",
+  "updated_at": "2026-10-23T14:15:04.686107+00:00"
 }
