@@ -1,5 +1,5 @@
 {
-  "capital": 1807.23,
+  "capital": 1807.24,
   "strategies": {
     "spy_bullcall": {
       "name": "SPY Bull-Call 10:15/15:30",
@@ -15,6 +15,6 @@
     }
   },
   "last_update_id": 628970452,
-  "last_spot_price": 768.219970703125,
-  "updated_at": "2026-10-29T19:30:04.448772+00:00"
+  "last_spot_price": null,
+  "updated_at": "2026-10-30T03:23:01.217530+00:00"
 }
