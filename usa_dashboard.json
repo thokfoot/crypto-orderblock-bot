@@ -4,8 +4,15 @@
     "spy_bullcall": {
       "name": "SPY Bull-Call 10:15/15:30",
       "capital": 973.53,
-      "active_trade": null,
-      "last_trade_date": "2026-11-13"
+      "active_trade": {
+        "symbol": "SPY",
+        "strategy": "spy_bullcall",
+        "structure": "Bull Call Spread (745/747)",
+        "entry_spot": 745.0700073242188,
+        "entry_cost": 120.0,
+        "entry_time": "2026-11-16 10:15:01 EST"
+      },
+      "last_trade_date": "2026-11-16"
     },
     "qqq_bullcall": {
       "name": "QQQ Bull-Call 10:15/15:30",
@@ -15,6 +22,6 @@
     }
   },
   "last_update_id": 628970452,
-  "last_spot_price": null,
-  "updated_at": "2026-11-16T07:07:51.465146+00:00"
+  "last_spot_price": 745.0700073242188,
+  "updated_at": "2026-11-16T15:15:01.925480+00:00"
 }
