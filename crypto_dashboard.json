@@ -2,7 +2,7 @@
   "capital": 1993.5,
   "funding_capital": 1000.0,
   "funding_yield_accrued": 4.04,
-  "funding_last_settlement_ms": 1794887016372,
+  "funding_last_settlement_ms": 1794907259301,
   "carry_notional": {
     "BTCUSDT": 500.0,
     "ETHUSDT": 500.0
@@ -34,5 +34,5 @@
   "total_trades": 153,
   "last_update_id": 159576215,
   "engine": "carry+trend v1",
-  "updated_at": "2026-11-17T03:43:41.729748+00:00"
+  "updated_at": "2026-11-17T09:21:04.739284+00:00"
 }
