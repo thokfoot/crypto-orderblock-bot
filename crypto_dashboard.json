@@ -1,8 +1,8 @@
 {
-  "capital": 1993.65,
+  "capital": 1993.68,
   "funding_capital": 1000.0,
-  "funding_yield_accrued": 4.18,
-  "funding_last_settlement_ms": 1795121056606,
+  "funding_yield_accrued": 4.21,
+  "funding_last_settlement_ms": 1795151944506,
   "carry_notional": {
     "BTCUSDT": 500.0,
     "ETHUSDT": 500.0
@@ -13,13 +13,13 @@
       "in_position": false,
       "entry_price": null,
       "equity": 489.4617585879354,
-      "last_price": 63068.22
+      "last_price": 61986.73
     },
     "ETHUSDT": {
       "in_position": false,
       "entry_price": null,
       "equity": 500.0,
-      "last_price": 1777.19
+      "last_price": 1757.32
     }
   },
   "trend_regime": {
@@ -27,12 +27,12 @@
     "ETHUSDT": "CASH"
   },
   "trend_last_eval_ms": {
-    "BTCUSDT": 1795046399999,
-    "ETHUSDT": 1795046399999
+    "BTCUSDT": 1795132799999,
+    "ETHUSDT": 1795132799999
   },
   "open_positions": {},
-  "total_trades": 161,
+  "total_trades": 163,
   "last_update_id": 159576215,
   "engine": "carry+trend v1",
-  "updated_at": "2026-11-19T20:44:22.116379+00:00"
+  "updated_at": "2026-11-20T05:19:09.825211+00:00"
 }
