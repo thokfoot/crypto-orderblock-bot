@@ -1,0 +1,39 @@
+name: Dry-run Data Check
+
+on:
+  schedule:
+    - cron: '5 4 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dry-run-data-check
+  cancel-in-progress: false
+
+jobs:
+  dry-run-data-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run read-only data check
+        env:
+          FYERS_CLIENT_ID: ${{ secrets.FYERS_CLIENT_ID }}
+          FYERS_ACCESS_TOKEN: ${{ secrets.FYERS_ACCESS_TOKEN }}
+          APCA_API_KEY_ID: ${{ secrets.APCA_API_KEY_ID }}
+          APCA_API_SECRET_KEY: ${{ secrets.APCA_API_SECRET_KEY }}
+          APCA_API_BASE_URL: ${{ secrets.APCA_API_BASE_URL }}
+          AUTOMATION_TELEGRAM_BOT_TOKEN: ${{ secrets.AUTOMATION_TELEGRAM_BOT_TOKEN }}
+          AUTOMATION_TELEGRAM_CHAT_ID: ${{ secrets.AUTOMATION_TELEGRAM_CHAT_ID }}
+          DRY_RUN_DATA_CHECK_NO_TELEGRAM: '0'
+        run: python scripts/dry_run_data_check.py
