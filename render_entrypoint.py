@@ -1,7 +1,9 @@
 """
 render_entrypoint.py
 Render Web Service Entrypoint for Strategy v3.2.5 Autonomous Cloud Runner.
-Starts a minimal HTTP healthcheck server on $PORT and runs the trading engine in a background thread.
+Starts a minimal HTTP healthcheck server on $PORT.
+Defaults to STANDBY mode (GitHub Actions is Primary) to prevent duplicate alerts.
+Set RENDER_SCAN_ENABLED=1 to activate active scanning on Render.
 """
 import os
 import sys
@@ -14,6 +16,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from scripts.v325_nse_cloud_runner import run_0935_scan, run_monitoring_loop, get_ist_now, send_telegram
 
 IST = timezone(timedelta(hours=5, minutes=30))
+RENDER_SCAN_ENABLED = os.environ.get("RENDER_SCAN_ENABLED", "0") == "1"
 
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -21,16 +24,21 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/json")
         self.end_headers()
         now_ist = datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S IST")
-        resp = f'{{"status": "running", "service": "Strategy v3.2.5 Runner", "time_ist": "{now_ist}"}}'
+        mode = "active" if RENDER_SCAN_ENABLED else "standby"
+        primary = "Render" if RENDER_SCAN_ENABLED else "GitHub Actions"
+        resp = f'{{"status": "running", "service": "Strategy v3.2.5 Runner", "mode": "{mode}", "primary": "{primary}", "time_ist": "{now_ist}"}}'
         self.wfile.write(resp.encode("utf-8"))
 
     def log_message(self, format, *args):
-        # Silence routine access logs
         return
 
 def trading_daemon_loop():
-    print("[DAEMON] Strategy v3.2.5 Trading Daemon started in background.", flush=True)
-    send_telegram("🟢 <b>Render Cloud Service Online</b>\nStrategy v3.2.5 background runner initialized.")
+    mode = "ACTIVE" if RENDER_SCAN_ENABLED else "STANDBY (GitHub Actions is Primary)"
+    print(f"[DAEMON] Strategy v3.2.5 Trading Daemon started in mode: {mode}", flush=True)
+
+    if not RENDER_SCAN_ENABLED:
+        print("[DAEMON] Render scanning disabled to prevent duplicate alerts. Running health server only.", flush=True)
+        return
 
     last_scanned_date = None
 
@@ -42,7 +50,6 @@ def trading_daemon_loop():
 
             # Check if trading day Mon-Fri
             if weekday < 5:
-                # Target window: 09:34 to 09:37 IST
                 target_hour = 9
                 target_min = 34
 
