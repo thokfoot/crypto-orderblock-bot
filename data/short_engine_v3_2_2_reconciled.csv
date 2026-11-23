@@ -1,0 +1,24 @@
+Date,Sector,Symbol,Benchmark_OR%,Status,Reason,Stock_OR%,ATR14%,Trigger,Actual_Entry,Entry_Time,Initial_Risk%,Entry_Touch_SL,Entry_Touch_TP05,Entry_Touch_TP10,Full_Day_MFE%,Full_Day_MAE%,C_PnL,C_R,C_Status,C_Bar_MFE%,C_Bar_MAE%,C_Bars_Held,C_Exit_Time,A_PnL,A_R,A_Status,A_Bar_MFE%,A_Bar_MAE%,B_PnL,B_R,B_Status,D_PnL,D_R,D_Status,E_PnL,E_R,E_Status,F_PnL,F_R,F_Status,ORH,ORL
+2026-10-16,Energy_Utilities,NO_QUALIFIED_STOCK,-0.58,NO_CANDIDATE,"Filtered: No stock met ATR>=2.5% & Move [-0.70%, -1.80%]",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+2026-10-19,FMCG,NO_QUALIFIED_STOCK,-0.23,NO_CANDIDATE,"Filtered: No stock met ATR>=2.5% & Move [-0.70%, -1.80%]",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+2026-10-21,Energy_Utilities,NO_QUALIFIED_STOCK,0.43,NO_CANDIDATE,"Filtered: No stock met ATR>=2.5% & Move [-0.70%, -1.80%]",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+2026-10-22,Energy_Utilities,NO_QUALIFIED_STOCK,-0.56,NO_CANDIDATE,"Filtered: No stock met ATR>=2.5% & Move [-0.70%, -1.80%]",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+2026-10-23,Energy_Utilities,NO_QUALIFIED_STOCK,-0.27,NO_CANDIDATE,"Filtered: No stock met ATR>=2.5% & Move [-0.70%, -1.80%]",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+2026-10-26,Consumer_Retail,TRENT,-0.39,EXECUTED,,-0.73,3.2,2690.59,2689.24,09:49,1.101,False,False,False,-0.04,3.13,-1.1,-1.0,SL HIT,-0.04,1.32,13.0,10:01,-1.1,-1.0,SL HIT,-0.04,1.32,-1.1,-1.0,SL HIT,-1.1,-1.0,SL HIT,-1.1,-1.0,SL HIT,-1.1,-1.0,SL HIT,,
+2026-10-27,IT_Tech,INFY,0.04,EXECUTED,,-1.38,3.8,1130.96,1130.39,10:12,1.101,False,False,False,0.08,3.12,-1.1,-1.0,SL HIT,0.08,1.08,39.0,10:50,-1.1,-1.0,SL HIT,0.08,1.08,-1.1,-1.0,SL HIT,-1.1,-1.0,SL HIT,-1.1,-1.0,SL HIT,-1.1,-1.0,SL HIT,,
+2026-10-28,Oil_Gas,BPCL,-0.48,EXECUTED,,-1.09,2.79,288.86,288.31,09:45,1.245,False,False,False,0.45,0.59,0.41,0.33,EOD EXIT,0.45,0.59,331.0,15:28,0.26,0.21,TP HIT,0.42,0.59,0.41,0.33,EOD EXIT,0.41,0.33,EOD EXIT,0.41,0.33,EOD EXIT,0.41,0.33,EOD EXIT,,
+2026-10-29,Consumer_Retail,TRENT,0.21,EXECUTED,,-1.28,2.72,2840.45,2839.03,11:32,1.101,False,False,False,0.32,1.44,-1.1,-1.0,SL HIT,0.32,1.38,122.0,13:33,-1.1,-1.0,SL HIT,0.32,1.38,-1.1,-1.0,SL HIT,-1.1,-1.0,SL HIT,-1.1,-1.0,SL HIT,-1.1,-1.0,SL HIT,,
+2026-10-30,FMCG,TATACONSUM,0.11,EXECUTED,,-0.96,2.6,1014.75,1014.24,09:47,1.101,False,False,False,1.17,1.36,0.9,0.82,TP HIT,0.96,0.11,21.0,10:07,0.4,0.36,TP HIT,0.56,0.11,0.65,0.59,TP HIT,-1.1,-1.0,SL HIT,-1.1,-1.0,SL HIT,0.63,0.57,TRAIL_STOP,,
+2026-11-02,IT_Tech,TECHM,0.25,UNTRIGGERED,Price stayed above ORL trigger,-1.42,3.58,1771.47,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1803.300048828125,1772.0
+2026-11-03,Pharma,APOLLOHOSP,0.14,UNTRIGGERED,Price stayed above ORL trigger,-0.72,2.51,8316.5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,8422.5,8319.0
+2026-11-04,Energy_Utilities,POWERGRID,0.82,UNTRIGGERED,Price stayed above ORL trigger,-1.6,2.55,255.32,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,260.0,255.39999389648438
+2026-11-05,Energy_Utilities,COALINDIA,-0.22,EXECUTED,,-1.12,2.5,396.13,395.93,10:00,1.101,False,False,False,0.71,0.42,0.36,0.33,EOD EXIT,0.71,0.42,317.0,15:28,0.4,0.36,TP HIT,0.49,0.14,0.65,0.59,TP HIT,0.36,0.33,EOD EXIT,0.36,0.33,EOD EXIT,-0.05,-0.05,BE_STOP,,
+2026-11-06,Energy_Utilities,POWERGRID,0.11,UNTRIGGERED,Price stayed above ORL trigger,-0.87,2.55,253.57,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,257.29998779296875,253.64999389648438
+2026-11-09,MetalsCement,NO_QUALIFIED_STOCK,-0.54,NO_CANDIDATE,"Filtered: No stock met ATR>=2.5% & Move [-0.70%, -1.80%]",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+2026-11-11,Pharma,NO_QUALIFIED_STOCK,0.13,NO_CANDIDATE,"Filtered: No stock met ATR>=2.5% & Move [-0.70%, -1.80%]",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+2026-11-13,Automobile,NO_QUALIFIED_STOCK,-0.19,NO_CANDIDATE,"Filtered: No stock met ATR>=2.5% & Move [-0.70%, -1.80%]",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+2026-11-16,Energy_Utilities,COALINDIA,0.23,EXECUTED,,-0.93,2.5,397.98,397.78,10:46,1.101,False,False,False,0.49,0.99,0.02,0.02,EOD EXIT,0.49,0.99,271.0,15:29,0.4,0.36,TP HIT,0.46,0.99,0.02,0.02,EOD EXIT,0.02,0.02,EOD EXIT,0.02,0.02,EOD EXIT,0.02,0.02,EOD EXIT,,
+2026-11-17,Energy_Utilities,COALINDIA,0.1,EXECUTED,,-0.72,2.5,394.73,394.53,10:01,1.103,False,False,False,1.66,0.2,0.9,0.82,TP HIT,1.15,0.2,64.0,11:04,0.4,0.36,TP HIT,0.5,0.2,0.65,0.59,TP HIT,1.4,1.27,TP HIT,0.7,0.63,EOD EXIT,1.12,1.02,TRAIL_STOP,,
+2026-11-18,Energy_Utilities,NO_QUALIFIED_STOCK,-0.11,NO_CANDIDATE,"Filtered: No stock met ATR>=2.5% & Move [-0.70%, -1.80%]",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+2026-11-19,IT_Tech,TCS,-0.18,EXECUTED,,-1.64,2.92,2340.7,2339.53,10:04,1.101,False,False,False,0.51,1.0,-0.19,-0.17,EOD EXIT,0.51,1.0,313.0,15:29,0.4,0.36,TP HIT,0.49,1.0,-0.19,-0.17,EOD EXIT,-0.19,-0.17,EOD EXIT,-0.19,-0.17,EOD EXIT,-0.05,-0.05,BE_STOP,,
+2026-11-20,Energy_Utilities,COALINDIA,0.39,UNTRIGGERED,Price stayed above ORL trigger,-1.27,2.5,387.88,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,394.0,388.0
