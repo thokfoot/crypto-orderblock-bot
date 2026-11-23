@@ -139,8 +139,11 @@ def run_0935_scan(target_date: datetime.date | None = None) -> dict[str, Any] | 
     day_mask = nifty_df.index.date == target_date
     nifty_day = nifty_df[day_mask]
     nifty_or = nifty_day.between_time("09:15", "09:34")
+    if len(nifty_or) == 0:
+        print(f"⚠️  NO OR BARS for {target_date} — market closed or pre-market run. Exiting gracefully.")
+        return None
     if len(nifty_or) < 15:
-        print(f"Warning: Only {len(nifty_or)} Nifty OR bars available")
+        print(f"Warning: Only {len(nifty_or)} Nifty OR bars available (partial session)")
 
     nifty_open = nifty_or.iloc[0]["Open"]
     nifty_close = nifty_or.iloc[-1]["Close"]
@@ -440,6 +443,9 @@ def main():
         cand = run_0935_scan()
         if cand:
             run_monitoring_loop(cand, is_test=False)
+        else:
+            print("ℹ️  No candidate locked (market closed / holiday / off-hours). Engine exiting cleanly.")
+            sys.exit(0)
 
 if __name__ == "__main__":
     main()
