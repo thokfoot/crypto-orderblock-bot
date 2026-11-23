@@ -1,0 +1,50 @@
+name: Strategy v3.2.5 US Autonomous Engine
+
+on:
+  schedule:
+    # 15:04 UTC = 20:34 IST / 10:04 AM ET (Monday to Friday)
+    - cron: '4 15 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: 'Run in test mode'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v325-us-engine
+  cancel-in-progress: false
+
+jobs:
+  run-us-engine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install yfinance pandas numpy requests
+
+      - name: Launch US Autonomous Engine
+        env:
+          AUTOMATION_TELEGRAM_BOT_TOKEN: ${{ secrets.AUTOMATION_TELEGRAM_BOT_TOKEN }}
+          AUTOMATION_TELEGRAM_CHAT_ID: ${{ secrets.AUTOMATION_TELEGRAM_CHAT_ID }}
+        run: |
+          if [ "${{ inputs.test_mode }}" = "true" ]; then
+            python scripts/v325_us_cloud_runner.py --test
+          else
+            python scripts/v325_us_cloud_runner.py
+          fi
