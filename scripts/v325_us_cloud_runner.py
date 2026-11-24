@@ -124,13 +124,14 @@ def run_us_engine(test_mode: bool = False):
     leader = sector_results[0]
     print(f"🏆 Leader Sector: {leader['sec']} (Breadth: {leader['breadth']:.0f}% Green, Avg Move: {leader['avg_m']:+.2f}%)")
 
-    # Select Primary Candidate (sweet spot momentum >= 0.50%)
+    # Select Primary Candidate (sweet spot momentum 0.50% to 1.80%)
     valid_cands = [c for c in leader["candidates"] if c["move"] > 0]
     if not valid_cands:
         print("❌ No positive moving candidate in leader sector.")
         return
     valid_cands.sort(key=lambda x: x["move"], reverse=True)
-    primary = valid_cands[0]
+    sweet_spot = [c for c in valid_cands if 0.50 <= c["move"] <= 1.80]
+    primary = sweet_spot[0] if sweet_spot else valid_cands[0]
 
     sym = primary["sym"]
     orh = primary["orh"]
