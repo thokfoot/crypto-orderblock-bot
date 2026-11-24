@@ -2,8 +2,12 @@ name: Strategy v3.2.5 US Autonomous Engine
 
 on:
   schedule:
-    # 15:04 UTC = 20:34 IST / 10:04 AM ET (Monday to Friday)
-    - cron: '4 15 * * 1-5'
+    # The script itself accepts only 10:03-10:15 America/New_York.
+    # Dual UTC schedules cover both EST and EDT; the off-season run self-skips.
+    - cron: '5 14 * * 1-5'
+    - cron: '5 15 * * 1-5'
+  repository_dispatch:
+    types: [us_scan]
   workflow_dispatch:
     inputs:
       test_mode:
@@ -38,12 +42,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install yfinance pandas numpy requests
 
+      - name: Validate market-time helpers
+        run: python -m unittest discover -s tests -v
+
       - name: Launch US Autonomous Engine
         env:
           AUTOMATION_TELEGRAM_BOT_TOKEN: ${{ secrets.AUTOMATION_TELEGRAM_BOT_TOKEN }}
           AUTOMATION_TELEGRAM_CHAT_ID: ${{ secrets.AUTOMATION_TELEGRAM_CHAT_ID }}
         run: |
-          if [ "${{ inputs.test_mode }}" = "true" ]; then
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.test_mode }}" = "true" ]; then
             python scripts/v325_us_cloud_runner.py --test
           else
             python scripts/v325_us_cloud_runner.py
