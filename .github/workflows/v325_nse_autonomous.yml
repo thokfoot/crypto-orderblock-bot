@@ -2,8 +2,10 @@ name: Strategy v3.2.5 NSE Autonomous Engine
 
 on:
   schedule:
-    # 04:04 UTC = 09:34 AM IST (Monday to Friday)
-    - cron: '4 4 * * 1-5'
+    # 04:06 UTC = 09:36 IST (Monday to Friday); script rejects late starts.
+    - cron: '6 4 * * 1-5'
+  repository_dispatch:
+    types: [nse_scan]
   workflow_dispatch:
     inputs:
       test_mode:
@@ -38,6 +40,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install yfinance pandas numpy requests
 
+      - name: Validate market-time helpers
+        run: python -m unittest discover -s tests -v
+
       - name: Launch Autonomous Engine
         env:
           AUTOMATION_TELEGRAM_BOT_TOKEN: ${{ secrets.AUTOMATION_TELEGRAM_BOT_TOKEN }}
@@ -45,7 +50,7 @@ jobs:
           FYERS_CLIENT_ID: ${{ secrets.FYERS_CLIENT_ID }}
           FYERS_ACCESS_TOKEN: ${{ secrets.FYERS_ACCESS_TOKEN }}
         run: |
-          if [ "${{ inputs.test_mode }}" = "true" ]; then
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.test_mode }}" = "true" ]; then
             python scripts/v325_nse_cloud_runner.py --test
           else
             python scripts/v325_nse_cloud_runner.py
