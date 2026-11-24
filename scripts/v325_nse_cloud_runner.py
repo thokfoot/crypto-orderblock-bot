@@ -19,12 +19,19 @@ from __future__ import annotations
 import argparse
 import datetime
 import json
+import math
 import os
 import sys
 import time
 import urllib.parse
 import urllib.request
 from typing import Any
+from zoneinfo import ZoneInfo
+
+from market_time_utils import completed_1m_bars, exact_minute_window, is_fresh_1m_data, normalize_1m_frame
+
+IST_ZONE_NAME = "Asia/Kolkata"
+IST = ZoneInfo(IST_ZONE_NAME)
 
 # Ensure UTF-8 output
 if sys.platform == "win32":
@@ -83,22 +90,17 @@ def send_telegram(text: str) -> dict[str, Any]:
 # MARKET DATA HELPERS
 # -----------------------------------------------------------------------------
 def get_ist_now() -> datetime.datetime:
-    return datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30)))
+    return datetime.datetime.now(IST)
 
 def fetch_ticker_1m(symbol: str, period: str = "5d") -> Any:
     import yfinance as yf
     t = yf.Ticker(symbol)
-    df = t.history(period=period, interval="1m")
+    df = t.history(period=period, interval="1m", prepost=False, auto_adjust=False)
     if df.empty:
         return None
-    # Ensure tz-aware IST
-    if df.index.tz is None:
-        df.index = df.index.tz_localize("UTC").tz_convert("Asia/Kolkata")
-    else:
-        df.index = df.index.tz_convert("Asia/Kolkata")
-    return df
+    return normalize_1m_frame(df, IST_ZONE_NAME)
 
-def compute_atr_pct(symbol: str) -> float:
+def compute_atr_pct(symbol: str) -> float | None:
     try:
         import yfinance as yf
         import pandas as pd
@@ -111,12 +113,12 @@ def compute_atr_pct(symbol: str) -> float:
             tr = pd.concat([h - l, (h - c.shift(1)).abs(), (l - c.shift(1)).abs()], axis=1).max(axis=1)
             atr14 = tr.rolling(14).mean().iloc[-1]
             return float((atr14 / c.iloc[-1]) * 100)
-    except Exception:
-        pass
-    return 2.50
+    except Exception as exc:
+        print(f"[ATR DATA ERROR] {symbol}: {exc}")
+    return None
 
 # -----------------------------------------------------------------------------
-# SCANNER LOGIC (09:35 IST)
+# SCANNER LOGIC (09:36 IST)
 # -----------------------------------------------------------------------------
 def run_0935_scan(target_date: datetime.date | None = None) -> dict[str, Any] | None:
     now_ist = get_ist_now()
@@ -130,20 +132,23 @@ def run_0935_scan(target_date: datetime.date | None = None) -> dict[str, Any] | 
 
     # 1. Fetch Nifty Benchmark
     print("Fetching Nifty 50 benchmark (^NSEI)...")
-    nifty_df = fetch_ticker_1m("^NSEI")
-    if nifty_df is None:
+    nifty_raw = fetch_ticker_1m("^NSEI")
+    if nifty_raw is None or nifty_raw.empty:
         print("ERROR: Failed to fetch Nifty data")
+        send_telegram("⚠️ [NSE DATA UNAVAILABLE] Nifty 1-minute data could not be fetched. No signal generated.")
         return None
 
-    # Filter for target_date 09:15 to 09:34
-    day_mask = nifty_df.index.date == target_date
-    nifty_day = nifty_df[day_mask]
-    nifty_or = nifty_day.between_time("09:15", "09:34")
-    if len(nifty_or) == 0:
-        print(f"⚠️  NO OR BARS for {target_date} — market closed or pre-market run. Exiting gracefully.")
+    nifty_df = completed_1m_bars(nifty_raw, now_ist, IST_ZONE_NAME)
+    if not is_fresh_1m_data(nifty_raw, now_ist, IST_ZONE_NAME, max_age_seconds=180):
+        print("ERROR: Nifty 1-minute data is stale (>180 seconds). Standing down.")
+        send_telegram("⚠️ [NSE STALE DATA] Nifty 1-minute feed is older than 180 seconds. No signal generated.")
         return None
-    if len(nifty_or) < 15:
-        print(f"Warning: Only {len(nifty_or)} Nifty OR bars available (partial session)")
+
+    nifty_or = exact_minute_window(nifty_df, target_date, "09:15", "09:34", IST_ZONE_NAME)
+    if nifty_or is None:
+        print(f"⚠️  INCOMPLETE NIFTY OR for {target_date}: expected all 20 bars from 09:15-09:34 IST.")
+        send_telegram("⚠️ [NSE INCOMPLETE OR] Nifty opening range does not contain all 20 completed minutes. No signal generated.")
+        return None
 
     nifty_open = nifty_or.iloc[0]["Open"]
     nifty_close = nifty_or.iloc[-1]["Close"]
@@ -160,12 +165,17 @@ def run_0935_scan(target_date: datetime.date | None = None) -> dict[str, Any] | 
         total = len(syms)
 
         for sym in syms:
-            df = fetch_ticker_1m(sym)
-            if df is None:
+            raw_df = fetch_ticker_1m(sym)
+            if raw_df is None or raw_df.empty:
                 continue
+            if not is_fresh_1m_data(raw_df, now_ist, IST_ZONE_NAME, max_age_seconds=180):
+                print(f"[STALE DATA] Skipping {sym}; latest completed 1m bar is older than 180 seconds.")
+                continue
+            df = completed_1m_bars(raw_df, now_ist, IST_ZONE_NAME)
             df_day = df[df.index.date == target_date]
-            or_bars = df_day.between_time("09:15", "09:34")
-            if len(or_bars) < 15:
+            or_bars = exact_minute_window(df_day, target_date, "09:15", "09:34", IST_ZONE_NAME)
+            if or_bars is None:
+                print(f"[INCOMPLETE OR] Skipping {sym}; expected all 20 bars from 09:15-09:34 IST.")
                 continue
 
             o = or_bars.iloc[0]["Open"]
@@ -187,9 +197,10 @@ def run_0935_scan(target_date: datetime.date | None = None) -> dict[str, Any] | 
                 "df_day": df_day,
             }
 
-        if moves:
+        minimum_coverage = max(2, math.ceil(total * 0.60))
+        if len(moves) >= minimum_coverage:
             avg_move = sum(moves) / len(moves)
-            breadth = (positive_count / total) * 100
+            breadth = (positive_count / len(moves)) * 100
             alpha = avg_move - nifty_move
             sector_results.append({
                 "sector": sector,
@@ -234,9 +245,14 @@ def run_0935_scan(target_date: datetime.date | None = None) -> dict[str, Any] | 
     # Sort constituents by Move desc
     candidates.sort(key=lambda c: c["move"], reverse=True)
 
-    # Filter ATR >= 2.50%
-    qual_cands = [c for c in candidates if c["atr"] >= 2.50]
-    primary = qual_cands[0] if qual_cands else candidates[0]
+    # Filter ATR >= 2.50%. Missing ATR is not silently replaced with a qualifying value.
+    qual_cands = [c for c in candidates if c["atr"] is not None and c["atr"] >= 2.50]
+    if not qual_cands:
+        msg = "🛡️ [NSE STAND DOWN] No candidate had a verified ATR >= 2.50%; missing ATR data is not treated as a pass."
+        print(msg)
+        send_telegram(msg)
+        return None
+    primary = qual_cands[0]
 
     sym = primary["symbol"]
     clean_sym = sym.replace(".NS", "")
@@ -271,7 +287,7 @@ def run_0935_scan(target_date: datetime.date | None = None) -> dict[str, Any] | 
 
     # Send 09:35 Telegram Scan Alert
     alert_msg = (
-        f"🎯 *[CLOUD DAEMON] NSE DAY 25 SCAN COMPLETE*\n"
+        f"🎯 *[NSE PAPER SIGNAL] SCAN COMPLETE — {target_date.isoformat()}*\n"
         f"• #1 Sector: *{top_sector}*\n"
         f"• Primary Candidate: *{clean_sym}* (ATR: {primary['atr']:.2f}%)\n"
         f"• Completed ORH: `₹{orh:.2f}`\n"
@@ -279,7 +295,8 @@ def run_0935_scan(target_date: datetime.date | None = None) -> dict[str, Any] | 
         f"• 1.00% Hard SL: `₹{stop_loss:.2f}`\n"
         f"• +2.00% Take Profit: `₹{take_profit:.2f}`\n"
         f"• Execution Gate: *09:45:00 IST*\n"
-        f"• Mode: *Autonomous Cloud Runner*"
+        f"• Data: *Yahoo Finance 1-minute bars; freshness checked*\n"
+        f"• Execution: *Signal monitoring only; this script places no broker orders.*"
     )
     send_telegram(alert_msg)
 
@@ -343,85 +360,133 @@ def run_monitoring_loop(candidate: dict[str, Any], is_test: bool = False) -> Non
         send_telegram(test_ping)
         return
 
-    # LIVE INTRADAY LOOP
+    # LIVE SIGNAL-MONITORING LOOP. Process each completed minute exactly once.
     triggered = False
     in_trade = False
     entry_price = 0.0
+    last_processed = pd.Timestamp(
+        datetime.datetime.combine(get_ist_now().date(), datetime.time(9, 44), tzinfo=IST)
+    )
+    last_close = None
+    stale_polls = 0
+    stale_alert_sent = False
+    terminal = False
 
-    while True:
+    while not terminal:
         now = get_ist_now()
-        t_str = now.strftime("%H:%M:%S")
+        df = fetch_ticker_1m(sym, period="1d")
+        fresh = df is not None and is_fresh_1m_data(df, now, IST_ZONE_NAME, max_age_seconds=180)
 
-        # EOD Square-off check @ 15:29 IST
-        if now.hour > 15 or (now.hour == 15 and now.minute >= 29):
-            if in_trade:
-                msg = f"⏱️ *EOD EXIT @ 15:29 IST*: {clean_sym} Position closed before market close."
-            else:
-                msg = f"🛡️ *STAND DOWN @ 15:29 IST*: {clean_sym} never triggered today. Capital 100% preserved (0.00% PnL)."
-            print(msg)
-            send_telegram(msg)
-            break
+        if not fresh:
+            stale_polls += 1
+            if not stale_alert_sent:
+                msg = (
+                    f"⚠️ [NSE STALE DATA] {clean_sym}: latest completed 1-minute bar "
+                    f"is older than 180 seconds. Signal monitoring is paused."
+                )
+                print(msg)
+                send_telegram(msg)
+                stale_alert_sent = True
+        else:
+            stale_polls = 0
+            stale_alert_sent = False
+            completed = completed_1m_bars(df, now, IST_ZONE_NAME)
+            post_gate = completed.loc[
+                (completed.index > last_processed)
+                & (completed.index.time >= datetime.time(9, 45))
+                & (completed.index.time <= datetime.time(15, 28))
+            ]
 
-        # Wait until 09:45 Gate
-        if now.hour < 9 or (now.hour == 9 and now.minute < 45):
-            time.sleep(30)
-            continue
-
-        # Fetch latest bars
-        try:
-            df = fetch_ticker_1m(sym, period="1d")
-            if df is not None and not df.empty:
-                last_bar = df.iloc[-1]
-                h = last_bar["High"]
-                l = last_bar["Low"]
-                c = last_bar["Close"]
+            for ts, bar in post_gate.iterrows():
+                last_processed = ts
+                bar_time = ts.strftime("%H:%M:%S IST")
+                h = float(bar["High"])
+                l = float(bar["Low"])
+                c = float(bar["Close"])
+                last_close = c
 
                 if not in_trade:
                     if h >= trigger:
+                        # A 1-minute OHLC candle cannot reveal intrabar order.
+                        # If the same candle also crosses the stop, skip this
+                        # ambiguous entry rather than inventing a fill.
+                        if l <= sl:
+                            msg = (
+                                f"⚠️ [NSE AMBIGUOUS BAR — NO ENTRY] {clean_sym} at {bar_time}: "
+                                f"trigger and stop were both inside one candle. Stand down."
+                            )
+                            print(msg)
+                            send_telegram(msg)
+                            terminal = True
+                            break
+
                         in_trade = True
                         triggered = True
                         entry_price = trigger
                         alert = (
-                            f"🚨 *[TRADE EXECUTION] BREAKOUT TRIGGERED*\n"
-                            f"• Stock: *{clean_sym}*\n"
-                            f"• Fill Price: `₹{entry_price:.2f}`\n"
-                            f"• Time: `{t_str} IST`\n"
-                            f"• 1.00% Hard SL: `₹{sl:.2f}`\n"
-                            f"• +2.00% TP Target: `₹{tp:.2f}`\n"
-                            f"• Status: *ACTIVE IN-TRADE*"
+                            f"🚨 *[NSE PAPER SIGNAL] BREAKOUT LEVEL REACHED*\\n"
+                            f"• Stock: *{clean_sym}*\\n"
+                            f"• Reference Fill: `₹{entry_price:.2f}`\\n"
+                            f"• Time: `{bar_time}`\\n"
+                            f"• 1.00% Hard SL: `₹{sl:.2f}`\\n"
+                            f"• +2.00% TP Target: `₹{tp:.2f}`\\n"
+                            f"• Note: *Signal only; no broker order was placed.*"
                         )
                         print(alert)
                         send_telegram(alert)
                 else:
-                    # In-trade monitoring
+                    # If SL and TP touch in the same candle, conservatively assume SL first.
                     if l <= sl:
                         exit_msg = (
-                            f"🛑 *[TRADE EXIT] HARD STOP LOSS HIT*\n"
-                            f"• Stock: *{clean_sym}*\n"
-                            f"• Exit Price: `₹{sl:.2f}`\n"
-                            f"• Return: *-1.00% Loss*\n"
-                            f"• Time: `{t_str} IST`\n"
-                            f"• Capital Protection: Risk strictly capped at 1.00%."
+                            f"🛑 *[NSE PAPER SIGNAL — STOP LEVEL HIT]*\\n"
+                            f"• Stock: *{clean_sym}*\\n"
+                            f"• Reference Exit: `₹{sl:.2f}`\\n"
+                            f"• Time: `{bar_time}`\\n"
+                            f"• Note: *Signal only; no broker order was placed.*"
                         )
                         print(exit_msg)
                         send_telegram(exit_msg)
+                        terminal = True
                         break
                     elif h >= tp:
                         tp_msg = (
-                            f"🎯 *[TRADE EXIT] TAKE PROFIT HIT!*\n"
-                            f"• Stock: *{clean_sym}*\n"
-                            f"• Exit Price: `₹{tp:.2f}`\n"
-                            f"• Return: *+2.00% NET PROFIT*\n"
-                            f"• Time: `{t_str} IST`\n"
-                            f"• Result: Monster Home-Run Captured!"
+                            f"🎯 *[NSE PAPER SIGNAL — TARGET LEVEL HIT]*\\n"
+                            f"• Stock: *{clean_sym}*\\n"
+                            f"• Reference Exit: `₹{tp:.2f}`\\n"
+                            f"• Time: `{bar_time}`\\n"
+                            f"• Note: *Signal only; no broker order was placed.*"
                         )
                         print(tp_msg)
                         send_telegram(tp_msg)
+                        terminal = True
                         break
-        except Exception as ex:
-            print(f"[{t_str}] Poll warning: {ex}")
 
-        time.sleep(45)
+        if terminal:
+            break
+
+        if now.time() >= datetime.time(15, 29):
+            if in_trade and last_close is not None and fresh:
+                msg = (
+                    f"🏁 *[NSE PAPER SIGNAL — EOD WINDOW CLOSED]*\\n"
+                    f"• Stock: *{clean_sym}*\\n"
+                    f"• Reference Exit: `₹{last_close:.2f}`\\n"
+                    f"• Note: *Signal only; no broker order was placed.*"
+                )
+            elif in_trade:
+                msg = f"⚠️ [NSE MONITOR ENDED] {clean_sym}: final fresh bar unavailable; exit price unverified. Manual review required."
+            else:
+                msg = f"🛡️ [NSE STAND DOWN] {clean_sym} did not reach trigger before 15:29 IST. No signal entry."
+            print(msg)
+            send_telegram(msg)
+            break
+
+        if stale_polls >= 3 and not in_trade:
+            msg = f"🛡️ [NSE STAND DOWN] {clean_sym}: market data remained stale for 3 consecutive checks. No signal entry."
+            print(msg)
+            send_telegram(msg)
+            break
+
+        time.sleep(20)
 
 # -----------------------------------------------------------------------------
 # MAIN CLI ENTRYPOINT
@@ -432,19 +497,28 @@ def main():
     args = parser.parse_args()
 
     if args.test:
-        # Day 24 = 2026-11-20
+        # Historical validation date used by the existing strategy test.
         target_date = datetime.date(2026, 11, 20)
         cand = run_0935_scan(target_date)
         if cand:
             run_monitoring_loop(cand, is_test=True)
     else:
-        # Real-time Autonomous Live Day Run
+        # Reject delayed GitHub cron runs instead of producing stale intraday signals.
         now = get_ist_now()
+        if not (datetime.time(9, 34) <= now.time() <= datetime.time(9, 42)):
+            msg = (
+                f"🛡️ [NSE ENGINE SKIPPED] Outside the 09:34-09:42 IST scan window. "
+                f"Current time: {now:%Y-%m-%d %H:%M:%S IST}. No signal generated."
+            )
+            print(msg)
+            send_telegram(msg)
+            return
+
         cand = run_0935_scan()
         if cand:
             run_monitoring_loop(cand, is_test=False)
         else:
-            print("ℹ️  No candidate locked (market closed / holiday / off-hours). Engine exiting cleanly.")
+            print("ℹ️  No candidate locked (market closed, holiday, incomplete OR or stale data). No signal generated.")
             sys.exit(0)
 
 if __name__ == "__main__":
