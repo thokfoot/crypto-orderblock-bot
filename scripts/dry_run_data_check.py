@@ -190,7 +190,8 @@ def main():
         "message": text,
     }
     print(json.dumps(result, indent=2))
-    return 0 if fyers.get("ok") and alpaca.get("ok") else 1
+    # A successful connectivity check must include the alert channel as well.
+    return 0 if fyers.get("ok") and alpaca.get("ok") and telegram.get("ok") else 1
 
 
 if __name__ == "__main__":
