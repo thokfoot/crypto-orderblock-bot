@@ -188,6 +188,7 @@ def main():
         "alpaca": alpaca,
         "telegram": telegram,
         "message": text,
+        "note": "This is an independent Fyers/Alpaca connectivity check. The current v3.2.5 NSE/US signal runners use Yahoo Finance 1-minute bars and do not place broker orders.",
     }
     print(json.dumps(result, indent=2))
     # A successful connectivity check must include the alert channel as well.
