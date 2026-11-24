@@ -222,7 +222,9 @@ def run_0935_scan(target_date: datetime.date | None = None) -> dict[str, Any] | 
         print(f"#{idx:<4} {s['sector']:<20} {s['positive']}/{s['total']} ({s['breadth']:5.1f}%)   coverage={s['coverage']:4.0f}%   {s['avg_move']:+6.2f}%     {s['alpha']:+6.2f}pp")
 
     if not sector_results:
-        print("ERROR: No sector data collected")
+        msg = "🛡️ [NSE STAND DOWN] No sector met the minimum 60% valid-data coverage requirement. No signal generated."
+        print(msg)
+        send_telegram(msg)
         return None
 
     top_sector = sector_results[0]["sector"]
@@ -502,7 +504,7 @@ def run_monitoring_loop(candidate: dict[str, Any], is_test: bool = False) -> Non
 # -----------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description="Strategy v3.2.5 NSE Autonomous Cloud Runner")
-    parser.add_argument("--test", action="store_true", help="Run test on last completed trading day (Friday Day 24)")
+    parser.add_argument("--test", action="store_true", help="Run a historical replay for 2026-11-20; no live monitoring or broker orders")
     args = parser.parse_args()
 
     if args.test:
