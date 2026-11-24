@@ -66,6 +66,13 @@ def request_json(url, headers=None, body=None):
         return {"ok": False, "message": redact(exc)}
 
 
+def is_fyers_check_acceptable(fyers: dict, required: bool) -> bool:
+    """Missing Fyers credentials are an explicit skip unless Fyers is required."""
+    if fyers.get("ok") is True:
+        return True
+    return not required and fyers.get("status") == "missing_credentials"
+
+
 def check_fyers():
     client_id = env_first("FYERS_CLIENT_ID")
     token = env_first("FYERS_ACCESS_TOKEN")
@@ -161,10 +168,17 @@ def send_telegram(text):
 
 def main():
     fyers = check_fyers()
+    fyers_required = env_first("FYERS_REQUIRED").lower() in {"1", "true", "yes"}
+    fyers_acceptable = is_fyers_check_acceptable(fyers, fyers_required)
     alpaca = check_alpaca()
     now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30)))
     stamp = now.strftime("%Y-%m-%d %H:%M:%S IST")
-    fyers_status = "OK" if fyers.get("ok") else "FAIL"
+    if fyers.get("ok"):
+        fyers_status = "OK"
+    elif fyers.get("status") == "missing_credentials" and not fyers_required:
+        fyers_status = "SKIPPED (optional)"
+    else:
+        fyers_status = "FAIL"
     alpaca_status = "OK" if alpaca.get("ok") else "FAIL"
     fyers_detail = redact(fyers.get("code") or fyers.get("message") or fyers.get("status") or "unknown")
     alpaca_detail = redact(alpaca.get("code") or alpaca.get("message") or alpaca.get("status") or "unknown")
@@ -188,11 +202,13 @@ def main():
         "alpaca": alpaca,
         "telegram": telegram,
         "message": text,
-        "note": "This is an independent Fyers/Alpaca connectivity check. The current v3.2.5 NSE/US signal runners use Yahoo Finance 1-minute bars and do not place broker orders.",
+        "fyers_required": fyers_required,
+        "fyers_acceptable": fyers_acceptable,
+        "note": "Fyers is optional unless FYERS_REQUIRED=true. The current v3.2.5 NSE/US signal runners use Yahoo Finance 1-minute bars and send paper signals only; they do not place broker orders.",
     }
     print(json.dumps(result, indent=2))
     # A successful connectivity check must include the alert channel as well.
-    return 0 if fyers.get("ok") and alpaca.get("ok") and telegram.get("ok") else 1
+    return 0 if fyers_acceptable and alpaca.get("ok") and telegram.get("ok") else 1
 
 
 if __name__ == "__main__":
