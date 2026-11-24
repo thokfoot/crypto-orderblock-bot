@@ -207,7 +207,8 @@ def run_0935_scan(target_date: datetime.date | None = None) -> dict[str, Any] | 
                 "avg_move": avg_move,
                 "alpha": alpha,
                 "positive": positive_count,
-                "total": total,
+                "total": len(moves),
+                "coverage": (len(moves) / total) * 100.0,
             })
 
     # Sort sectors: Breadth desc, Avg Move desc
@@ -217,7 +218,7 @@ def run_0935_scan(target_date: datetime.date | None = None) -> dict[str, Any] | 
     print("RANK  SECTOR               BREADTH         AVG MOVE     ALPHA vs NIFTY")
     print("=" * 80)
     for idx, s in enumerate(sector_results, 1):
-        print(f"#{idx:<4} {s['sector']:<20} {s['positive']}/{s['total']} ({s['breadth']:5.1f}%)   {s['avg_move']:+6.2f}%     {s['alpha']:+6.2f}pp")
+        print(f"#{idx:<4} {s['sector']:<20} {s['positive']}/{s['total']} ({s['breadth']:5.1f}%)   coverage={s['coverage']:4.0f}%   {s['avg_move']:+6.2f}%     {s['alpha']:+6.2f}pp")
 
     if not sector_results:
         print("ERROR: No sector data collected")
@@ -231,7 +232,8 @@ def run_0935_scan(target_date: datetime.date | None = None) -> dict[str, Any] | 
     for sym in NSE_SECTORS[top_sector]:
         if sym in symbol_data:
             d = symbol_data[sym]
-            atr = compute_atr_pct(sym, as_of=target_date)
+            atr_as_of = target_date if historical_mode else (target_date - datetime.timedelta(days=1))
+            atr = compute_atr_pct(sym, as_of=atr_as_of)
             candidates.append({
                 "symbol": sym,
                 "move": d["move"],
