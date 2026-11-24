@@ -1,18 +1,11 @@
 """
 v325_nse_cloud_runner.py
-Strategy v3.2.5 Fully Autonomous Cloud Engine for NSE India Sleeve
-Runs in GitHub Actions Cloud Runner from 09:34 IST to 15:30 IST.
-Enables 100% hands-free trading: zero laptop required after 09:35 IST.
-
-Schedule:
-  • 09:34 IST: Cloud Runner boots up.
-  • 09:35 IST: 10-Sector Scan runs (09:15-09:34 completed bars).
-               Locks #1 Leader candidate, pre-declares ORH, Trigger, SL, TP.
-               Sends instant Telegram scan alert.
-  • 09:45 IST: Execution Gate opens.
-  • 09:45-15:29 IST: Real-time 1m bar monitoring loop.
-                     Tracks breakout trigger, +2.00% TP, 1.00% Hard SL, 15:29 EOD exit.
-                     Sends instant Telegram execution alerts.
+NSE opening-range signal scanner and paper-signal monitor.
+- Uses Asia/Kolkata time.
+- Requires all 20 completed 09:15-09:34 IST opening-range bars.
+- Rejects late starts, stale market data, incomplete ranges and missing ATR.
+- Processes each new completed 1-minute bar once; never replays pre-lock candles.
+- Sends signals only. This script does not place broker orders.
 """
 from __future__ import annotations
 
@@ -101,19 +94,23 @@ def fetch_ticker_1m(symbol: str, period: str = "5d") -> Any:
         return None
     return normalize_1m_frame(df, IST_ZONE_NAME)
 
-def compute_atr_pct(symbol: str) -> float | None:
+def compute_atr_pct(symbol: str, as_of: datetime.date | None = None) -> float | None:
     try:
         import yfinance as yf
-        import pandas as pd
         t = yf.Ticker(symbol)
-        df = t.history(period="60d", interval="1d")
-        if len(df) >= 14:
+        df = t.history(period="60d", interval="1d", auto_adjust=False)
+        if as_of is not None and not df.empty:
+            df = df[df.index.date <= as_of]
+        if len(df) >= 15:
             h = df["High"]
             l = df["Low"]
             c = df["Close"]
             tr = pd.concat([h - l, (h - c.shift(1)).abs(), (l - c.shift(1)).abs()], axis=1).max(axis=1)
-            atr14 = tr.rolling(14).mean().iloc[-1]
-            return float((atr14 / c.iloc[-1]) * 100)
+            atr14 = tr.rolling(14, min_periods=14).mean().iloc[-1]
+            if pd.notna(atr14) and float(c.iloc[-1]) > 0:
+                value = float((atr14 / c.iloc[-1]) * 100)
+                if math.isfinite(value):
+                    return value
     except Exception as exc:
         print(f"[ATR DATA ERROR] {symbol}: {exc}")
     return None
@@ -234,7 +231,7 @@ def run_0935_scan(target_date: datetime.date | None = None) -> dict[str, Any] | 
     for sym in NSE_SECTORS[top_sector]:
         if sym in symbol_data:
             d = symbol_data[sym]
-            atr = compute_atr_pct(sym)
+            atr = compute_atr_pct(sym, as_of=target_date)
             candidates.append({
                 "symbol": sym,
                 "move": d["move"],
@@ -366,8 +363,15 @@ def run_monitoring_loop(candidate: dict[str, Any], is_test: bool = False) -> Non
     triggered = False
     in_trade = False
     entry_price = 0.0
-    last_processed = pd.Timestamp(
-        datetime.datetime.combine(get_ist_now().date(), datetime.time(9, 44), tzinfo=IST)
+    # Start from the latest completed bar at candidate-lock time. Earlier bars
+    # are deliberately not replayed as if they were observed live.
+    monitor_boot_now = get_ist_now()
+    monitor_boot_df = fetch_ticker_1m(sym, period="1d")
+    monitor_boot_completed = completed_1m_bars(monitor_boot_df, monitor_boot_now, IST_ZONE_NAME)
+    last_processed = (
+        monitor_boot_completed.index[-1]
+        if not monitor_boot_completed.empty
+        else pd.Timestamp(datetime.datetime.combine(monitor_boot_now.date(), datetime.time(9, 44), tzinfo=IST))
     )
     last_close = None
     stale_polls = 0
@@ -518,6 +522,11 @@ def main():
 
         cand = run_0935_scan()
         if cand:
+            if get_ist_now().time() >= datetime.time(15, 29):
+                msg = "🛡️ [NSE STAND DOWN] Candidate scan finished after the execution window. No late/backfilled signal will be generated."
+                print(msg)
+                send_telegram(msg)
+                return
             run_monitoring_loop(cand, is_test=False)
         else:
             print("ℹ️  No candidate locked (market closed, holiday, incomplete OR or stale data). No signal generated.")
