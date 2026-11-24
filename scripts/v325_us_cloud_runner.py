@@ -1,14 +1,11 @@
 """
 v325_us_cloud_runner.py
 Strategy v3.2.5 Fully Autonomous Cloud Engine for US Wall Street Sleeve
-Runs in GitHub Actions Cloud Runner from 10:04 ET to 11:05 ET (20:34 to 21:35 IST).
-Enables 100% hands-free trading for the evening US sleeve:
-- 10:05 ET: 8-Mega-Sector Scan runs (09:45-10:04 completed 20 OR bars).
-           Locks #1 Leader candidate, pre-declares ORH, Trigger, SL, TP.
-           Sends instant Telegram scan alert.
-- 10:05-11:00 ET: Real-time 1m bar live monitoring loop (55-minute holding window).
-                  Tracks breakout trigger, +1.00% TP, 1.00% Hard SL, 11:00 ET window exit.
-                  Sends instant Telegram execution and settlement alerts.
+Runs against the US market using America/New_York (DST-aware) time.
+- Scan is accepted only near 10:05 ET and requires all 20 completed OR bars.
+- Monitoring processes each newly completed 1-minute bar once, through 11:00 ET.
+- Stale data, incomplete bars and delayed starts cause a stand-down.
+- This script sends paper signals only; it does not place broker orders.
 """
 
 from __future__ import annotations
@@ -78,7 +75,7 @@ def fetch_1m_bars(ticker: str) -> pd.DataFrame:
         if df.empty:
             return pd.DataFrame()
         # Yahoo timestamps are exchange-local; normalize before filtering.
-        return completed_1m_bars(df, datetime.datetime.now(ET), ET_ZONE_NAME).pipe(lambda x: x)
+        return completed_1m_bars(df, datetime.datetime.now(ET), ET_ZONE_NAME)
     except Exception as e:
         print(f"Error fetching {ticker}: {e}")
         return pd.DataFrame()
@@ -167,7 +164,9 @@ def run_us_engine(test_mode: bool = False):
     # Select Primary Candidate (sweet spot momentum 0.50% to 1.80%)
     valid_cands = [c for c in leader["candidates"] if c["move"] > 0]
     if not valid_cands:
-        print("❌ No positive moving candidate in leader sector.")
+        msg = f"🛡️ [US STAND DOWN] {scan_date.isoformat()}: leader sector has no positive candidate."
+        print(msg)
+        send_telegram(msg)
         return
     valid_cands.sort(key=lambda x: x["move"], reverse=True)
     sweet_spot = [c for c in valid_cands if 0.50 <= c["move"] <= 1.80]
@@ -202,7 +201,24 @@ def run_us_engine(test_mode: bool = False):
     # Step 2: process each newly completed 1-minute bar once, through 11:00 ET.
     window_start = datetime.datetime.combine(scan_date, datetime.time(10, 5), tzinfo=ET)
     window_end = datetime.datetime.combine(scan_date, datetime.time(11, 0), tzinfo=ET)
-    last_processed = pd.Timestamp(window_start - datetime.timedelta(minutes=1))
+    monitor_start_et = datetime.datetime.now(ET)
+    if monitor_start_et >= window_end:
+        msg = (
+            f"🛡️ [US STAND DOWN] {sym}: candidate scan completed after the 11:00 ET execution window. "
+            f"No late/backfilled signal will be generated."
+        )
+        print(msg)
+        send_telegram(msg)
+        return
+
+    # Do not replay bars that closed before the candidate was actually locked.
+    boot_df = fetch_1m_bars(sym)
+    boot_completed = completed_1m_bars(boot_df, monitor_start_et, ET_ZONE_NAME)
+    last_processed = (
+        boot_completed.index[-1]
+        if not boot_completed.empty
+        else pd.Timestamp(window_start - datetime.timedelta(minutes=1))
+    )
     in_trade = False
     entry_fill = 0.0
     last_close = None
