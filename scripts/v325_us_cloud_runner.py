@@ -23,7 +23,10 @@ import pandas as pd
 import yfinance as yf
 from zoneinfo import ZoneInfo
 
-from market_time_utils import completed_1m_bars, exact_minute_window, is_fresh_1m_data
+try:
+    from scripts.market_time_utils import completed_1m_bars, exact_minute_window, is_fresh_1m_data
+except ModuleNotFoundError:
+    from market_time_utils import completed_1m_bars, exact_minute_window, is_fresh_1m_data
 
 # Ensure UTF-8 output
 if sys.platform == "win32":
