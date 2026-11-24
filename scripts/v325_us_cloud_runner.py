@@ -210,7 +210,7 @@ def run_us_engine(test_mode: bool = False):
     stale_alert_sent = False
     terminal = False
 
-    print("\\n[Step 2] Monitoring completed 1-minute bars until 11:00 ET (signal-only; no orders).")
+    print("\n[Step 2] Monitoring completed 1-minute bars until 11:00 ET (signal-only; no orders).")
     while not terminal:
         now_et = datetime.datetime.now(ET)
         raw_df = fetch_1m_bars(sym)
@@ -265,13 +265,13 @@ def run_us_engine(test_mode: bool = False):
                             base_fill = bar_o if bar_o > trig else trig
                             entry_fill = round(base_fill * 1.0005, 2)
                             trig_msg = (
-                                f"🚨 <b>[US PAPER SIGNAL] BREAKOUT LEVEL REACHED</b>\\n\\n"
-                                f"• <b>Stock:</b> {sym}\\n"
-                                f"• <b>Reference Fill:</b> ${entry_fill:.2f}\\n"
-                                f"• <b>Trigger:</b> ${trig:.2f}\\n"
-                                f"• <b>Hard SL:</b> ${sl:.2f}\\n"
-                                f"• <b>TP:</b> ${tp:.2f}\\n"
-                                f"• <b>Bar time:</b> {bar_time}\\n"
+                                f"🚨 <b>[US PAPER SIGNAL] BREAKOUT LEVEL REACHED</b>\n\n"
+                                f"• <b>Stock:</b> {sym}\n"
+                                f"• <b>Reference Fill:</b> ${entry_fill:.2f}\n"
+                                f"• <b>Trigger:</b> ${trig:.2f}\n"
+                                f"• <b>Hard SL:</b> ${sl:.2f}\n"
+                                f"• <b>TP:</b> ${tp:.2f}\n"
+                                f"• <b>Bar time:</b> {bar_time}\n"
                                 f"• <b>Note:</b> Signal only; no broker order was placed."
                             )
                             print(trig_msg)
@@ -282,11 +282,11 @@ def run_us_engine(test_mode: bool = False):
                             exit_price = round(sl * 0.9995, 2)
                             pnl = ((exit_price - entry_fill) / entry_fill) * 100.0
                             msg = (
-                                f"🛑 <b>[US PAPER SIGNAL — STOP LEVEL HIT]</b>\\n"
-                                f"• <b>Stock:</b> {sym}\\n"
-                                f"• <b>Reference Exit:</b> ${exit_price:.2f}\\n"
-                                f"• <b>Indicative P&L:</b> {pnl:.2f}%\\n"
-                                f"• <b>Bar time:</b> {bar_time}\\n"
+                                f"🛑 <b>[US PAPER SIGNAL — STOP LEVEL HIT]</b>\n"
+                                f"• <b>Stock:</b> {sym}\n"
+                                f"• <b>Reference Exit:</b> ${exit_price:.2f}\n"
+                                f"• <b>Indicative P&L:</b> {pnl:.2f}%\n"
+                                f"• <b>Bar time:</b> {bar_time}\n"
                                 f"• <b>Note:</b> Signal only; no broker order was placed."
                             )
                             print(msg)
@@ -297,11 +297,11 @@ def run_us_engine(test_mode: bool = False):
                             exit_price = round(tp * 0.9995, 2)
                             pnl = ((exit_price - entry_fill) / entry_fill) * 100.0
                             msg = (
-                                f"🎯 <b>[US PAPER SIGNAL — TARGET LEVEL HIT]</b>\\n"
-                                f"• <b>Stock:</b> {sym}\\n"
-                                f"• <b>Reference Exit:</b> ${exit_price:.2f}\\n"
-                                f"• <b>Indicative P&L:</b> {pnl:+.2f}%\\n"
-                                f"• <b>Bar time:</b> {bar_time}\\n"
+                                f"🎯 <b>[US PAPER SIGNAL — TARGET LEVEL HIT]</b>\n"
+                                f"• <b>Stock:</b> {sym}\n"
+                                f"• <b>Reference Exit:</b> ${exit_price:.2f}\n"
+                                f"• <b>Indicative P&L:</b> {pnl:+.2f}%\n"
+                                f"• <b>Bar time:</b> {bar_time}\n"
                                 f"• <b>Note:</b> Signal only; no broker order was placed."
                             )
                             print(msg)
@@ -317,10 +317,10 @@ def run_us_engine(test_mode: bool = False):
                 exit_price = round(last_close * 0.9995, 2)
                 pnl = ((exit_price - entry_fill) / entry_fill) * 100.0
                 msg = (
-                    f"🏁 <b>[US PAPER SIGNAL — WINDOW CLOSED]</b>\\n"
-                    f"• <b>Stock:</b> {sym}\\n"
-                    f"• <b>Reference Exit:</b> ${exit_price:.2f}\\n"
-                    f"• <b>Indicative P&L:</b> {pnl:+.2f}%\\n"
+                    f"🏁 <b>[US PAPER SIGNAL — WINDOW CLOSED]</b>\n"
+                    f"• <b>Stock:</b> {sym}\n"
+                    f"• <b>Reference Exit:</b> ${exit_price:.2f}\n"
+                    f"• <b>Indicative P&L:</b> {pnl:+.2f}%\n"
                     f"• <b>Note:</b> Signal only; no broker order was placed."
                 )
             elif in_trade:
