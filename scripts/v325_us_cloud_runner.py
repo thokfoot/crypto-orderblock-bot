@@ -56,17 +56,19 @@ def send_telegram(text: str) -> dict[str, Any]:
     token = os.getenv("AUTOMATION_TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN")
     chat_id = os.getenv("AUTOMATION_TELEGRAM_CHAT_ID") or os.getenv("TELEGRAM_CHAT_ID")
     if not token or not chat_id:
-        print("[TELEGRAM SKIPPED] Missing credentials.")
-        return {"status": "skipped"}
+        raise RuntimeError("[TELEGRAM FAILED] Missing bot token or chat ID; aborting so the workflow cannot report a false-green run.")
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     payload = json.dumps({"chat_id": chat_id, "text": text, "parse_mode": "HTML"}).encode("utf-8")
     req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
-            return json.loads(resp.read().decode())
+            result = json.loads(resp.read().decode())
+        if result.get("ok") is not True:
+            raise RuntimeError(result.get("description", "Telegram API rejected the message"))
+        return result
     except Exception as e:
         print(f"[TELEGRAM ERROR] {e}")
-        return {"status": "error", "message": str(e)}
+        raise RuntimeError("Telegram alert delivery failed; stopping the signal engine.") from e
 
 def fetch_1m_bars(ticker: str) -> pd.DataFrame:
     try:
