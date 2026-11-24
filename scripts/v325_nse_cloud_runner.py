@@ -59,8 +59,7 @@ def send_telegram(text: str) -> dict[str, Any]:
     token = os.getenv("AUTOMATION_TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN")
     chat_id = os.getenv("AUTOMATION_TELEGRAM_CHAT_ID") or os.getenv("TELEGRAM_CHAT_ID")
     if not token or not chat_id:
-        print(f"[Telegram Skipped - No Token] {text}")
-        return {"ok": False, "status": "no_credentials"}
+        raise RuntimeError("[TELEGRAM FAILED] Missing bot token or chat ID; aborting so the workflow cannot report a false-green run.")
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     payload = json.dumps({
@@ -73,12 +72,14 @@ def send_telegram(text: str) -> dict[str, Any]:
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read().decode("utf-8"))
+        if data.get("ok") is not True:
+            raise RuntimeError(data.get("description", "Telegram API rejected the message"))
         msg_id = data.get("result", {}).get("message_id")
         print(f"[Telegram Sent - msg_id {msg_id}] {text.splitlines()[0]}")
         return {"ok": True, "message_id": msg_id}
     except Exception as ex:
         print(f"[Telegram Error: {ex}] {text.splitlines()[0]}")
-        return {"ok": False, "error": str(ex)}
+        raise RuntimeError("Telegram alert delivery failed; stopping the signal engine.") from ex
 
 # -----------------------------------------------------------------------------
 # MARKET DATA HELPERS
