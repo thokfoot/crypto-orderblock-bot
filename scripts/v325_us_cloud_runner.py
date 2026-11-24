@@ -22,6 +22,7 @@ import time
 import urllib.parse
 import urllib.request
 from typing import Any
+from zoneinfo import ZoneInfo
 import pandas as pd
 import yfinance as yf
 
@@ -65,193 +66,329 @@ def send_telegram(text: str) -> dict[str, Any]:
         print(f"[TELEGRAM ERROR] {e}")
         return {"status": "error", "message": str(e)}
 
+ET = ZoneInfo("America/New_York")
+EXPECTED_OR_BARS = 20
+MAX_ENTRY_GAP_PCT = 0.0015  # Skip if the first eligible bar opens >0.15% above trigger.
+MAX_DATA_STALENESS_SECONDS = 180
+
+def get_et_now() -> datetime.datetime:
+    """Return DST-aware US Eastern time."""
+    return datetime.datetime.now(ET)
+
 def fetch_1m_bars(ticker: str) -> pd.DataFrame:
+    """Fetch 1-minute bars and normalize timestamps to America/New_York."""
     try:
-        t = yf.Ticker(ticker)
-        df = t.history(period="1d", interval="1m")
+        df = yf.Ticker(ticker).history(
+            period="1d", interval="1m", prepost=False, auto_adjust=False
+        )
         if df.empty:
             return pd.DataFrame()
+        if df.index.tz is None:
+            # yfinance normally supplies an exchange timezone; if it does not,
+            # do not guess whether naive timestamps are UTC or Eastern.
+            print(f"[DATA WARNING] {ticker}: timezone-naive 1m data rejected.")
+            return pd.DataFrame()
+        df.index = df.index.tz_convert(ET)
+        df = df[~df.index.duplicated(keep="last")].sort_index()
         return df
     except Exception as e:
         print(f"Error fetching {ticker}: {e}")
         return pd.DataFrame()
 
+def get_expected_or_index(session_date: datetime.date) -> pd.DatetimeIndex:
+    start = datetime.datetime.combine(
+        session_date, datetime.time(9, 45), tzinfo=ET
+    )
+    return pd.date_range(start=start, periods=EXPECTED_OR_BARS, freq="min")
+
 def run_us_engine(test_mode: bool = False):
+    now_et = get_et_now()
     print("=" * 80)
-    print("  STRATEGY v3.2.5 AUTONOMOUS CLOUD ENGINE: US WALL STREET SLEEVE")
-    print(f"  Timestamp: {datetime.datetime.now().isoformat()} | Test Mode: {test_mode}")
+    print("  STRATEGY v3.2.5 US WALL STREET SIGNAL MONITOR")
+    print(f"  Timestamp: {now_et.isoformat()} | Test Mode: {test_mode}")
+    print("  MODE: SIGNAL / PAPER MONITOR ONLY — NO BROKER ORDERS ARE PLACED")
     print("=" * 80)
 
-    # Step 1: Scan 8 Mega Sectors
-    print("\n[Step 1] Scanning 8 US Mega Sectors (09:45-10:04 completed OR bars)...")
+    # The opening range is 09:45-10:04 ET. Run only after the range is complete,
+    # and refuse a stale scheduled run rather than scanning old prices.
+    if not test_mode and not (
+        datetime.time(10, 5) <= now_et.time().replace(tzinfo=None) <= datetime.time(10, 12)
+    ):
+        msg = (
+            f"🛡️ [US ENGINE STAND DOWN] Scan started outside the permitted "
+            f"10:05-10:12 ET window ({now_et.strftime('%H:%M:%S %Z')}). "
+            "No candidate locked; no broker order was placed."
+        )
+        print(msg)
+        send_telegram(msg)
+        return
+
+    session_date = now_et.date()
+    print("\n[Step 1] Scanning 8 US sectors using 20 completed OR bars (09:45-10:04 ET)...")
     sector_results = []
-    
+
     for sec_name, tickers in US_SECTORS.items():
         moves = []
         candidates = []
         for sym in tickers:
             df = fetch_1m_bars(sym)
             if df.empty:
+                print(f"[DATA SKIP] {sym}: no 1-minute bars.")
                 continue
-            or_bars = df.between_time("09:45", "10:04")
-            if len(or_bars) < 15 and not test_mode:
+
+            day_df = df[df.index.date == session_date]
+            or_bars = day_df.between_time("09:45", "10:04", inclusive="both")
+            expected = get_expected_or_index(session_date)
+            if len(or_bars) < EXPECTED_OR_BARS or not expected.isin(or_bars.index).all():
+                print(f"[DATA SKIP] {sym}: incomplete opening range "
+                      f"({len(or_bars)}/{EXPECTED_OR_BARS} bars).")
                 continue
-            if len(or_bars) == 0:
-                continue
-            
+
+            or_bars = or_bars.loc[expected]
             o = float(or_bars["Open"].iloc[0])
             c = float(or_bars["Close"].iloc[-1])
             h = float(or_bars["High"].max())
             l = float(or_bars["Low"].min())
-            m = ((c - o) / o) * 100.0
-            moves.append(m)
-            candidates.append({"sym": sym, "move": m, "orh": h, "orl": l, "df": df})
+            if o <= 0:
+                print(f"[DATA SKIP] {sym}: invalid opening price.")
+                continue
+            move = ((c - o) / o) * 100.0
+            moves.append(move)
+            candidates.append({"sym": sym, "move": move, "orh": h, "orl": l})
 
         if len(candidates) >= 2:
-            breadth = (sum(1 for x in moves if x > 0) / len(moves)) * 100.0
-            avg_m = sum(moves) / len(moves)
+            breadth = (sum(1 for item in moves if item > 0) / len(moves)) * 100.0
+            avg_move = sum(moves) / len(moves)
             sector_results.append({
-                "sec": sec_name, "breadth": breadth, "avg_m": avg_m, "candidates": candidates
+                "sec": sec_name,
+                "breadth": breadth,
+                "avg_m": avg_move,
+                "candidates": candidates,
             })
 
     if not sector_results:
-        print("❌ No qualifying US sectors found. Standing down.")
-        send_telegram("🛡️ [US ENGINE STAND DOWN] No sector met minimum constituent breadth.")
+        msg = (
+            f"🛡️ [US ENGINE STAND DOWN] No sector had sufficient complete "
+            f"09:45-10:04 ET data for {session_date}. No trade signal generated."
+        )
+        print(msg)
+        send_telegram(msg)
         return
 
-    # Rank Leader Sector
-    sector_results.sort(key=lambda x: (x["breadth"], x["avg_m"]), reverse=True)
+    sector_results.sort(key=lambda item: (item["breadth"], item["avg_m"]), reverse=True)
     leader = sector_results[0]
-    print(f"🏆 Leader Sector: {leader['sec']} (Breadth: {leader['breadth']:.0f}% Green, Avg Move: {leader['avg_m']:+.2f}%)")
+    print(
+        f"Leader Sector: {leader['sec']} "
+        f"(Breadth: {leader['breadth']:.0f}% Green, Avg Move: {leader['avg_m']:+.2f}%)"
+    )
 
-    # Select Primary Candidate (sweet spot momentum 0.50% to 1.80%)
-    valid_cands = [c for c in leader["candidates"] if c["move"] > 0]
-    if not valid_cands:
-        print("❌ No positive moving candidate in leader sector.")
+    valid_cands = [item for item in leader["candidates"] if item["move"] > 0]
+    valid_cands.sort(key=lambda item: item["move"], reverse=True)
+    sweet_spot = [item for item in valid_cands if 0.50 <= item["move"] <= 1.80]
+
+    # Do not silently fall back to an overextended or out-of-rule candidate.
+    if not sweet_spot:
+        msg = (
+            f"🛡️ [US ENGINE STAND DOWN] Leader sector {leader['sec']} has no "
+            "positive candidate in the 0.50%-1.80% momentum sweet spot. "
+            "No trade signal generated."
+        )
+        print(msg)
+        send_telegram(msg)
         return
-    valid_cands.sort(key=lambda x: x["move"], reverse=True)
-    sweet_spot = [c for c in valid_cands if 0.50 <= c["move"] <= 1.80]
-    primary = sweet_spot[0] if sweet_spot else valid_cands[0]
 
+    primary = sweet_spot[0]
     sym = primary["sym"]
     orh = primary["orh"]
     orl = primary["orl"]
-    trig = round(orh * 1.0003, 2)
-    sl = round(trig * 0.9900, 2)
-    tp = round(trig * 1.0100, 2)
+    trigger = round(orh * 1.0003, 2)
+    stop_loss = round(trigger * 0.9900, 2)
+    take_profit = round(trigger * 1.0100, 2)
 
     scan_msg = (
-        f"🎯 <b>[US CLOUD DAEMON] US DAY 25 SCAN COMPLETE</b>\n\n"
+        f"🎯 <b>[US PAPER SIGNAL SCAN] {session_date.isoformat()}</b>\n\n"
         f"• <b>#1 Sector:</b> {leader['sec']} ({leader['breadth']:.0f}% Green)\n"
         f"• <b>Primary Candidate:</b> {sym}\n"
         f"• <b>Completed ORH:</b> ${orh:.2f}\n"
-        f"• <b>Pre-Declared Trigger:</b> >= ${trig:.2f}\n"
-        f"• <b>1.00% Hard SL:</b> ${sl:.2f}\n"
-        f"• <b>+1.00% Take Profit:</b> ${tp:.2f}\n"
-        f"• <b>Execution Window:</b> 10:05-11:00 ET (55 Mins)\n"
-        f"• <b>Mode:</b> Autonomous Cloud Runner"
+        f"• <b>Pre-declared Trigger:</b> >= ${trigger:.2f}\n"
+        f"• <b>Modelled Stop:</b> ${stop_loss:.2f}\n"
+        f"• <b>Modelled Target:</b> ${take_profit:.2f}\n"
+        f"• <b>Monitoring Window:</b> 10:05-11:00 ET\n"
+        f"• <b>Mode:</b> Paper/signal only; no broker orders are placed."
     )
     send_telegram(scan_msg)
-    print(f"\nLocked {sym}: Trigger >= ${trig:.2f}, SL=${sl:.2f}, TP=${tp:.2f}")
+    print(
+        f"Locked {sym}: Trigger >= ${trigger:.2f}, "
+        f"modelled SL=${stop_loss:.2f}, TP=${take_profit:.2f}"
+    )
 
     if test_mode:
-        print("Test mode complete. Exiting.")
+        print("[TEST MODE] Scan completed; live monitoring was not started.")
         return
 
-    # Step 2: 55-Minute Real-Time Polling Loop (10:05 to 11:00 ET)
-    print("\n[Step 2] Entering 55-Minute Real-Time Monitoring Loop (until 11:00 ET)...")
+    print("\n[Step 2] Monitoring completed 1-minute bars from 10:05 through 10:59 ET.")
     in_trade = False
+    finished = False
     entry_fill = 0.0
+    last_processed = None
+    last_close = None
+    stale_alert_sent = False
 
-    while True:
-        now_utc = datetime.datetime.now(datetime.timezone.utc)
-        now_et = now_utc.astimezone(datetime.timezone(datetime.timedelta(hours=-5)))
-        current_time_str = now_et.strftime("%H:%M:%S")
+    while not finished:
+        now_et = get_et_now()
+        now_floor = now_et.replace(second=0, microsecond=0)
 
-        df = fetch_1m_bars(sym)
-        if not df.empty:
-            post = df.between_time("10:05", "11:05")
-            if not post.empty:
-                last_bar = post.iloc[-1]
-                bar_h = float(last_bar["High"])
-                bar_l = float(last_bar["Low"])
-                bar_c = float(last_bar["Close"])
-                bar_o = float(last_bar["Open"])
-
-                # Check Trigger
-                if not in_trade:
-                    if bar_h >= trig:
-                        in_trade = True
-                        base_fill = bar_o if bar_o > trig else trig
-                        entry_fill = round(base_fill * 1.0005, 2)  # 5 bps entry adverse slippage
-                        trig_msg = (
-                            f"🚨 <b>[US TRADE EXECUTION] BREAKOUT TRIGGERED</b>\n\n"
-                            f"• <b>Stock:</b> {sym}\n"
-                            f"• <b>Fill Price:</b> ${entry_fill:.2f}\n"
-                            f"• <b>Trigger Level:</b> ${trig:.2f}\n"
-                            f"• <b>Hard SL:</b> ${sl:.2f}\n"
-                            f"• <b>TP Target:</b> ${tp:.2f}\n"
-                            f"• <b>Time:</b> {current_time_str} ET\n"
-                            f"• <b>Status:</b> ACTIVE IN-TRADE"
-                        )
-                        send_telegram(trig_msg)
-                        print(f"🚨 TRIGGERED @ ${entry_fill:.2f} @ {current_time_str} ET!")
-
-                # In-trade tracking
-                else:
-                    if bar_h >= tp:
-                        exit_price = round(tp * 0.9995, 2)
-                        pnl = ((exit_price - entry_fill) / entry_fill) * 100.0
-                        tp_msg = (
-                            f"🎯 <b>[US TAKE PROFIT HIT] TARGET REACHED</b>\n\n"
-                            f"• <b>Stock:</b> {sym}\n"
-                            f"• <b>Exit Price:</b> ${exit_price:.2f}\n"
-                            f"• <b>Net P&L:</b> +{pnl:.2f}% (+1.00R WIN) 🚀\n"
-                            f"• <b>Time:</b> {current_time_str} ET"
-                        )
-                        send_telegram(tp_msg)
-                        print(f"🎯 TP HIT @ ${exit_price:.2f} (+{pnl:.2f}%)!")
-                        break
-
-                    elif bar_l <= sl:
-                        exit_price = round(sl * 0.9995, 2)
-                        pnl = ((exit_price - entry_fill) / entry_fill) * 100.0
-                        sl_msg = (
-                            f"🛑 <b>[US STOP LOSS HIT] HARD STOP EXECUTED</b>\n\n"
-                            f"• <b>Stock:</b> {sym}\n"
-                            f"• <b>Exit Price:</b> ${exit_price:.2f}\n"
-                            f"• <b>Net P&L:</b> {pnl:.2f}% (-1.00R Loss)\n"
-                            f"• <b>Time:</b> {current_time_str} ET\n"
-                            f"• <b>Capital Protection:</b> Risk strictly capped."
-                        )
-                        send_telegram(sl_msg)
-                        print(f"🛑 SL HIT @ ${exit_price:.2f} ({pnl:.2f}%)!")
-                        break
-
-        # Check 11:00 ET window close
-        if now_et.hour >= 11:
-            print(f"11:00 ET Window closed at {current_time_str} ET.")
-            if in_trade:
-                exit_price = round(bar_c * 0.9995, 2)
-                pnl = ((exit_price - entry_fill) / entry_fill) * 100.0
-                win_msg = (
-                    f"🏆 <b>[US 55-MIN WINDOW SETTLEMENT] SESSION COMPLETE</b>\n\n"
+        # At 11:00 ET, settle only from the latest completed in-window bar.
+        if now_et.time().replace(tzinfo=None) >= datetime.time(11, 0):
+            if in_trade and last_close is not None:
+                exit_price = round(last_close * 0.9995, 2)  # modelled adverse exit slippage
+                pnl_pct = ((exit_price - entry_fill) / entry_fill) * 100.0
+                risk_per_share = max(entry_fill - stop_loss, 0.01)
+                r_multiple = ((exit_price - entry_fill) / risk_per_share)
+                msg = (
+                    f"🏁 <b>[US PAPER WINDOW SETTLEMENT]</b>\n"
                     f"• <b>Stock:</b> {sym}\n"
-                    f"• <b>Entry Fill:</b> ${entry_fill:.2f}\n"
-                    f"• <b>Window Exit:</b> ${exit_price:.2f}\n"
-                    f"• <b>Net P&L:</b> {pnl:+.2f}% ({pnl/1.05:+.2f}R)\n"
-                    f"• <b>Holding Duration:</b> 55 Mins (10:05-11:00 ET)\n"
-                    f"• <b>Status:</b> SETTLED & LOCKED"
+                    f"• <b>Modelled Entry:</b> ${entry_fill:.2f}\n"
+                    f"• <b>Modelled Exit:</b> ${exit_price:.2f}\n"
+                    f"• <b>Illustrative P&amp;L:</b> {pnl_pct:+.2f}% ({r_multiple:+.2f}R)\n"
+                    f"• <b>Last completed bar:</b> {last_processed.strftime('%H:%M %Z') if last_processed else 'N/A'}\n"
+                    f"• <b>Mode:</b> Simulation only; no actual position was held."
                 )
-                send_telegram(win_msg)
-                print(f"🏆 WINDOW EXIT @ ${exit_price:.2f} ({pnl:+.2f}%)!")
+            elif in_trade:
+                msg = (
+                    f"⚠️ [US PAPER MONITOR INCOMPLETE] {sym}: session ended but no "
+                    "valid completed-bar exit price was available. Review data manually."
+                )
             else:
-                stand_msg = f"🛡️ <b>[US STAND DOWN @ 11:00 ET]</b> {sym} stayed below trigger ${trig:.2f}. Capital 100% preserved (0.00% PnL)."
-                send_telegram(stand_msg)
-                print(f"🛡️ Untriggered. Stood down at 11:00 ET.")
+                msg = (
+                    f"🛡️ [US PAPER STAND DOWN @ 11:00 ET] {sym} did not produce "
+                    "a valid simulated entry. No broker order was placed."
+                )
+            print(msg)
+            send_telegram(msg)
             break
 
-        time.sleep(60)
+        if now_et.time().replace(tzinfo=None) < datetime.time(10, 5):
+            time.sleep(10)
+            continue
+
+        df = fetch_1m_bars(sym)
+        if df.empty:
+            time.sleep(20)
+            continue
+
+        window_bars = df.between_time("10:05", "10:59", inclusive="both")
+        # Bar timestamps mark the start of a minute. Only process bars whose
+        # minute has fully closed; never trade on an in-progress candle.
+        completed = window_bars[window_bars.index < now_floor]
+        if completed.empty:
+            time.sleep(20)
+            continue
+
+        latest_bar_time = completed.index[-1]
+        age_seconds = (now_et - latest_bar_time).total_seconds()
+        if age_seconds > MAX_DATA_STALENESS_SECONDS:
+            if not stale_alert_sent:
+                msg = (
+                    f"⚠️ [US DATA STALE — MONITOR STOPPED] {sym}: latest completed "
+                    f"bar is {age_seconds:.0f}s old. No further simulated entries/exits "
+                    "will be inferred from stale data."
+                )
+                print(msg)
+                send_telegram(msg)
+                stale_alert_sent = True
+            break
+
+        new_bars = completed if last_processed is None else completed[completed.index > last_processed]
+        for bar_time, bar in new_bars.iterrows():
+            last_processed = bar_time
+            bar_open = float(bar["Open"])
+            bar_high = float(bar["High"])
+            bar_low = float(bar["Low"])
+            last_close = float(bar["Close"])
+
+            if not in_trade:
+                if bar_high >= trigger:
+                    if bar_open > trigger * (1 + MAX_ENTRY_GAP_PCT):
+                        msg = (
+                            f"⏭️ [US PAPER ENTRY SKIPPED] {sym}: opening gap exceeded "
+                            f"the 0.15% limit. No simulated entry."
+                        )
+                        print(msg)
+                        send_telegram(msg)
+                        finished = True
+                        break
+
+                    entry_fill = round(max(bar_open, trigger) * 1.0005, 2)
+                    in_trade = True
+                    msg = (
+                        f"🚨 <b>[US PAPER SIGNAL TRIGGERED]</b>\n"
+                        f"• <b>Stock:</b> {sym}\n"
+                        f"• <b>Modelled Entry:</b> ${entry_fill:.2f}\n"
+                        f"• <b>Trigger:</b> ${trigger:.2f}\n"
+                        f"• <b>Modelled Stop:</b> ${stop_loss:.2f}\n"
+                        f"• <b>Modelled Target:</b> ${take_profit:.2f}\n"
+                        f"• <b>Time:</b> {bar_time.strftime('%H:%M %Z')}\n"
+                        f"• <b>Mode:</b> Simulation only; no broker order was sent."
+                    )
+                    print(msg)
+                    send_telegram(msg)
+
+                    # If one OHLC candle spans entry and stop, its intrabar
+                    # ordering is unknowable. Use the conservative stop outcome.
+                    if bar_low <= stop_loss:
+                        exit_price = round(stop_loss * 0.9995, 2)
+                        pnl_pct = ((exit_price - entry_fill) / entry_fill) * 100.0
+                        stop_msg = (
+                            f"🛑 [US PAPER AMBIGUOUS BAR — CONSERVATIVE STOP] {sym} "
+                            f"same 1-minute bar crossed trigger and stop. "
+                            f"Assumed modelled stop exit ${exit_price:.2f}; "
+                            f"illustrative P&amp;L {pnl_pct:+.2f}%. No actual order."
+                        )
+                        print(stop_msg)
+                        send_telegram(stop_msg)
+                        finished = True
+                        break
+            else:
+                # Conservative ordering: if TP and SL occur in the same OHLC
+                # candle, assume the stop was reached first.
+                if bar_low <= stop_loss:
+                    exit_price = round(stop_loss * 0.9995, 2)
+                    pnl_pct = ((exit_price - entry_fill) / entry_fill) * 100.0
+                    risk_per_share = max(entry_fill - stop_loss, 0.01)
+                    r_multiple = (exit_price - entry_fill) / risk_per_share
+                    stop_msg = (
+                        f"🛑 <b>[US PAPER STOP LEVEL REACHED]</b>\n"
+                        f"• <b>Stock:</b> {sym}\n"
+                        f"• <b>Modelled Exit:</b> ${exit_price:.2f}\n"
+                        f"• <b>Illustrative P&amp;L:</b> {pnl_pct:+.2f}% ({r_multiple:+.2f}R)\n"
+                        f"• <b>Mode:</b> Simulation only; no actual order was placed."
+                    )
+                    print(stop_msg)
+                    send_telegram(stop_msg)
+                    finished = True
+                    break
+                if bar_high >= take_profit:
+                    exit_price = round(take_profit * 0.9995, 2)
+                    pnl_pct = ((exit_price - entry_fill) / entry_fill) * 100.0
+                    risk_per_share = max(entry_fill - stop_loss, 0.01)
+                    r_multiple = (exit_price - entry_fill) / risk_per_share
+                    tp_msg = (
+                        f"🎯 <b>[US PAPER TARGET REACHED]</b>\n"
+                        f"• <b>Stock:</b> {sym}\n"
+                        f"• <b>Modelled Exit:</b> ${exit_price:.2f}\n"
+                        f"• <b>Illustrative P&amp;L:</b> {pnl_pct:+.2f}% ({r_multiple:+.2f}R)\n"
+                        f"• <b>Mode:</b> Simulation only; no actual order was placed."
+                    )
+                    print(tp_msg)
+                    send_telegram(tp_msg)
+                    finished = True
+                    break
+
+        if not finished:
+            time.sleep(20)
+
+    print("[US ENGINE COMPLETE] Signal monitor finished. No broker orders were placed.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
