@@ -7,6 +7,7 @@ on:
       - "scripts/market_time_utils.py"
       - "scripts/v325_us_cloud_runner.py"
       - "scripts/v325_nse_cloud_runner.py"
+      - "scripts/dry_run_data_check.py"
       - "tests/**"
       - ".github/workflows/market_time_tests.yml"
   workflow_dispatch:
