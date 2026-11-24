@@ -22,7 +22,7 @@ import urllib.request
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from market_time_utils import completed_1m_bars, exact_minute_window, is_fresh_1m_data, normalize_1m_frame
+from scripts.market_time_utils import completed_1m_bars, exact_minute_window, is_fresh_1m_data, normalize_1m_frame
 
 IST_ZONE_NAME = "Asia/Kolkata"
 IST = ZoneInfo(IST_ZONE_NAME)
