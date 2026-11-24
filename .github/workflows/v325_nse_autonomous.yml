@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       test_mode:
-        description: 'Run in test mode (audits Day 24 Friday data)'
+        description: 'Run historical replay for 2026-11-20; no live broker orders'
         type: boolean
         required: false
         default: false
