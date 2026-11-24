@@ -32,7 +32,7 @@ class MarketTimeUtilsTests(unittest.TestCase):
         tz = ZoneInfo("America/New_York")
         index = pd.date_range("2026-11-24 10:03", periods=3, freq="min", tz=tz)
         frame = pd.DataFrame({"Close": [1, 2, 3]}, index=index)
-        now = dt.datetime(2026, 11, 24, 10, 05, 30, tzinfo=tz)
+        now = dt.datetime(2026, 11, 24, 10, 5, 30, tzinfo=tz)
         result = completed_1m_bars(frame, now, "America/New_York")
         self.assertEqual(list(result["Close"]), [1, 2])
 
