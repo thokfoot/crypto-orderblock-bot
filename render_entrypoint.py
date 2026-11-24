@@ -9,6 +9,7 @@ import os
 import sys
 import time
 import threading
+import json
 from datetime import datetime, timezone, timedelta
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
@@ -17,16 +18,35 @@ from scripts.v325_nse_cloud_runner import run_0935_scan, run_monitoring_loop, ge
 
 IST = timezone(timedelta(hours=5, minutes=30))
 RENDER_SCAN_ENABLED = os.environ.get("RENDER_SCAN_ENABLED", "0") == "1"
+START_TIME = datetime.now(IST)
 
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.end_headers()
-        now_ist = datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S IST")
+        now_dt = datetime.now(IST)
+        now_ist = now_dt.strftime("%Y-%m-%d %H:%M:%S IST")
+        uptime_sec = int((now_dt - START_TIME).total_seconds())
         mode = "active" if RENDER_SCAN_ENABLED else "standby"
         primary = "Render" if RENDER_SCAN_ENABLED else "GitHub Actions"
-        resp = f'{{"status": "running", "service": "Strategy v3.2.5 Runner", "mode": "{mode}", "primary": "{primary}", "time_ist": "{now_ist}"}}'
+        git_commit = os.environ.get("RENDER_GIT_COMMIT", "manual-or-local")
+        git_branch = os.environ.get("RENDER_GIT_BRANCH", "main")
+        service_id = os.environ.get("RENDER_SERVICE_ID", "v325-trading-runner")
+
+        payload = {
+            "status": "running",
+            "service": "Strategy v3.2.5 Runner",
+            "version": "v3.2.5",
+            "mode": mode,
+            "primary": primary,
+            "git_commit": git_commit,
+            "git_branch": git_branch,
+            "service_id": service_id,
+            "uptime_seconds": uptime_sec,
+            "time_ist": now_ist,
+        }
+        resp = json.dumps(payload, indent=2)
         self.wfile.write(resp.encode("utf-8"))
 
     def log_message(self, format, *args):
