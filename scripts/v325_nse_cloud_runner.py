@@ -235,7 +235,9 @@ def run_0935_scan(target_date: datetime.date | None = None) -> dict[str, Any] | 
     for sym in NSE_SECTORS[top_sector]:
         if sym in symbol_data:
             d = symbol_data[sym]
-            atr_as_of = target_date if historical_mode else (target_date - datetime.timedelta(days=1))
+            # Use only data available before the session being replayed/scanned.
+            # This avoids same-day daily-candle look-ahead in historical tests.
+            atr_as_of = target_date - datetime.timedelta(days=1)
             atr = compute_atr_pct(sym, as_of=atr_as_of)
             candidates.append({
                 "symbol": sym,
