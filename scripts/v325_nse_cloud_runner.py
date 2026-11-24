@@ -22,6 +22,7 @@ import json
 import math
 import os
 import sys
+import pandas as pd
 import time
 import urllib.parse
 import urllib.request
@@ -122,6 +123,7 @@ def compute_atr_pct(symbol: str) -> float | None:
 # -----------------------------------------------------------------------------
 def run_0935_scan(target_date: datetime.date | None = None) -> dict[str, Any] | None:
     now_ist = get_ist_now()
+    historical_mode = target_date is not None and target_date < now_ist.date()
     if target_date is None:
         target_date = now_ist.date()
 
@@ -139,7 +141,7 @@ def run_0935_scan(target_date: datetime.date | None = None) -> dict[str, Any] | 
         return None
 
     nifty_df = completed_1m_bars(nifty_raw, now_ist, IST_ZONE_NAME)
-    if not is_fresh_1m_data(nifty_raw, now_ist, IST_ZONE_NAME, max_age_seconds=180):
+    if not historical_mode and not is_fresh_1m_data(nifty_raw, now_ist, IST_ZONE_NAME, max_age_seconds=180):
         print("ERROR: Nifty 1-minute data is stale (>180 seconds). Standing down.")
         send_telegram("⚠️ [NSE STALE DATA] Nifty 1-minute feed is older than 180 seconds. No signal generated.")
         return None
@@ -168,7 +170,7 @@ def run_0935_scan(target_date: datetime.date | None = None) -> dict[str, Any] | 
             raw_df = fetch_ticker_1m(sym)
             if raw_df is None or raw_df.empty:
                 continue
-            if not is_fresh_1m_data(raw_df, now_ist, IST_ZONE_NAME, max_age_seconds=180):
+            if not historical_mode and not is_fresh_1m_data(raw_df, now_ist, IST_ZONE_NAME, max_age_seconds=180):
                 print(f"[STALE DATA] Skipping {sym}; latest completed 1m bar is older than 180 seconds.")
                 continue
             df = completed_1m_bars(raw_df, now_ist, IST_ZONE_NAME)
@@ -348,14 +350,14 @@ def run_monitoring_loop(candidate: dict[str, Any], is_test: bool = False) -> Non
                     break
 
         if not triggered:
-            print(f"🛡️ [TEST] UNTRIGGERED / STAND DOWN (0.00% PnL, Capital 100% Preserved)")
+            print(f"🛡️ [TEST] UNTRIGGERED / STAND DOWN (no historical trigger detected)")
 
         test_ping = (
-            f"✅ *[CLOUD TEST PASS] Strategy v3.2.5 Sanity Audit*\n"
+            f"✅ *[HISTORICAL TEST COMPLETE] Strategy v3.2.5*\n"
             f"• Candidate: *{clean_sym}*\n"
-            f"• Cloud Engine: *Operational (GitHub Actions)*\n"
-            f"• Monday Morning Gate: *Ready @ 09:34 IST*\n"
-            f"• Laptop required after 09:35: *NO (100% Cloud Hands-Free)*"
+            f"• Historical replay finished.\n"
+            f"• This does not prove live market-data freshness or broker execution.\n"
+            f"• This script sends signals only; it places no broker orders."
         )
         send_telegram(test_ping)
         return
@@ -424,12 +426,12 @@ def run_monitoring_loop(candidate: dict[str, Any], is_test: bool = False) -> Non
                         triggered = True
                         entry_price = trigger
                         alert = (
-                            f"🚨 *[NSE PAPER SIGNAL] BREAKOUT LEVEL REACHED*\\n"
-                            f"• Stock: *{clean_sym}*\\n"
-                            f"• Reference Fill: `₹{entry_price:.2f}`\\n"
-                            f"• Time: `{bar_time}`\\n"
-                            f"• 1.00% Hard SL: `₹{sl:.2f}`\\n"
-                            f"• +2.00% TP Target: `₹{tp:.2f}`\\n"
+                            f"🚨 *[NSE PAPER SIGNAL] BREAKOUT LEVEL REACHED*\n"
+                            f"• Stock: *{clean_sym}*\n"
+                            f"• Reference Fill: `₹{entry_price:.2f}`\n"
+                            f"• Time: `{bar_time}`\n"
+                            f"• 1.00% Hard SL: `₹{sl:.2f}`\n"
+                            f"• +2.00% TP Target: `₹{tp:.2f}`\n"
                             f"• Note: *Signal only; no broker order was placed.*"
                         )
                         print(alert)
@@ -438,10 +440,10 @@ def run_monitoring_loop(candidate: dict[str, Any], is_test: bool = False) -> Non
                     # If SL and TP touch in the same candle, conservatively assume SL first.
                     if l <= sl:
                         exit_msg = (
-                            f"🛑 *[NSE PAPER SIGNAL — STOP LEVEL HIT]*\\n"
-                            f"• Stock: *{clean_sym}*\\n"
-                            f"• Reference Exit: `₹{sl:.2f}`\\n"
-                            f"• Time: `{bar_time}`\\n"
+                            f"🛑 *[NSE PAPER SIGNAL — STOP LEVEL HIT]*\n"
+                            f"• Stock: *{clean_sym}*\n"
+                            f"• Reference Exit: `₹{sl:.2f}`\n"
+                            f"• Time: `{bar_time}`\n"
                             f"• Note: *Signal only; no broker order was placed.*"
                         )
                         print(exit_msg)
@@ -450,10 +452,10 @@ def run_monitoring_loop(candidate: dict[str, Any], is_test: bool = False) -> Non
                         break
                     elif h >= tp:
                         tp_msg = (
-                            f"🎯 *[NSE PAPER SIGNAL — TARGET LEVEL HIT]*\\n"
-                            f"• Stock: *{clean_sym}*\\n"
-                            f"• Reference Exit: `₹{tp:.2f}`\\n"
-                            f"• Time: `{bar_time}`\\n"
+                            f"🎯 *[NSE PAPER SIGNAL — TARGET LEVEL HIT]*\n"
+                            f"• Stock: *{clean_sym}*\n"
+                            f"• Reference Exit: `₹{tp:.2f}`\n"
+                            f"• Time: `{bar_time}`\n"
                             f"• Note: *Signal only; no broker order was placed.*"
                         )
                         print(tp_msg)
@@ -467,9 +469,9 @@ def run_monitoring_loop(candidate: dict[str, Any], is_test: bool = False) -> Non
         if now.time() >= datetime.time(15, 29):
             if in_trade and last_close is not None and fresh:
                 msg = (
-                    f"🏁 *[NSE PAPER SIGNAL — EOD WINDOW CLOSED]*\\n"
-                    f"• Stock: *{clean_sym}*\\n"
-                    f"• Reference Exit: `₹{last_close:.2f}`\\n"
+                    f"🏁 *[NSE PAPER SIGNAL — EOD WINDOW CLOSED]*\n"
+                    f"• Stock: *{clean_sym}*\n"
+                    f"• Reference Exit: `₹{last_close:.2f}`\n"
                     f"• Note: *Signal only; no broker order was placed.*"
                 )
             elif in_trade:
