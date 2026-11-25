@@ -404,6 +404,68 @@ def run_monitoring_loop(candidate: dict[str, Any], is_test: bool = False) -> Non
                 send_telegram(msg)
                 stale_alert_sent = True
         else:
+            if stale_polls > 0:
+                completed = completed_1m_bars(df, now, IST_ZONE_NAME)
+                stale_alert_sent = False
+                stale_polls = 0
+                if completed.empty:
+                    continue
+
+                latest_ts = completed.index[-1]
+                latest_bar = completed.iloc[-1]
+                latest_c = float(latest_bar["Close"])
+                latest_h = float(latest_bar["High"])
+                latest_l = float(latest_bar["Low"])
+                bar_time = latest_ts.strftime("%H:%M:%S IST")
+
+                if not in_trade:
+                    # Anti-Backfill Rule: Never retrospectively trigger a breakout that occurred during blackout.
+                    # Discard missed blackout candles and advance last_processed to the latest fresh candle.
+                    last_processed = latest_ts
+                    msg = (
+                        f"ℹ️ [NSE DATA RESTORED] {clean_sym}: feed reconnected at {bar_time}. "
+                        f"Blackout candles discarded to prevent retrospective backfilling. "
+                        f"Resuming live forward monitoring."
+                    )
+                    print(msg)
+                    send_telegram(msg)
+                    continue
+                else:
+                    # In-Trade Outage Recovery: Evaluate current market state upon reconnection.
+                    last_processed = latest_ts
+                    if latest_l <= sl:
+                        exit_msg = (
+                            f"🛑 *[NSE PAPER SIGNAL — STOP LEVEL HIT (POST-OUTAGE)]*\n"
+                            f"• Stock: *{clean_sym}*\n"
+                            f"• Reference Exit: `₹{sl:.2f}`\n"
+                            f"• Time: `{bar_time}`\n"
+                            f"• Note: *Position closed upon feed reconnection.*"
+                        )
+                        print(exit_msg)
+                        send_telegram(exit_msg)
+                        terminal = True
+                        break
+                    elif latest_h >= tp:
+                        tp_msg = (
+                            f"🎯 *[NSE PAPER SIGNAL — TARGET LEVEL HIT (POST-OUTAGE)]*\n"
+                            f"• Stock: *{clean_sym}*\n"
+                            f"• Reference Exit: `₹{tp:.2f}`\n"
+                            f"• Time: `{bar_time}`\n"
+                            f"• Note: *Target reached during/after feed recovery.*"
+                        )
+                        print(tp_msg)
+                        send_telegram(tp_msg)
+                        terminal = True
+                        break
+                    else:
+                        msg = (
+                            f"ℹ️ [NSE DATA RESTORED] {clean_sym}: feed resumed at {bar_time}. "
+                            f"Trade active (Current: ₹{latest_c:.2f}, SL: ₹{sl:.2f}, TP: ₹{tp:.2f})."
+                        )
+                        print(msg)
+                        send_telegram(msg)
+                        continue
+
             stale_polls = 0
             stale_alert_sent = False
             completed = completed_1m_bars(df, now, IST_ZONE_NAME)

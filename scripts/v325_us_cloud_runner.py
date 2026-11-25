@@ -249,6 +249,69 @@ def run_us_engine(test_mode: bool = False):
                 send_telegram(warn)
                 stale_alert_sent = True
         else:
+            if stale_polls > 0:
+                stale_alert_sent = False
+                stale_polls = 0
+                if not closed.empty:
+                    latest_ts = closed.index[-1]
+                    latest_bar = closed.iloc[-1]
+                    latest_c = float(latest_bar["Close"])
+                    latest_h = float(latest_bar["High"])
+                    latest_l = float(latest_bar["Low"])
+                    bar_time = latest_ts.strftime("%H:%M:%S %Z")
+
+                    if not in_trade:
+                        # Anti-Backfill Rule: Never retrospectively trigger a breakout that occurred during blackout.
+                        last_processed = latest_ts
+                        msg = (
+                            f"ℹ️ [US DATA RESTORED] {sym}: feed reconnected at {bar_time}. "
+                            f"Blackout candles discarded to prevent retrospective backfilling. "
+                            f"Resuming live forward monitoring."
+                        )
+                        print(msg)
+                        send_telegram(msg)
+                        continue
+                    else:
+                        last_processed = latest_ts
+                        if latest_l <= sl:
+                            exit_price = round(sl * 0.9995, 2)
+                            pnl = ((exit_price - entry_fill) / entry_fill) * 100.0
+                            msg = (
+                                f"🛑 <b>[US PAPER SIGNAL — STOP LEVEL HIT (POST-OUTAGE)]</b>\n"
+                                f"• <b>Stock:</b> {sym}\n"
+                                f"• <b>Reference Exit:</b> ${exit_price:.2f}\n"
+                                f"• <b>Indicative P&L:</b> {pnl:.2f}%\n"
+                                f"• <b>Bar time:</b> {bar_time}\n"
+                                f"• <b>Note:</b> Position closed upon feed reconnection."
+                            )
+                            print(msg)
+                            send_telegram(msg)
+                            terminal = True
+                            break
+                        elif latest_h >= tp:
+                            exit_price = round(tp * 0.9995, 2)
+                            pnl = ((exit_price - entry_fill) / entry_fill) * 100.0
+                            msg = (
+                                f"🎯 <b>[US PAPER SIGNAL — TARGET LEVEL HIT (POST-OUTAGE)]</b>\n"
+                                f"• <b>Stock:</b> {sym}\n"
+                                f"• <b>Reference Exit:</b> ${exit_price:.2f}\n"
+                                f"• <b>Indicative P&L:</b> {pnl:.2f}%\n"
+                                f"• <b>Bar time:</b> {bar_time}\n"
+                                f"• <b>Note:</b> Target reached during/after feed recovery."
+                            )
+                            print(msg)
+                            send_telegram(msg)
+                            terminal = True
+                            break
+                        else:
+                            msg = (
+                                f"ℹ️ [US DATA RESTORED] {sym}: feed resumed at {bar_time}. "
+                                f"Trade active (Current: ${latest_c:.2f}, SL: ${sl:.2f}, TP: ${tp:.2f})."
+                            )
+                            print(msg)
+                            send_telegram(msg)
+                            continue
+
             stale_polls = 0
             stale_alert_sent = False
             if not closed.empty:
