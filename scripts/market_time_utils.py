@@ -87,27 +87,39 @@ def is_fresh_1m_data(
 
 def evaluate_stale_recovery(
     in_trade: bool,
-    latest_bar: pd.Series,
+    latest_bar: pd.Series | pd.DataFrame,
     trigger: float,
     sl: float,
     tp: float,
+    blackout_bars: pd.DataFrame | None = None,
 ) -> dict:
     """
     Evaluate market state after recovering from a stale data feed outage.
     
+    Accepts either a single latest_bar (pd.Series or pd.DataFrame) or a full
+    blackout_bars DataFrame covering every 1-minute candle formed during the outage.
+
     Rules:
     1. Pre-entry (in_trade=False):
        Blackout candles formed during the outage are strictly discarded to prevent
-       retrospective backfilling of entries. Returns action='DISCARD_AND_RESUME'.
+       retrospective backfilling of entries, even if a breakout occurred during the outage.
+       Returns action='DISCARD_AND_RESUME'.
     2. In-trade (in_trade=True):
-       Evaluates actual observable market price on the reconnection bar.
-       If price breached SL or TP during the outage, records an outage exit at the
-       observable market price (conservative min(sl, close) for stop loss) with
-       uncertainty provenance, rather than assuming an exact synthetic fill.
+       Evaluates every candle in the outage window in chronological order:
+       - If a candle touches SL (or touches both SL and TP), stops out conservatively
+         at observable market price min(sl, close), flagging execution uncertainty.
+       - If a candle reaches TP without prior SL breach, exits at target with uncertainty.
+       - If the price remained strictly within the [SL, TP] corridor across all blackout candles,
+         returns action='CONTINUE_IN_TRADE'.
     """
-    latest_c = float(latest_bar["Close"])
-    latest_h = float(latest_bar["High"])
-    latest_l = float(latest_bar["Low"])
+    if blackout_bars is not None and not blackout_bars.empty:
+        bars_df = blackout_bars.copy()
+    elif isinstance(latest_bar, pd.DataFrame):
+        bars_df = latest_bar.copy()
+    elif isinstance(latest_bar, pd.Series):
+        bars_df = pd.DataFrame([latest_bar])
+    else:
+        raise ValueError("Either latest_bar or blackout_bars must be provided as Series or DataFrame")
 
     if not in_trade:
         return {
@@ -117,39 +129,53 @@ def evaluate_stale_recovery(
             "exit_price": None,
             "uncertainty": False,
             "reason": "anti_backfill_discard",
+            "bars_discarded": len(bars_df),
         }
 
-    # In-trade evaluation
-    # If both SL and TP are touched in the same recovery bar, conservative risk management
-    # strictly prioritizes SL first (worst-case execution) to eliminate optimistic bias.
-    if latest_l <= sl:
-        exit_price = min(sl, latest_c)  # Conservative: accounts for potential adverse gap-down
-        reason = "ambiguous_bar_sl_and_tp_both_touched_assumed_sl" if latest_h >= tp else "stop_crossed_during_outage"
-        return {
-            "action": "OUTAGE_EXIT_STOP",
-            "triggered": True,
-            "terminal": True,
-            "exit_price": exit_price,
-            "uncertainty": True,
-            "reason": reason,
-        }
-    elif latest_h >= tp:
-        return {
-            "action": "OUTAGE_EXIT_TARGET",
-            "triggered": True,
-            "terminal": True,
-            "exit_price": tp,
-            "uncertainty": True,
-            "reason": "target_reached_during_outage",
-        }
-    else:
-        return {
-            "action": "CONTINUE_IN_TRADE",
-            "triggered": True,
-            "terminal": False,
-            "exit_price": None,
-            "uncertainty": False,
-            "current_price": latest_c,
-            "reason": "trade_active_within_channel",
-        }
+    latest_c = float(bars_df.iloc[-1]["Close"])
+
+    # Chronologically evaluate every bar in the blackout window
+    for ts, bar in bars_df.iterrows():
+        b_high = float(bar["High"])
+        b_low = float(bar["Low"])
+        b_close = float(bar["Close"])
+
+        # Stop loss check (conservative: if both SL and TP touched, assume SL first)
+        if b_low <= sl:
+            exit_price = min(sl, b_close)  # Conservative: accounts for potential adverse gap-down
+            reason = (
+                "ambiguous_bar_sl_and_tp_both_touched_assumed_sl"
+                if b_high >= tp
+                else "stop_crossed_during_outage"
+            )
+            return {
+                "action": "OUTAGE_EXIT_STOP",
+                "triggered": True,
+                "terminal": True,
+                "exit_price": exit_price,
+                "uncertainty": True,
+                "reason": reason,
+                "breach_time": str(ts),
+            }
+        elif b_high >= tp:
+            return {
+                "action": "OUTAGE_EXIT_TARGET",
+                "triggered": True,
+                "terminal": True,
+                "exit_price": tp,
+                "uncertainty": True,
+                "reason": "target_reached_during_outage",
+                "reach_time": str(ts),
+            }
+
+    # Price remained within the channel across the ENTIRE blackout window
+    return {
+        "action": "CONTINUE_IN_TRADE",
+        "triggered": True,
+        "terminal": False,
+        "exit_price": None,
+        "uncertainty": False,
+        "current_price": latest_c,
+        "reason": "trade_active_within_channel",
+    }
 

@@ -260,7 +260,18 @@ def run_us_engine(test_mode: bool = False):
                     latest_l = float(latest_bar["Low"])
                     bar_time = latest_ts.strftime("%H:%M:%S %Z")
 
-                    recovery = evaluate_stale_recovery(in_trade, latest_bar, trig, sl, tp)
+                    # Slice all completed bars formed during the outage window
+                    blackout_bars = (
+                        closed.loc[closed.index > last_processed]
+                        if last_processed is not None
+                        else closed.iloc[[-1]]
+                    )
+                    if blackout_bars.empty:
+                        blackout_bars = closed.iloc[[-1]]
+
+                    recovery = evaluate_stale_recovery(
+                        in_trade, latest_bar, trig, sl, tp, blackout_bars=blackout_bars
+                    )
                     last_processed = latest_ts
 
                     if recovery["action"] == "DISCARD_AND_RESUME":

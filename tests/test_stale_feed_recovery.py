@@ -105,6 +105,48 @@ class StaleFeedRecoveryRegressionTests(unittest.TestCase):
         self.assertIsNone(recovery["exit_price"])
         self.assertEqual(recovery["current_price"], 103.0)
 
+    def test_in_trade_multi_bar_dataframe_detects_intermediate_stop_loss(self):
+        """Multi-bar outage window: detects SL breach in candle 1 even if candle 2 rebounded."""
+        df = pd.DataFrame(
+            [
+                {"Open": 101.0, "High": 101.2, "Low": 99.4, "Close": 99.5},  # Breaches SL 100.0
+                {"Open": 99.6, "High": 103.0, "Low": 99.6, "Close": 102.5},  # Rebounds above SL
+            ]
+        )
+        recovery = evaluate_stale_recovery(
+            in_trade=True,
+            latest_bar=df.iloc[-1],
+            trigger=102.0,
+            sl=100.0,
+            tp=106.0,
+            blackout_bars=df,
+        )
+        self.assertEqual(recovery["action"], "OUTAGE_EXIT_STOP")
+        self.assertTrue(recovery["terminal"])
+        self.assertTrue(recovery["uncertainty"])
+        self.assertEqual(recovery["exit_price"], 99.5)  # min(sl=100.0, close=99.5)
+
+    def test_in_trade_multi_bar_dataframe_channel_survival(self):
+        """Multi-bar outage window: all bars stay within channel."""
+        df = pd.DataFrame(
+            [
+                {"Open": 102.0, "High": 103.5, "Low": 101.5, "Close": 102.8},
+                {"Open": 102.8, "High": 104.2, "Low": 102.0, "Close": 103.9},
+            ]
+        )
+        recovery = evaluate_stale_recovery(
+            in_trade=True,
+            latest_bar=df.iloc[-1],
+            trigger=102.0,
+            sl=100.0,
+            tp=106.0,
+            blackout_bars=df,
+        )
+        self.assertEqual(recovery["action"], "CONTINUE_IN_TRADE")
+        self.assertFalse(recovery["terminal"])
+        self.assertEqual(recovery["current_price"], 103.9)
+
 
 if __name__ == "__main__":
     unittest.main()
+

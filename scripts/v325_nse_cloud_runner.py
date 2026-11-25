@@ -418,7 +418,18 @@ def run_monitoring_loop(candidate: dict[str, Any], is_test: bool = False) -> Non
                 latest_l = float(latest_bar["Low"])
                 bar_time = latest_ts.strftime("%H:%M:%S IST")
 
-                recovery = evaluate_stale_recovery(in_trade, latest_bar, trigger, sl, tp)
+                # Slice all completed bars formed during the outage window
+                blackout_bars = (
+                    completed.loc[completed.index > last_processed]
+                    if last_processed is not None
+                    else completed.iloc[[-1]]
+                )
+                if blackout_bars.empty:
+                    blackout_bars = completed.iloc[[-1]]
+
+                recovery = evaluate_stale_recovery(
+                    in_trade, latest_bar, trigger, sl, tp, blackout_bars=blackout_bars
+                )
                 last_processed = latest_ts
 
                 if recovery["action"] == "DISCARD_AND_RESUME":
