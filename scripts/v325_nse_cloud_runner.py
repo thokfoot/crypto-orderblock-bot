@@ -436,6 +436,7 @@ def run_monitoring_loop(candidate: dict[str, Any], is_test: bool = False) -> Non
                     blackout_bars=blackout_bars,
                     last_processed_ts=last_processed,
                     expected_latest_ts=latest_ts,
+                    exchange="NSE",
                 )
 
                 if recovery["action"] == "RECOVERY_DATA_INCOMPLETE":

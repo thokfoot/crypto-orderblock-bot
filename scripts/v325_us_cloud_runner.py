@@ -278,6 +278,7 @@ def run_us_engine(test_mode: bool = False):
                         blackout_bars=blackout_bars,
                         last_processed_ts=last_processed,
                         expected_latest_ts=latest_ts,
+                        exchange="US",
                     )
 
                     if recovery["action"] == "RECOVERY_DATA_INCOMPLETE":

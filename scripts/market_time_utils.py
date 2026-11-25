@@ -85,70 +85,174 @@ def is_fresh_1m_data(
     return 0 <= age <= max_age_seconds
 
 
+# Canonical Trading Holidays for 2026
+NSE_2026_HOLIDAYS: set[dt.date] = {
+    dt.date(2026, 1, 26),  # Republic Day
+    dt.date(2026, 3, 3),   # Holi
+    dt.date(2026, 3, 20),  # Id-ul-Fitr
+    dt.date(2026, 4, 3),   # Good Friday
+    dt.date(2026, 4, 14),  # Dr. Ambedkar Jayanti
+    dt.date(2026, 5, 1),   # Maharashtra Day
+    dt.date(2026, 5, 27),  # Bakri Id
+    dt.date(2026, 6, 26),  # Muharram
+    dt.date(2026, 8, 15),  # Independence Day
+    dt.date(2026, 10, 2),  # Mahatma Gandhi Jayanti
+    dt.date(2026, 10, 20), # Dussehra
+    dt.date(2026, 11, 8),  # Diwali / Laxmi Pujan
+    dt.date(2026, 11, 10), # Diwali Balipratipada
+    dt.date(2026, 11, 24), # Gurunanak Jayanti
+    dt.date(2026, 12, 25), # Christmas
+}
+
+US_2026_HOLIDAYS: set[dt.date] = {
+    dt.date(2026, 1, 1),   # New Year's Day
+    dt.date(2026, 1, 19),  # Martin Luther King Jr. Day
+    dt.date(2026, 2, 16),  # Presidents' Day
+    dt.date(2026, 4, 3),   # Good Friday
+    dt.date(2026, 5, 25),  # Memorial Day
+    dt.date(2026, 6, 19),  # Juneteenth
+    dt.date(2026, 7, 3),   # Independence Day (Observed)
+    dt.date(2026, 9, 7),   # Labor Day
+    dt.date(2026, 11, 26), # Thanksgiving
+    dt.date(2026, 12, 25), # Christmas
+}
+
+
+def get_exchange_expected_1m_range(
+    start_ts: pd.Timestamp | dt.datetime,
+    end_ts: pd.Timestamp | dt.datetime,
+    exchange: str = "NSE",
+    custom_holidays: set[dt.date] | None = None,
+) -> pd.DatetimeIndex:
+    """
+    Generate the exact set of expected 1-minute tradable bar start timestamps
+    for an exchange, accounting for regular session trading hours, weekends,
+    and official exchange holidays.
+
+    Exchanges supported:
+    - 'NSE' (India): 09:15 to 15:29 IST, Mon-Fri, excluding NSE holidays.
+    - 'US' (NYSE/NASDAQ): 09:30 to 15:59 ET, Mon-Fri, excluding US holidays.
+    """
+    if exchange.upper() in ("NSE", "INDIA", "NIFTY"):
+        open_time = dt.time(9, 15)
+        close_time = dt.time(15, 29)
+        tz_name = "Asia/Kolkata"
+        holiday_set = set(NSE_2026_HOLIDAYS)
+    else:
+        open_time = dt.time(9, 30)
+        close_time = dt.time(15, 59)
+        tz_name = "America/New_York"
+        holiday_set = set(US_2026_HOLIDAYS)
+
+    if custom_holidays:
+        holiday_set.update(custom_holidays)
+
+    tz = ZoneInfo(tz_name)
+    s = pd.Timestamp(start_ts)
+    s = s.tz_convert(tz) if s.tz is not None else s.tz_localize(tz)
+    e = pd.Timestamp(end_ts)
+    e = e.tz_convert(tz) if e.tz is not None else e.tz_localize(tz)
+
+    if s > e:
+        return pd.DatetimeIndex([], tz=tz)
+
+    expected_bars = []
+    cur_date = s.date()
+    while cur_date <= e.date():
+        if cur_date.weekday() < 5 and cur_date not in holiday_set:
+            day_open = pd.Timestamp(dt.datetime.combine(cur_date, open_time, tzinfo=tz))
+            day_close = pd.Timestamp(dt.datetime.combine(cur_date, close_time, tzinfo=tz))
+
+            day_start = max(s, day_open)
+            day_end = min(e, day_close)
+
+            if day_start <= day_end:
+                day_bars = pd.date_range(start=day_start, end=day_end, freq="min")
+                expected_bars.extend(day_bars)
+        cur_date += dt.timedelta(days=1)
+
+    if not expected_bars:
+        return pd.DatetimeIndex([], tz=tz)
+    return pd.DatetimeIndex(expected_bars, tz=tz)
+
+
 def validate_blackout_continuity(
     blackout_bars: pd.DataFrame,
     last_processed_ts: pd.Timestamp | dt.datetime | None = None,
     expected_latest_ts: pd.Timestamp | dt.datetime | None = None,
     expected_range: pd.DatetimeIndex | None = None,
+    exchange: str = "NSE",
+    custom_holidays: set[dt.date] | None = None,
 ) -> list[pd.Timestamp]:
     """
-    Validate that blackout_bars contains every expected 1-minute bar without gaps.
+    Validate that blackout_bars contains every expected 1-minute tradable bar without gaps.
     Returns a list of missing Timestamp objects (empty if data is contiguous and complete).
 
-    Checks:
-    - Missing first candle(s): bars between (last_processed_ts + 1m) and first received bar.
-    - Missing middle candle(s): internal gaps within received bars.
-    - Missing last candle(s): bars between last received bar and expected_latest_ts.
+    Calendar-Aware Continuity:
+    - If expected_range is explicitly provided, uses it directly (normalized to canonical exchange timezone).
+    - If expected_range is None, derives the expected tradable bars from get_exchange_expected_1m_range,
+      strictly respecting exchange session open/close boundaries, weekends, and holidays.
+    - Missing first candle(s): tradable bars between (last_processed_ts + 1m) and first received bar.
+    - Missing middle candle(s): internal gaps within tradable session hours.
+    - Missing last candle(s): tradable bars between last received bar and expected_latest_ts.
     """
+    tz_name = "Asia/Kolkata" if exchange.upper() in ("NSE", "INDIA", "NIFTY") else "America/New_York"
+    exchange_tz = ZoneInfo(tz_name)
+
+    # 1. Normalize blackout_bars index to canonical exchange timezone
     if blackout_bars.empty:
-        if expected_range is not None:
-            return list(expected_range)
+        bars_idx = pd.DatetimeIndex([], tz=exchange_tz)
+    else:
+        bars_idx = pd.DatetimeIndex(blackout_bars.index)
+        if bars_idx.tz is None:
+            bars_idx = bars_idx.tz_localize(exchange_tz)
+        else:
+            bars_idx = bars_idx.tz_convert(exchange_tz)
+
+    # 2. Use explicit expected_range if provided (Auditor Requirement #4)
+    if expected_range is not None:
+        target_range = pd.DatetimeIndex(expected_range)
+        if target_range.tz is None:
+            target_range = target_range.tz_localize(exchange_tz)
+        else:
+            target_range = target_range.tz_convert(exchange_tz)
+        missing = target_range.difference(bars_idx)
+        return list(missing)
+
+    # 3. If blackout_bars is empty and bounds are given, compute expected range
+    if blackout_bars.empty:
         if last_processed_ts is not None and expected_latest_ts is not None:
-            start_ts = pd.Timestamp(last_processed_ts) + dt.timedelta(minutes=1)
-            end_ts = pd.Timestamp(expected_latest_ts)
-            if start_ts <= end_ts:
-                return list(pd.date_range(start=start_ts, end=end_ts, freq="min"))
+            s = pd.Timestamp(last_processed_ts)
+            s = (s.tz_convert(exchange_tz) if s.tz is not None else s.tz_localize(exchange_tz)) + dt.timedelta(minutes=1)
+            e = pd.Timestamp(expected_latest_ts)
+            e = e.tz_convert(exchange_tz) if e.tz is not None else e.tz_localize(exchange_tz)
+            if s <= e:
+                target_range = get_exchange_expected_1m_range(s, e, exchange=exchange, custom_holidays=custom_holidays)
+                return list(target_range)
         return []
 
-    bars_idx = pd.DatetimeIndex(blackout_bars.index)
-    tz = bars_idx.tz
-
-    if expected_range is not None:
-        target_range = expected_range
-        if tz is not None and target_range.tz is None:
-            target_range = target_range.tz_localize(tz)
-        elif tz is not None and target_range.tz != tz:
-            target_range = target_range.tz_convert(tz)
-        return list(target_range.difference(bars_idx))
-
-    # Derive start timestamp (first expected bar after last_processed)
+    # 4. Derive start_ts and end_ts with canonical exchange timezone
     if last_processed_ts is not None:
-        start_ts = pd.Timestamp(last_processed_ts)
-        if tz is not None:
-            if start_ts.tz is None:
-                start_ts = start_ts.tz_localize(tz)
-            else:
-                start_ts = start_ts.tz_convert(tz)
-        start_ts = start_ts + dt.timedelta(minutes=1)
+        s = pd.Timestamp(last_processed_ts)
+        s = s.tz_convert(exchange_tz) if s.tz is not None else s.tz_localize(exchange_tz)
+        start_ts = s + dt.timedelta(minutes=1)
     else:
         start_ts = bars_idx[0]
 
-    # Derive end timestamp (expected latest completed bar)
     if expected_latest_ts is not None:
-        end_ts = pd.Timestamp(expected_latest_ts)
-        if tz is not None:
-            if end_ts.tz is None:
-                end_ts = end_ts.tz_localize(tz)
-            else:
-                end_ts = end_ts.tz_convert(tz)
+        e = pd.Timestamp(expected_latest_ts)
+        end_ts = e.tz_convert(exchange_tz) if e.tz is not None else e.tz_localize(exchange_tz)
     else:
         end_ts = bars_idx[-1]
 
     if start_ts > end_ts:
         return []
 
-    full_expected = pd.date_range(start=start_ts, end=end_ts, freq="min")
-    missing = full_expected.difference(bars_idx)
+    # 5. Compute exchange-session-aware expected 1-minute range
+    target_range = get_exchange_expected_1m_range(
+        start_ts, end_ts, exchange=exchange, custom_holidays=custom_holidays
+    )
+    missing = target_range.difference(bars_idx)
     return list(missing)
 
 
@@ -163,6 +267,8 @@ def evaluate_stale_recovery(
     expected_latest_ts: pd.Timestamp | dt.datetime | None = None,
     expected_range: pd.DatetimeIndex | None = None,
     require_continuity: bool = True,
+    exchange: str = "NSE",
+    custom_holidays: set[dt.date] | None = None,
 ) -> dict:
     """
     Evaluate market state after recovering from a stale data feed outage.
@@ -204,6 +310,8 @@ def evaluate_stale_recovery(
             last_processed_ts=last_processed_ts,
             expected_latest_ts=expected_latest_ts,
             expected_range=expected_range,
+            exchange=exchange,
+            custom_holidays=custom_holidays,
         )
         if missing_bars:
             return {
