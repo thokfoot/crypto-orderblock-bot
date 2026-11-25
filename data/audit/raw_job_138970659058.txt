@@ -1,0 +1,331 @@
+run-nse-engine	UNKNOWN STEP	﻿2026-11-25T04:06:30.0298499Z Current runner version: '2.338.2'
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0324442Z ##[group]Runner Image Provisioner
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0325410Z Hosted Compute Agent
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0325995Z Version: 20261111.635
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0326695Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0327567Z Build Date: 2026-11-11T01:49:01Z
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0328259Z Worker ID: {36d964e0-5754-413b-85db-5febbec1b49a}
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0329072Z Region: us-east-1
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0329643Z Cloud: AWS
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0330270Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0332190Z ##[group]Operating System
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0332848Z Ubuntu
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0333450Z 26.04.1
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0334043Z LTS
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0334611Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0335187Z ##[group]Runner Image
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0335796Z Image: ubuntu-26.04
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0336480Z Version: 20261116.88.1
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0337834Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261116.88/images/ubuntu/Ubuntu2604-Readme.md
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0339681Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261116.88
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0340941Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0342150Z ##[group]GITHUB_TOKEN Permissions
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0344845Z Contents: read
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0345500Z Metadata: read
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0346151Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0348079Z Secret source: Actions
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0349137Z Cache mode: write
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0350078Z Prepare workflow directory
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0688276Z Prepare all required actions
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0741183Z Getting action download info
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.2446573Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.4919749Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.7829034Z Complete job name: run-nse-engine
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.8546603Z ##[group]Run actions/checkout@v4
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.8547379Z with:
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.8547887Z   repository: thokfoot/crypto-orderblock-bot
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.8551385Z   token: ***
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.8551868Z   ssh-strict: true
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.8552297Z   ssh-user: git
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.8552795Z   persist-credentials: true
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.8553269Z   clean: true
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.8553915Z   sparse-checkout-cone-mode: true
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.8554448Z   fetch-depth: 1
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.8554901Z   fetch-tags: false
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.8555368Z   show-progress: true
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.8555865Z   lfs: false
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.8556270Z   submodules: false
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.8556759Z   set-safe-directory: true
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.8557263Z   allow-unsafe-pr-checkout: false
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:31.8557939Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:34.9636463Z Syncing repository: thokfoot/crypto-orderblock-bot
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:34.9639752Z ##[group]Getting Git version info
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:34.9641941Z Working directory is '/home/runner/work/crypto-orderblock-bot/crypto-orderblock-bot'
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:34.9644047Z [command]/usr/bin/git version
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:34.9644924Z git version 2.56.1
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:34.9648506Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:34.9654863Z Temporarily overriding HOME='/home/runner/work/_temp/d28594ca-2ad2-412e-8dec-01dfc3dcef74' before making global git config changes
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:34.9657329Z Adding repository directory to the temporary git global config as a safe directory
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:34.9659610Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/crypto-orderblock-bot/crypto-orderblock-bot
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:34.9746918Z Deleting the contents of '/home/runner/work/crypto-orderblock-bot/crypto-orderblock-bot'
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:34.9752722Z ##[group]Initializing the repository
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:34.9755194Z [command]/usr/bin/git init /home/runner/work/crypto-orderblock-bot/crypto-orderblock-bot
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0529388Z hint: Using 'master' as the name for the initial branch. This default branch name
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0532155Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0534290Z hint: to use in all of your new repositories, which will suppress this warning,
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0536029Z hint: call:
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0537004Z hint:
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0538163Z hint: 	git config --global init.defaultBranch <name>
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0539599Z hint:
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0541060Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0543132Z hint: 'development'. The just-created branch can be renamed via this command:
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0544935Z hint:
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0546102Z hint: 	git branch -m <name>
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0547312Z hint:
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0548770Z hint: Disable this message with "git config set advice.defaultBranchName false"
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0556959Z Initialized empty Git repository in /home/runner/work/crypto-orderblock-bot/crypto-orderblock-bot/.git/
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0565673Z [command]/usr/bin/git remote add origin https://github.com/thokfoot/crypto-orderblock-bot
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0633940Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0635898Z ##[group]Disabling automatic garbage collection
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0637303Z [command]/usr/bin/git config --local gc.auto 0
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0664105Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0666347Z ##[group]Setting up auth
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0668833Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.0692632Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.4558227Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.4586923Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.4769146Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.4792329Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.4966585Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.4991745Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.4992187Z ##[group]Fetching the repository
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.4997369Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +cd52ba5d79230895ea9108aa651cb32122ea6f1a:refs/remotes/origin/main
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.8838561Z From https://github.com/thokfoot/crypto-orderblock-bot
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.8839214Z  * [new ref]         cd52ba5d79230895ea9108aa651cb32122ea6f1a -> origin/main
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.8851260Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.8851899Z ##[group]Determining the checkout info
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.8852473Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.8852857Z [command]/usr/bin/git sparse-checkout disable
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.8914917Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.8935159Z ##[group]Checking out the ref
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.8938537Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.9048834Z Switched to a new branch 'main'
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.9057573Z branch 'main' set up to track 'origin/main'.
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.9063336Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.9101721Z [command]/usr/bin/git log -1 --format=%H
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.9117636Z cd52ba5d79230895ea9108aa651cb32122ea6f1a
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.9337926Z ##[group]Run actions/setup-python@v5
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.9338225Z with:
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.9338456Z   python-version: 3.11
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.9338751Z   check-latest: false
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.9340514Z   token: ***
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.9341109Z   update-environment: true
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.9341379Z   allow-prereleases: false
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.9341694Z   freethreaded: false
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:35.9341954Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:36.0358876Z ##[group]Installed versions
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:36.4860984Z (node:2376) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:36.4861858Z (Use `node --trace-deprecation ...` to show where the warning was created)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:36.4863195Z Successfully set up CPython (3.11.18)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:36.4863897Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:36.4982182Z ##[group]Run python -m pip install --upgrade pip
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:36.4982847Z ^[[36;1mpython -m pip install --upgrade pip^[[0m
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:36.4983341Z ^[[36;1mpip install yfinance pandas numpy requests^[[0m
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:36.5742250Z shell: /usr/bin/bash -e {0}
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:36.5742696Z env:
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:36.5742993Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:36.5743420Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib/pkgconfig
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:36.5743978Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:36.5744343Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:36.5744700Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:36.5745063Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:36.5745386Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:41.4459957Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages (26.3)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:43.1361737Z Collecting yfinance
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:43.2797360Z   Downloading yfinance-1.8.0-py3-none-any.whl.metadata (6.8 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:43.4932825Z Collecting pandas
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:43.5377977Z   Downloading pandas-3.1.1-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (16 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:43.7472889Z Collecting numpy
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:43.7928185Z   Downloading numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:43.8519250Z Collecting requests
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:43.8967314Z   Downloading requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:43.9502377Z Collecting beautifulsoup4>=4.11.1 (from yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:43.9951078Z   Downloading beautifulsoup4-4.15.0-py3-none-any.whl.metadata (3.8 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:44.0771890Z Collecting curl_cffi>=0.17 (from yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:44.1231164Z   Downloading curl_cffi-0.17.0-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (18 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:44.3249328Z Collecting lxml>=4.9.0 (from yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:44.3701417Z   Downloading lxml-6.1.3-cp311-cp311-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl.metadata (3.3 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:44.4279516Z Collecting peewee>=3.16.2 (from yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:44.4728285Z   Downloading peewee-4.5.3-py3-none-any.whl.metadata (10 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:44.5344903Z Collecting platformdirs>=2.0.0 (from yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:44.5808679Z   Downloading platformdirs-4.14.8-py3-none-any.whl.metadata (5.7 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:44.7052955Z Collecting protobuf>=3.19.0 (from yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:44.7511231Z   Downloading protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl.metadata (595 bytes)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:44.8141774Z Collecting pytz>=2022.5 (from yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:44.8590307Z   Downloading pytz-2026.6-py2.py3-none-any.whl.metadata (22 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:45.0003413Z Collecting websockets>=13.0 (from yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:45.0452804Z   Downloading websockets-17.4-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.3 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:45.0998975Z Collecting python-dateutil>=2.9.0 (from pandas)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:45.1446133Z   Downloading python_dateutil-4.0.0-py3-none-any.whl.metadata (7.3 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:45.2657191Z Collecting charset_normalizer<4,>=2 (from requests)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:45.3103767Z   Downloading charset_normalizer-3.5.3-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (43 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:45.3826115Z Collecting idna<4,>=2.5 (from requests)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:45.4270420Z   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:45.4835013Z Collecting urllib3<3,>=1.26 (from requests)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:45.5280751Z   Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:45.5821936Z Collecting certifi>=2023.5.7 (from requests)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:45.6269183Z   Downloading certifi-2026.11.20-py3-none-any.whl.metadata (2.5 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:45.6829450Z Collecting soupsieve>=1.6.1 (from beautifulsoup4>=4.11.1->yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:45.7281803Z   Downloading soupsieve-4.1.3-py3-none-any.whl.metadata (4.4 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:45.7834669Z Collecting typing-extensions>=4.0.0 (from beautifulsoup4>=4.11.1->yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:45.8284244Z   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:45.9302906Z Collecting cffi>=2.1.1 (from curl_cffi>=0.17->yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:45.9759031Z   Downloading cffi-2.1.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:46.0270088Z Collecting pycparser (from cffi>=2.1.1->curl_cffi>=0.17->yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:46.0722696Z   Downloading pycparser-3.12-py3-none-any.whl.metadata (9.7 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:46.1266362Z Collecting tzdata (from python-dateutil>=2.9.0->pandas)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:46.1713019Z   Downloading tzdata-2026.6-py2.py3-none-any.whl.metadata (1.4 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:46.2196051Z Downloading yfinance-1.8.0-py3-none-any.whl (158 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:46.3196672Z Downloading pandas-3.1.1-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (12.4 MB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:46.6117837Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.4/12.4 MB 49.7 MB/s  0:00:00
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:46.6570242Z Downloading numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.9 MB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:46.7765316Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.9/16.9 MB 142.0 MB/s  0:00:00
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:46.8212257Z Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:46.8672510Z Downloading charset_normalizer-3.5.3-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (263 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:46.9153560Z Downloading idna-3.20-py3-none-any.whl (69 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:46.9613225Z Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:47.0070687Z Downloading beautifulsoup4-4.15.0-py3-none-any.whl (109 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:47.0543294Z Downloading certifi-2026.11.20-py3-none-any.whl (127 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:47.1045879Z Downloading curl_cffi-0.17.0-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (14.1 MB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:47.2054762Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.1/14.1 MB 139.9 MB/s  0:00:00
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:47.2513446Z Downloading cffi-2.1.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (217 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:47.3018241Z Downloading lxml-6.1.3-cp311-cp311-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl (5.2 MB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:47.3326305Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.2/5.2 MB 170.2 MB/s  0:00:00
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:47.3809124Z Downloading peewee-4.5.3-py3-none-any.whl (194 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:47.4290204Z Downloading platformdirs-4.14.8-py3-none-any.whl (94 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:47.4802520Z Downloading protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl (343 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:47.5282005Z Downloading python_dateutil-4.0.0-py3-none-any.whl (92 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:47.5740371Z Downloading pytz-2026.6-py2.py3-none-any.whl (506 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:47.6222819Z Downloading soupsieve-4.1.3-py3-none-any.whl (59 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:47.6714796Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:47.7172119Z Downloading websockets-17.4-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (226 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:47.7656725Z Downloading pycparser-3.12-py3-none-any.whl (62 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:47.8113470Z Downloading tzdata-2026.6-py2.py3-none-any.whl (348 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:47.9556126Z Installing collected packages: pytz, websockets, urllib3, tzdata, typing-extensions, soupsieve, pycparser, protobuf, platformdirs, peewee, numpy, lxml, idna, charset_normalizer, certifi, requests, python-dateutil, cffi, beautifulsoup4, pandas, curl_cffi, yfinance
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.0412536Z 
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.0424777Z Successfully installed beautifulsoup4-4.15.0 certifi-2026.11.20 cffi-2.1.1 charset_normalizer-3.5.3 curl_cffi-0.17.0 idna-3.20 lxml-6.1.3 numpy-2.4.6 pandas-3.1.1 peewee-4.5.3 platformdirs-4.14.8 protobuf-7.36.2 pycparser-3.12 python-dateutil-4.0.0 pytz-2026.6 requests-2.34.2 soupsieve-4.1.3 typing-extensions-4.16.0 tzdata-2026.6 urllib3-2.8.0 websockets-17.4 yfinance-1.8.0
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.1326450Z ##[group]Run python -m unittest discover -s tests -v
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.1326828Z ^[[36;1mpython -m unittest discover -s tests -v^[[0m
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.1347044Z shell: /usr/bin/bash -e {0}
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.1347485Z env:
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.1347764Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.1348171Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib/pkgconfig
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.1348554Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.1348968Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.1349327Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.1349671Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.1350009Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.8983189Z test_bad_credentials_do_not_get_skipped (test_dry_run_policy.FyersPolicyTests.test_bad_credentials_do_not_get_skipped) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.8984510Z test_missing_credentials_are_skipped_when_optional (test_dry_run_policy.FyersPolicyTests.test_missing_credentials_are_skipped_when_optional) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.8985299Z test_missing_credentials_fail_when_required (test_dry_run_policy.FyersPolicyTests.test_missing_credentials_fail_when_required) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.8986019Z test_valid_fyers_connection_passes (test_dry_run_policy.FyersPolicyTests.test_valid_fyers_connection_passes) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.9380481Z test_current_forming_minute_is_excluded (test_market_time_utils.MarketTimeUtilsTests.test_current_forming_minute_is_excluded) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.9387661Z test_exact_twenty_minute_window_is_accepted (test_market_time_utils.MarketTimeUtilsTests.test_exact_twenty_minute_window_is_accepted) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.9750420Z test_incomplete_or_window_is_rejected (test_market_time_utils.MarketTimeUtilsTests.test_incomplete_or_window_is_rejected) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.9754358Z test_stale_data_is_rejected (test_market_time_utils.MarketTimeUtilsTests.test_stale_data_is_rejected) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.9755181Z test_us_timezone_observes_dst (test_market_time_utils.MarketTimeUtilsTests.test_us_timezone_observes_dst) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.9755502Z 
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.9755669Z ----------------------------------------------------------------------
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.9756143Z Ran 9 tests in 0.077s
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.9756330Z 
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:53.9756440Z OK
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:54.0275602Z ##[group]Run if [ "false" = "true" ]; then
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:54.0275985Z ^[[36;1mif [ "false" = "true" ]; then^[[0m
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:54.0276305Z ^[[36;1m  python scripts/v325_nse_cloud_runner.py --test^[[0m
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:54.0276599Z ^[[36;1melse^[[0m
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:54.0276879Z ^[[36;1m  python scripts/v325_nse_cloud_runner.py^[[0m
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:54.0277164Z ^[[36;1mfi^[[0m
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:54.0296395Z shell: /usr/bin/bash -e {0}
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:54.0296696Z env:
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:54.0296972Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:54.0297374Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib/pkgconfig
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:54.0297767Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:54.0298483Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:54.0298832Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:54.0299308Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:54.0299848Z   AUTOMATION_TELEGRAM_BOT_TOKEN: ***
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:54.0300163Z   AUTOMATION_TELEGRAM_CHAT_ID: ***
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:54.0300403Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-25T05:21:59.4473017Z $BRITANNIA.NS: possibly delisted; no price data found  (period=1d)
+run-nse-engine	UNKNOWN STEP	2026-11-25T06:37:34.5859274Z $BRITANNIA.NS: possibly delisted; no price data found  (period=1d)
+run-nse-engine	UNKNOWN STEP	2026-11-25T07:53:09.4712800Z $BRITANNIA.NS: possibly delisted; no price data found  (period=1d)
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:08:44.5949627Z $BRITANNIA.NS: possibly delisted; no price data found  (period=1d)
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3959393Z ================================================================================
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3959849Z   STRATEGY v3.2.5 NSE 10-SECTOR SCANNER (Target Date: 2026-11-25)
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3960207Z   Timestamp: 2026-11-25 09:36:54 IST
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3960461Z ================================================================================
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3960941Z Fetching Nifty 50 benchmark (^NSEI)...
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3961255Z Nifty 50 Move: +0.47% (Open: 25658.35 -> Close: 25779.80)
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3961426Z 
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3961525Z ================================================================================
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3961798Z RANK  SECTOR               BREADTH         AVG MOVE     ALPHA vs NIFTY
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3962106Z ================================================================================
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3962419Z #1    FMCG                 5/5 (100.0%)   coverage= 100%    +1.06%      +0.59pp
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3962740Z #2    Banking              6/6 (100.0%)   coverage= 100%    +1.03%      +0.56pp
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3963123Z #3    FinServices          5/5 (100.0%)   coverage= 100%    +1.03%      +0.55pp
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3963505Z #4    Energy_Utilities     6/6 (100.0%)   coverage= 100%    +0.82%      +0.34pp
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3963898Z #5    Infra_CapGoods       2/3 ( 66.7%)   coverage= 100%    +0.16%      -0.31pp
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3964323Z #6    Consumer_Retail      2/4 ( 50.0%)   coverage= 100%    -0.04%      -0.52pp
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3964666Z #7    Metals_Materials     2/5 ( 40.0%)   coverage= 100%    +0.03%      -0.44pp
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3964988Z #8    Automobile           1/5 ( 20.0%)   coverage= 100%    -0.20%      -0.68pp
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3965279Z #9    IT_Tech              1/5 ( 20.0%)   coverage= 100%    -0.43%      -0.91pp
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3965565Z #10   Pharma_Health        1/5 ( 20.0%)   coverage= 100%    -0.61%      -1.08pp
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3965747Z 
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3966104Z 🏆 #1 LEADER SECTOR: FMCG
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3966219Z 
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3966313Z ################################################################################
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3966609Z 🎯 PRIMARY CANDIDATE LOCKED: BRITANNIA (FMCG)
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3966914Z    • 20-min Completed ORH (09:15-09:34): ₹4907.60
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3967198Z    • Pre-Declared Trigger (>= ORH x 1.0003): >= ₹4909.07
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3967779Z    • 1.00% Hard Stop Loss: ₹4859.98
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3968021Z    • +2.00% Take Profit Target: ₹5007.25
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3968253Z    • 14d ATR: 2.78% (Threshold: >= 2.50%)
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3968506Z    • Execution Gate: STRICTLY >= 09:45:00 IST (Law 2)
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3968748Z ################################################################################
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3969102Z [Telegram Sent - msg_id 1000] 🎯 *[NSE PAPER SIGNAL] SCAN COMPLETE — 2026-11-25*
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3969300Z 
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3969420Z ================================================================================
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3969664Z   LAUNCHING INTRADAY MONITORING LOOP: BRITANNIA
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3970217Z   Gate: >= 09:45:00 IST | Trigger: >= ₹4909.07 | SL: ₹4859.98 | TP: ₹5007.25
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3970966Z ================================================================================
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3971293Z 🚨 *[NSE PAPER SIGNAL] BREAKOUT LEVEL REACHED*
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3971533Z • Stock: *BRITANNIA*
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3971742Z • Reference Fill: `₹4909.07`
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3971937Z • Time: `09:45:00 IST`
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3972124Z • 1.00% Hard SL: `₹4859.98`
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3972322Z • +2.00% TP Target: `₹5007.25`
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3972564Z • Note: *Signal only; no broker order was placed.*
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3972891Z [Telegram Sent - msg_id 1001] 🚨 *[NSE PAPER SIGNAL] BREAKOUT LEVEL REACHED*
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3973384Z ⚠️ [NSE STALE DATA] BRITANNIA: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3974036Z [Telegram Sent - msg_id 1002] ⚠️ [NSE STALE DATA] BRITANNIA: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3974709Z ⚠️ [NSE STALE DATA] BRITANNIA: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3975478Z [Telegram Sent - msg_id 1003] ⚠️ [NSE STALE DATA] BRITANNIA: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3976126Z ⚠️ [NSE STALE DATA] BRITANNIA: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3976739Z [Telegram Sent - msg_id 1004] ⚠️ [NSE STALE DATA] BRITANNIA: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3977351Z ⚠️ [NSE STALE DATA] BRITANNIA: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3977959Z [Telegram Sent - msg_id 1005] ⚠️ [NSE STALE DATA] BRITANNIA: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3978400Z 🎯 *[NSE PAPER SIGNAL — TARGET LEVEL HIT]*
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3978629Z • Stock: *BRITANNIA*
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3978822Z • Reference Exit: `₹5007.25`
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3979021Z • Time: `14:42:00 IST`
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3979245Z • Note: *Signal only; no broker order was placed.*
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3979561Z [Telegram Sent - msg_id 1006] 🎯 *[NSE PAPER SIGNAL — TARGET LEVEL HIT]*
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.4755768Z Post job cleanup.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.5693534Z (node:4050) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.5694077Z (Use `node --trace-deprecation ...` to show where the warning was created)
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.5808120Z Post job cleanup.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.6511903Z [command]/usr/bin/git version
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.6541815Z git version 2.56.1
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.6573444Z Temporarily overriding HOME='/home/runner/work/_temp/2a1bc310-fd77-465c-a3e5-c29a2d5c37bf' before making global git config changes
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.6574582Z Adding repository directory to the temporary git global config as a safe directory
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.6577975Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/crypto-orderblock-bot/crypto-orderblock-bot
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.6607791Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.6633692Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.6836746Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.6854461Z http.https://github.com/.extraheader
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.6863230Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.6889995Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.7092856Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.7117219Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.7454682Z Cleaning up orphan processes
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.7655680Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
