@@ -1,0 +1,14 @@
+run-nse-engine	UNKNOWN STEP	2026-11-25T04:06:30.0326695Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3969102Z [Telegram Sent - msg_id 1000] 🎯 *[NSE PAPER SIGNAL] SCAN COMPLETE — 2026-11-25*
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3971293Z 🚨 *[NSE PAPER SIGNAL] BREAKOUT LEVEL REACHED*
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3972891Z [Telegram Sent - msg_id 1001] 🚨 *[NSE PAPER SIGNAL] BREAKOUT LEVEL REACHED*
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3973384Z ⚠️ [NSE STALE DATA] BRITANNIA: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3974036Z [Telegram Sent - msg_id 1002] ⚠️ [NSE STALE DATA] BRITANNIA: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3974709Z ⚠️ [NSE STALE DATA] BRITANNIA: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3975478Z [Telegram Sent - msg_id 1003] ⚠️ [NSE STALE DATA] BRITANNIA: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3976126Z ⚠️ [NSE STALE DATA] BRITANNIA: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3976739Z [Telegram Sent - msg_id 1004] ⚠️ [NSE STALE DATA] BRITANNIA: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3977351Z ⚠️ [NSE STALE DATA] BRITANNIA: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3977959Z [Telegram Sent - msg_id 1005] ⚠️ [NSE STALE DATA] BRITANNIA: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3978400Z 🎯 *[NSE PAPER SIGNAL — TARGET LEVEL HIT]*
+run-nse-engine	UNKNOWN STEP	2026-11-25T09:13:06.3979561Z [Telegram Sent - msg_id 1006] 🎯 *[NSE PAPER SIGNAL — TARGET LEVEL HIT]*

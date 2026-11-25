@@ -1,0 +1,14 @@
+{
+  "ticker": "BRITANNIA.NS",
+  "session_date": "2026-11-25",
+  "retrieval_timestamp_utc": "2026-11-25T13:37:36.144664+00:00",
+  "retrieval_timestamp_ist": "2026-11-25T19:07:36.148629+05:30",
+  "total_1m_bars": 361,
+  "exchange_timezone": "Asia/Kolkata (IST, UTC+05:30)",
+  "first_bar": "2026-11-25 09:15:00+05:30",
+  "last_bar": "2026-11-25 15:29:00+05:30",
+  "target_level": 5007.25,
+  "crossing_bar_timestamp": "2026-11-25 14:42:00+05:30",
+  "crossing_bar_high": 5008.0,
+  "crossing_bar_close": 5007.2998046875
+}
