@@ -83,3 +83,70 @@ def is_fresh_1m_data(
     latest_close = latest_start + dt.timedelta(minutes=1)
     age = (local_now - latest_close).total_seconds()
     return 0 <= age <= max_age_seconds
+
+
+def evaluate_stale_recovery(
+    in_trade: bool,
+    latest_bar: pd.Series,
+    trigger: float,
+    sl: float,
+    tp: float,
+) -> dict:
+    """
+    Evaluate market state after recovering from a stale data feed outage.
+    
+    Rules:
+    1. Pre-entry (in_trade=False):
+       Blackout candles formed during the outage are strictly discarded to prevent
+       retrospective backfilling of entries. Returns action='DISCARD_AND_RESUME'.
+    2. In-trade (in_trade=True):
+       Evaluates actual observable market price on the reconnection bar.
+       If price breached SL or TP during the outage, records an outage exit at the
+       observable market price (conservative min(sl, close) for stop loss) with
+       uncertainty provenance, rather than assuming an exact synthetic fill.
+    """
+    latest_c = float(latest_bar["Close"])
+    latest_h = float(latest_bar["High"])
+    latest_l = float(latest_bar["Low"])
+
+    if not in_trade:
+        return {
+            "action": "DISCARD_AND_RESUME",
+            "triggered": False,
+            "terminal": False,
+            "exit_price": None,
+            "uncertainty": False,
+            "reason": "anti_backfill_discard",
+        }
+
+    # In-trade evaluation
+    if latest_l <= sl:
+        exit_price = min(sl, latest_c)  # Conservative: accounts for potential adverse gap-down
+        return {
+            "action": "OUTAGE_EXIT_STOP",
+            "triggered": True,
+            "terminal": True,
+            "exit_price": exit_price,
+            "uncertainty": True,
+            "reason": "stop_crossed_during_outage",
+        }
+    elif latest_h >= tp:
+        return {
+            "action": "OUTAGE_EXIT_TARGET",
+            "triggered": True,
+            "terminal": True,
+            "exit_price": tp,
+            "uncertainty": True,
+            "reason": "target_reached_during_outage",
+        }
+    else:
+        return {
+            "action": "CONTINUE_IN_TRADE",
+            "triggered": True,
+            "terminal": False,
+            "exit_price": None,
+            "uncertainty": False,
+            "current_price": latest_c,
+            "reason": "trade_active_within_channel",
+        }
+

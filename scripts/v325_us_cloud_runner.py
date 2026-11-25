@@ -24,9 +24,9 @@ import yfinance as yf
 from zoneinfo import ZoneInfo
 
 try:
-    from scripts.market_time_utils import completed_1m_bars, exact_minute_window, is_fresh_1m_data
+    from scripts.market_time_utils import completed_1m_bars, evaluate_stale_recovery, exact_minute_window, is_fresh_1m_data
 except ModuleNotFoundError:
-    from market_time_utils import completed_1m_bars, exact_minute_window, is_fresh_1m_data
+    from market_time_utils import completed_1m_bars, evaluate_stale_recovery, exact_minute_window, is_fresh_1m_data
 
 # Ensure UTF-8 output
 if sys.platform == "win32":
@@ -260,9 +260,10 @@ def run_us_engine(test_mode: bool = False):
                     latest_l = float(latest_bar["Low"])
                     bar_time = latest_ts.strftime("%H:%M:%S %Z")
 
-                    if not in_trade:
-                        # Anti-Backfill Rule: Never retrospectively trigger a breakout that occurred during blackout.
-                        last_processed = latest_ts
+                    recovery = evaluate_stale_recovery(in_trade, latest_bar, trig, sl, tp)
+                    last_processed = latest_ts
+
+                    if recovery["action"] == "DISCARD_AND_RESUME":
                         msg = (
                             f"ℹ️ [US DATA RESTORED] {sym}: feed reconnected at {bar_time}. "
                             f"Blackout candles discarded to prevent retrospective backfilling. "
@@ -271,46 +272,44 @@ def run_us_engine(test_mode: bool = False):
                         print(msg)
                         send_telegram(msg)
                         continue
+                    elif recovery["action"] == "OUTAGE_EXIT_STOP":
+                        exit_price = recovery["exit_price"]
+                        pnl = ((exit_price - entry_fill) / entry_fill) * 100.0 if in_trade else -1.0
+                        msg = (
+                            f"🛑 <b>[US PAPER SIGNAL — STOP OUTAGE EXIT]</b>\n"
+                            f"• <b>Stock:</b> {sym}\n"
+                            f"• <b>Observable Exit Price:</b> ${exit_price:.2f}\n"
+                            f"• <b>Indicative P&L:</b> {pnl:.2f}%\n"
+                            f"• <b>Reconnection Time:</b> {bar_time}\n"
+                            f"• <b>Execution Uncertainty:</b> TRUE (Stop crossed during blackout; recorded at observable price)"
+                        )
+                        print(msg)
+                        send_telegram(msg)
+                        terminal = True
+                        break
+                    elif recovery["action"] == "OUTAGE_EXIT_TARGET":
+                        exit_price = recovery["exit_price"]
+                        pnl = ((exit_price - entry_fill) / entry_fill) * 100.0 if in_trade else 2.0
+                        msg = (
+                            f"🎯 <b>[US PAPER SIGNAL — TARGET LEVEL HIT (POST-OUTAGE)]</b>\n"
+                            f"• <b>Stock:</b> {sym}\n"
+                            f"• <b>Observable Exit Price:</b> ${exit_price:.2f}\n"
+                            f"• <b>Indicative P&L:</b> {pnl:.2f}%\n"
+                            f"• <b>Reconnection Time:</b> {bar_time}\n"
+                            f"• <b>Execution Uncertainty:</b> TRUE (Target reached during/after feed recovery)"
+                        )
+                        print(msg)
+                        send_telegram(msg)
+                        terminal = True
+                        break
                     else:
-                        last_processed = latest_ts
-                        if latest_l <= sl:
-                            exit_price = round(sl * 0.9995, 2)
-                            pnl = ((exit_price - entry_fill) / entry_fill) * 100.0
-                            msg = (
-                                f"🛑 <b>[US PAPER SIGNAL — STOP LEVEL HIT (POST-OUTAGE)]</b>\n"
-                                f"• <b>Stock:</b> {sym}\n"
-                                f"• <b>Reference Exit:</b> ${exit_price:.2f}\n"
-                                f"• <b>Indicative P&L:</b> {pnl:.2f}%\n"
-                                f"• <b>Bar time:</b> {bar_time}\n"
-                                f"• <b>Note:</b> Position closed upon feed reconnection."
-                            )
-                            print(msg)
-                            send_telegram(msg)
-                            terminal = True
-                            break
-                        elif latest_h >= tp:
-                            exit_price = round(tp * 0.9995, 2)
-                            pnl = ((exit_price - entry_fill) / entry_fill) * 100.0
-                            msg = (
-                                f"🎯 <b>[US PAPER SIGNAL — TARGET LEVEL HIT (POST-OUTAGE)]</b>\n"
-                                f"• <b>Stock:</b> {sym}\n"
-                                f"• <b>Reference Exit:</b> ${exit_price:.2f}\n"
-                                f"• <b>Indicative P&L:</b> {pnl:.2f}%\n"
-                                f"• <b>Bar time:</b> {bar_time}\n"
-                                f"• <b>Note:</b> Target reached during/after feed recovery."
-                            )
-                            print(msg)
-                            send_telegram(msg)
-                            terminal = True
-                            break
-                        else:
-                            msg = (
-                                f"ℹ️ [US DATA RESTORED] {sym}: feed resumed at {bar_time}. "
-                                f"Trade active (Current: ${latest_c:.2f}, SL: ${sl:.2f}, TP: ${tp:.2f})."
-                            )
-                            print(msg)
-                            send_telegram(msg)
-                            continue
+                        msg = (
+                            f"ℹ️ [US DATA RESTORED] {sym}: feed resumed at {bar_time}. "
+                            f"Trade active (Current: ${latest_c:.2f}, SL: ${sl:.2f}, TP: ${tp:.2f})."
+                        )
+                        print(msg)
+                        send_telegram(msg)
+                        continue
 
             stale_polls = 0
             stale_alert_sent = False
