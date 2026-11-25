@@ -45,22 +45,19 @@ class ControlledRecoverySimulationTests(unittest.TestCase):
         # 2. Outage occurs from 09:51 to 10:00 (10 minutes)
         stale_polls = 10  # 10 consecutive failed/stale polls
 
-        # 3. Feed restores at 10:01 with completed dataframe containing:
-        #    - 09:52: normal pre-breakout candle (High 99.5)
+        # 3. Feed restores at 10:01 with completed dataframe containing ALL 10 continuous bars (09:51 to 10:00):
         #    - 09:55: BREAKOUT CANDLE in the dark! (High 101.5 >= trigger 100.0)
         #    - 10:00: reconnection bar (High 100.8, Close 100.5)
-        t_0952 = pd.Timestamp("2026-11-25 09:52:00", tz=IST)
-        t_0955 = pd.Timestamp("2026-11-25 09:55:00", tz=IST)
-        t_1000 = pd.Timestamp("2026-11-25 10:00:00", tz=IST)
-
-        completed_df = pd.DataFrame(
-            [
-                {"Open": 99.1, "High": 99.5, "Low": 98.9, "Close": 99.3},
-                {"Open": 99.4, "High": 101.5, "Low": 99.2, "Close": 101.0},  # Breakout during blackout!
-                {"Open": 100.8, "High": 100.9, "Low": 100.1, "Close": 100.5},
-            ],
-            index=[t_0952, t_0955, t_1000],
-        )
+        bar_times = pd.date_range("2026-11-25 09:51:00", "2026-11-25 10:00:00", freq="min", tz=IST)
+        bars = []
+        for t in bar_times:
+            if t.minute == 55:
+                bars.append({"Open": 99.4, "High": 101.5, "Low": 99.2, "Close": 101.0})  # Breakout candle!
+            elif t.minute == 0:
+                bars.append({"Open": 100.8, "High": 100.9, "Low": 100.1, "Close": 100.5})
+            else:
+                bars.append({"Open": 99.5, "High": 99.8, "Low": 99.1, "Close": 99.6})
+        completed_df = pd.DataFrame(bars, index=bar_times)
 
         # Runner recovery execution (exact runner logic)
         if stale_polls > 0:
@@ -69,18 +66,27 @@ class ControlledRecoverySimulationTests(unittest.TestCase):
             blackout_bars = completed_df.loc[completed_df.index > last_processed]
 
             recovery = evaluate_stale_recovery(
-                in_trade, latest_bar, trigger, sl, tp, blackout_bars=blackout_bars
+                in_trade,
+                latest_bar,
+                trigger,
+                sl,
+                tp,
+                blackout_bars=blackout_bars,
+                last_processed_ts=last_processed,
+                expected_latest_ts=latest_ts,
             )
-            last_processed = latest_ts
 
             if recovery["action"] == "DISCARD_AND_RESUME":
+                last_processed = latest_ts
                 mock_telegram(
                     f"INFO: feed reconnected. Discarded {recovery['bars_discarded']} blackout candles."
                 )
                 stale_polls = 0
             elif recovery["action"] == "OUTAGE_EXIT_STOP":
+                last_processed = latest_ts
                 terminal = True
             elif recovery["action"] == "OUTAGE_EXIT_TARGET":
+                last_processed = latest_ts
                 terminal = True
 
         # VERIFICATIONS:
@@ -88,10 +94,10 @@ class ControlledRecoverySimulationTests(unittest.TestCase):
         self.assertFalse(in_trade, "Pre-entry blackout breakout must NOT trigger an entry!")
         self.assertFalse(triggered)
         self.assertFalse(terminal)
-        self.assertEqual(recovery["bars_discarded"], 3)
+        self.assertEqual(recovery["bars_discarded"], 10)
 
         # B. last_processed must have advanced past the entire blackout window to 10:00
-        self.assertEqual(last_processed, t_1000)
+        self.assertEqual(last_processed, bar_times[-1])
 
         # C. Next incoming bar (10:01) is tested: 09:55 candle is never re-evaluated
         t_1001 = pd.Timestamp("2026-11-25 10:01:00", tz=IST)
@@ -105,17 +111,17 @@ class ControlledRecoverySimulationTests(unittest.TestCase):
 
         # D. Dispatched message must report discarded blackout candles, NEVER a breakout alert!
         self.assertEqual(len(dispatched_alerts), 1)
-        self.assertIn("Discarded 3 blackout candles", dispatched_alerts[0])
+        self.assertIn("Discarded 10 blackout candles", dispatched_alerts[0])
         self.assertNotIn("BREAKOUT LEVEL REACHED", str(dispatched_alerts))
 
     def test_simulation_in_trade_multi_bar_outage_catches_sl_even_if_later_candle_rebounds(self):
         """
         Scenario: Position is active (entered at 100.0, SL=99.0, TP=102.0).
-        Feed goes stale for 10 minutes.
+        Feed goes stale for 10 minutes (09:51 to 10:00 contiguous).
         - At 09:53 (in the dark): price drops to Low 98.4 (breaches SL 99.0!), Close 98.6.
         - At 09:58 (in the dark): price rebounds to High 100.5.
         - At 10:00 (reconnection bar): price is at High 101.2, Low 99.8, Close 100.8 (above SL!).
-        
+
         CRITICAL AUDIT CHECK:
         A naive system inspecting only the 10:00 reconnection bar would report CONTINUE_IN_TRADE.
         Our multi-bar blackout evaluation MUST detect the 09:53 SL breach and terminate the trade!
@@ -134,18 +140,18 @@ class ControlledRecoverySimulationTests(unittest.TestCase):
         last_processed = pd.Timestamp("2026-11-25 09:50:00", tz=IST)
         stale_polls = 10
 
-        t_0953 = pd.Timestamp("2026-11-25 09:53:00", tz=IST)
-        t_0958 = pd.Timestamp("2026-11-25 09:58:00", tz=IST)
-        t_1000 = pd.Timestamp("2026-11-25 10:00:00", tz=IST)
-
-        blackout_df = pd.DataFrame(
-            [
-                {"Open": 99.2, "High": 99.4, "Low": 98.4, "Close": 98.6},  # SL breached at 09:53!
-                {"Open": 98.7, "High": 100.5, "Low": 98.7, "Close": 100.2},  # Rebound at 09:58
-                {"Open": 100.3, "High": 101.2, "Low": 99.8, "Close": 100.8},  # Reconnection bar at 10:00
-            ],
-            index=[t_0953, t_0958, t_1000],
-        )
+        bar_times = pd.date_range("2026-11-25 09:51:00", "2026-11-25 10:00:00", freq="min", tz=IST)
+        bars = []
+        for t in bar_times:
+            if t.minute == 53:
+                bars.append({"Open": 99.2, "High": 99.4, "Low": 98.4, "Close": 98.6})  # SL breach!
+            elif t.minute == 58:
+                bars.append({"Open": 98.7, "High": 100.5, "Low": 98.7, "Close": 100.2})  # Rebound
+            elif t.minute == 0:
+                bars.append({"Open": 100.3, "High": 101.2, "Low": 99.8, "Close": 100.8})  # Reconnect
+            else:
+                bars.append({"Open": 99.5, "High": 99.7, "Low": 99.3, "Close": 99.5})
+        blackout_df = pd.DataFrame(bars, index=bar_times)
 
         latest_bar = blackout_df.iloc[-1]
         recovery = evaluate_stale_recovery(
@@ -155,6 +161,8 @@ class ControlledRecoverySimulationTests(unittest.TestCase):
             sl=sl,
             tp=tp,
             blackout_bars=blackout_df,
+            last_processed_ts=last_processed,
+            expected_latest_ts=bar_times[-1],
         )
 
         if recovery["action"] == "OUTAGE_EXIT_STOP":
@@ -177,10 +185,10 @@ class ControlledRecoverySimulationTests(unittest.TestCase):
     def test_simulation_in_trade_multi_bar_outage_catches_tp_even_if_later_candle_pulls_back(self):
         """
         Scenario: Trade is active (entered at 100.0, SL=99.0, TP=102.0).
-        Feed goes stale.
+        Feed goes stale for 10 minutes (11:11 to 11:20 contiguous).
         - At 11:14 (in the dark): price hits High 102.6 (TP 102.0 reached!).
         - At 11:20 (reconnection bar): price pulls back to High 101.4, Low 100.2, Close 100.5.
-        
+
         Our multi-bar evaluation MUST detect the 11:14 TP reach and exit at TP!
         """
         trigger = 100.0
@@ -190,16 +198,17 @@ class ControlledRecoverySimulationTests(unittest.TestCase):
         in_trade = True
         terminal = False
 
-        t_1114 = pd.Timestamp("2026-11-25 11:14:00", tz=IST)
-        t_1120 = pd.Timestamp("2026-11-25 11:20:00", tz=IST)
-
-        blackout_df = pd.DataFrame(
-            [
-                {"Open": 101.5, "High": 102.6, "Low": 101.2, "Close": 102.3},  # TP crossed at 11:14!
-                {"Open": 102.1, "High": 101.4, "Low": 100.2, "Close": 100.5},  # Pullback at 11:20
-            ],
-            index=[t_1114, t_1120],
-        )
+        last_processed = pd.Timestamp("2026-11-25 11:10:00", tz=IST)
+        bar_times = pd.date_range("2026-11-25 11:11:00", "2026-11-25 11:20:00", freq="min", tz=IST)
+        bars = []
+        for t in bar_times:
+            if t.minute == 14:
+                bars.append({"Open": 101.5, "High": 102.6, "Low": 101.2, "Close": 102.3})  # TP reached!
+            elif t.minute == 20:
+                bars.append({"Open": 102.1, "High": 101.4, "Low": 100.2, "Close": 100.5})  # Pullback
+            else:
+                bars.append({"Open": 100.8, "High": 101.3, "Low": 100.6, "Close": 101.0})
+        blackout_df = pd.DataFrame(bars, index=bar_times)
 
         recovery = evaluate_stale_recovery(
             in_trade=in_trade,
@@ -208,6 +217,8 @@ class ControlledRecoverySimulationTests(unittest.TestCase):
             sl=sl,
             tp=tp,
             blackout_bars=blackout_df,
+            last_processed_ts=last_processed,
+            expected_latest_ts=bar_times[-1],
         )
 
         self.assertEqual(recovery["action"], "OUTAGE_EXIT_TARGET")
@@ -215,6 +226,70 @@ class ControlledRecoverySimulationTests(unittest.TestCase):
         self.assertTrue(recovery["uncertainty"])
         self.assertEqual(recovery["exit_price"], 102.0)
         self.assertIn("11:14:00", recovery["reach_time"])
+
+    def test_simulation_in_trade_missing_candle_triggers_recovery_incomplete_and_pauses(self):
+        """
+        Scenario: Trade is active (entered at 100.0, SL=99.0, TP=102.0).
+        Feed goes stale. Upon reconnection, data provider returns incomplete bars
+        (09:51 and 09:53 present, but 09:52 missing!).
+        
+        CRITICAL AUDIT VALIDATION:
+        The helper MUST return action='RECOVERY_DATA_INCOMPLETE'.
+        The runner MUST NOT advance last_processed.
+        The runner MUST NOT silently continue or exit at SL/TP.
+        The runner MUST log warning and keep monitoring safely paused.
+        """
+        trigger = 100.0
+        sl = 99.0
+        tp = 102.0
+
+        in_trade = True
+        last_processed = pd.Timestamp("2026-11-25 09:50:00", tz=IST)
+        stale_polls = 3
+        terminal = False
+        dispatched_alerts = []
+
+        # 09:52 candle is missing!
+        t_0951 = pd.Timestamp("2026-11-25 09:51:00", tz=IST)
+        t_0953 = pd.Timestamp("2026-11-25 09:53:00", tz=IST)
+        incomplete_df = pd.DataFrame(
+            [
+                {"Open": 99.8, "High": 100.1, "Low": 99.5, "Close": 99.9},
+                {"Open": 100.0, "High": 100.4, "Low": 99.8, "Close": 100.2},
+            ],
+            index=[t_0951, t_0953],
+        )
+
+        latest_bar = incomplete_df.iloc[-1]
+        recovery = evaluate_stale_recovery(
+            in_trade=in_trade,
+            latest_bar=latest_bar,
+            trigger=trigger,
+            sl=sl,
+            tp=tp,
+            blackout_bars=incomplete_df,
+            last_processed_ts=last_processed,
+            expected_latest_ts=t_0953,
+        )
+
+        # Runner logic for RECOVERY_DATA_INCOMPLETE
+        if recovery["action"] == "RECOVERY_DATA_INCOMPLETE":
+            dispatched_alerts.append(f"PAUSED: missing {recovery['missing_count']} bars")
+            stale_polls = 1  # Retain recovery gate
+            # Notice: last_processed is NOT updated!
+        elif recovery["action"] == "OUTAGE_EXIT_STOP":
+            terminal = True
+            last_processed = t_0953
+
+        # VERIFICATIONS:
+        self.assertEqual(recovery["action"], "RECOVERY_DATA_INCOMPLETE")
+        self.assertFalse(terminal, "Must NOT exit when recovery data is incomplete!")
+        self.assertEqual(last_processed, pd.Timestamp("2026-11-25 09:50:00", tz=IST), "last_processed must NOT advance!")
+        self.assertEqual(stale_polls, 1, "Monitoring gate must remain paused!")
+        self.assertEqual(recovery["missing_count"], 1)
+        self.assertIn("09:52:00", recovery["missing_bars"][0])
+        self.assertEqual(len(dispatched_alerts), 1)
+        self.assertIn("PAUSED: missing 1 bars", dispatched_alerts[0])
 
     def test_simulation_in_trade_outage_stop_loss_with_gap(self):
         """

@@ -85,6 +85,73 @@ def is_fresh_1m_data(
     return 0 <= age <= max_age_seconds
 
 
+def validate_blackout_continuity(
+    blackout_bars: pd.DataFrame,
+    last_processed_ts: pd.Timestamp | dt.datetime | None = None,
+    expected_latest_ts: pd.Timestamp | dt.datetime | None = None,
+    expected_range: pd.DatetimeIndex | None = None,
+) -> list[pd.Timestamp]:
+    """
+    Validate that blackout_bars contains every expected 1-minute bar without gaps.
+    Returns a list of missing Timestamp objects (empty if data is contiguous and complete).
+
+    Checks:
+    - Missing first candle(s): bars between (last_processed_ts + 1m) and first received bar.
+    - Missing middle candle(s): internal gaps within received bars.
+    - Missing last candle(s): bars between last received bar and expected_latest_ts.
+    """
+    if blackout_bars.empty:
+        if expected_range is not None:
+            return list(expected_range)
+        if last_processed_ts is not None and expected_latest_ts is not None:
+            start_ts = pd.Timestamp(last_processed_ts) + dt.timedelta(minutes=1)
+            end_ts = pd.Timestamp(expected_latest_ts)
+            if start_ts <= end_ts:
+                return list(pd.date_range(start=start_ts, end=end_ts, freq="min"))
+        return []
+
+    bars_idx = pd.DatetimeIndex(blackout_bars.index)
+    tz = bars_idx.tz
+
+    if expected_range is not None:
+        target_range = expected_range
+        if tz is not None and target_range.tz is None:
+            target_range = target_range.tz_localize(tz)
+        elif tz is not None and target_range.tz != tz:
+            target_range = target_range.tz_convert(tz)
+        return list(target_range.difference(bars_idx))
+
+    # Derive start timestamp (first expected bar after last_processed)
+    if last_processed_ts is not None:
+        start_ts = pd.Timestamp(last_processed_ts)
+        if tz is not None:
+            if start_ts.tz is None:
+                start_ts = start_ts.tz_localize(tz)
+            else:
+                start_ts = start_ts.tz_convert(tz)
+        start_ts = start_ts + dt.timedelta(minutes=1)
+    else:
+        start_ts = bars_idx[0]
+
+    # Derive end timestamp (expected latest completed bar)
+    if expected_latest_ts is not None:
+        end_ts = pd.Timestamp(expected_latest_ts)
+        if tz is not None:
+            if end_ts.tz is None:
+                end_ts = end_ts.tz_localize(tz)
+            else:
+                end_ts = end_ts.tz_convert(tz)
+    else:
+        end_ts = bars_idx[-1]
+
+    if start_ts > end_ts:
+        return []
+
+    full_expected = pd.date_range(start=start_ts, end=end_ts, freq="min")
+    missing = full_expected.difference(bars_idx)
+    return list(missing)
+
+
 def evaluate_stale_recovery(
     in_trade: bool,
     latest_bar: pd.Series | pd.DataFrame,
@@ -92,6 +159,10 @@ def evaluate_stale_recovery(
     sl: float,
     tp: float,
     blackout_bars: pd.DataFrame | None = None,
+    last_processed_ts: pd.Timestamp | dt.datetime | None = None,
+    expected_latest_ts: pd.Timestamp | dt.datetime | None = None,
+    expected_range: pd.DatetimeIndex | None = None,
+    require_continuity: bool = True,
 ) -> dict:
     """
     Evaluate market state after recovering from a stale data feed outage.
@@ -100,11 +171,16 @@ def evaluate_stale_recovery(
     blackout_bars DataFrame covering every 1-minute candle formed during the outage.
 
     Rules:
-    1. Pre-entry (in_trade=False):
+    1. Data Continuity Validation:
+       Before evaluating candle prices, checks whether any expected tradable 1-minute
+       candles are missing from blackout_bars. If any candle is missing (first, middle,
+       or last), returns action='RECOVERY_DATA_INCOMPLETE'. The runner must NOT silently
+       continue or record a confirmed exit on partial data.
+    2. Pre-entry (in_trade=False):
        Blackout candles formed during the outage are strictly discarded to prevent
        retrospective backfilling of entries, even if a breakout occurred during the outage.
        Returns action='DISCARD_AND_RESUME'.
-    2. In-trade (in_trade=True):
+    3. In-trade (in_trade=True):
        Evaluates every candle in the outage window in chronological order:
        - If a candle touches SL (or touches both SL and TP), stops out conservatively
          at observable market price min(sl, close), flagging execution uncertainty.
@@ -120,6 +196,29 @@ def evaluate_stale_recovery(
         bars_df = pd.DataFrame([latest_bar])
     else:
         raise ValueError("Either latest_bar or blackout_bars must be provided as Series or DataFrame")
+
+    # 1. Data Continuity Validation
+    if require_continuity:
+        missing_bars = validate_blackout_continuity(
+            bars_df,
+            last_processed_ts=last_processed_ts,
+            expected_latest_ts=expected_latest_ts,
+            expected_range=expected_range,
+        )
+        if missing_bars:
+            return {
+                "action": "RECOVERY_DATA_INCOMPLETE",
+                "triggered": in_trade,
+                "terminal": False,
+                "exit_price": None,
+                "uncertainty": True,
+                "missing_bars": [
+                    ts.strftime("%Y-%m-%d %H:%M:%S%z") if hasattr(ts, "strftime") else str(ts)
+                    for ts in missing_bars
+                ],
+                "missing_count": len(missing_bars),
+                "reason": "missing_blackout_candles_data_continuity_violation",
+            }
 
     if not in_trade:
         return {

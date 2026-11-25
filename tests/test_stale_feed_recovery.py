@@ -107,11 +107,13 @@ class StaleFeedRecoveryRegressionTests(unittest.TestCase):
 
     def test_in_trade_multi_bar_dataframe_detects_intermediate_stop_loss(self):
         """Multi-bar outage window: detects SL breach in candle 1 even if candle 2 rebounded."""
+        idx = pd.date_range("2026-11-25 10:00:00", "2026-11-25 10:01:00", freq="min")
         df = pd.DataFrame(
             [
-                {"Open": 101.0, "High": 101.2, "Low": 99.4, "Close": 99.5},  # Breaches SL 100.0
-                {"Open": 99.6, "High": 103.0, "Low": 99.6, "Close": 102.5},  # Rebounds above SL
-            ]
+                {"Open": 101.0, "High": 101.2, "Low": 99.4, "Close": 99.5},  # Breaches SL 100.0 at 10:00
+                {"Open": 99.6, "High": 103.0, "Low": 99.6, "Close": 102.5},  # Rebounds above SL at 10:01
+            ],
+            index=idx,
         )
         recovery = evaluate_stale_recovery(
             in_trade=True,
@@ -120,6 +122,8 @@ class StaleFeedRecoveryRegressionTests(unittest.TestCase):
             sl=100.0,
             tp=106.0,
             blackout_bars=df,
+            last_processed_ts=pd.Timestamp("2026-11-25 09:59:00"),
+            expected_latest_ts=idx[-1],
         )
         self.assertEqual(recovery["action"], "OUTAGE_EXIT_STOP")
         self.assertTrue(recovery["terminal"])
@@ -128,11 +132,13 @@ class StaleFeedRecoveryRegressionTests(unittest.TestCase):
 
     def test_in_trade_multi_bar_dataframe_channel_survival(self):
         """Multi-bar outage window: all bars stay within channel."""
+        idx = pd.date_range("2026-11-25 10:00:00", "2026-11-25 10:01:00", freq="min")
         df = pd.DataFrame(
             [
                 {"Open": 102.0, "High": 103.5, "Low": 101.5, "Close": 102.8},
                 {"Open": 102.8, "High": 104.2, "Low": 102.0, "Close": 103.9},
-            ]
+            ],
+            index=idx,
         )
         recovery = evaluate_stale_recovery(
             in_trade=True,
@@ -141,12 +147,104 @@ class StaleFeedRecoveryRegressionTests(unittest.TestCase):
             sl=100.0,
             tp=106.0,
             blackout_bars=df,
+            last_processed_ts=pd.Timestamp("2026-11-25 09:59:00"),
+            expected_latest_ts=idx[-1],
         )
         self.assertEqual(recovery["action"], "CONTINUE_IN_TRADE")
         self.assertFalse(recovery["terminal"])
         self.assertEqual(recovery["current_price"], 103.9)
 
+    def test_missing_first_blackout_candle_returns_recovery_data_incomplete(self):
+        """Data continuity: missing first blackout candle (09:51) triggers RECOVERY_DATA_INCOMPLETE."""
+        last_processed = pd.Timestamp("2026-11-25 09:50:00")
+        # Received bars: 09:52, 09:53, 09:54 (09:51 is missing!)
+        idx = pd.date_range("2026-11-25 09:52:00", "2026-11-25 09:54:00", freq="min")
+        df = pd.DataFrame(
+            [
+                {"Open": 101.0, "High": 101.5, "Low": 100.5, "Close": 101.2},
+                {"Open": 101.2, "High": 101.8, "Low": 100.8, "Close": 101.4},
+                {"Open": 101.4, "High": 102.0, "Low": 101.0, "Close": 101.6},
+            ],
+            index=idx,
+        )
+        recovery = evaluate_stale_recovery(
+            in_trade=True,
+            latest_bar=df.iloc[-1],
+            trigger=102.0,
+            sl=100.0,
+            tp=106.0,
+            blackout_bars=df,
+            last_processed_ts=last_processed,
+            expected_latest_ts=idx[-1],
+        )
+        self.assertEqual(recovery["action"], "RECOVERY_DATA_INCOMPLETE")
+        self.assertFalse(recovery["terminal"])
+        self.assertTrue(recovery["uncertainty"])
+        self.assertIsNone(recovery["exit_price"])
+        self.assertEqual(recovery["missing_count"], 1)
+        self.assertIn("09:51:00", recovery["missing_bars"][0])
+
+    def test_missing_middle_blackout_candle_returns_recovery_data_incomplete(self):
+        """Data continuity: missing middle blackout candle (09:52) triggers RECOVERY_DATA_INCOMPLETE."""
+        last_processed = pd.Timestamp("2026-11-25 09:50:00")
+        # Received bars: 09:51, 09:53, 09:54 (09:52 is missing!)
+        t_0951 = pd.Timestamp("2026-11-25 09:51:00")
+        t_0953 = pd.Timestamp("2026-11-25 09:53:00")
+        t_0954 = pd.Timestamp("2026-11-25 09:54:00")
+        df = pd.DataFrame(
+            [
+                {"Open": 101.0, "High": 101.5, "Low": 100.5, "Close": 101.2},
+                {"Open": 101.2, "High": 101.8, "Low": 100.8, "Close": 101.4},
+                {"Open": 101.4, "High": 102.0, "Low": 101.0, "Close": 101.6},
+            ],
+            index=[t_0951, t_0953, t_0954],
+        )
+        recovery = evaluate_stale_recovery(
+            in_trade=True,
+            latest_bar=df.iloc[-1],
+            trigger=102.0,
+            sl=100.0,
+            tp=106.0,
+            blackout_bars=df,
+            last_processed_ts=last_processed,
+            expected_latest_ts=t_0954,
+        )
+        self.assertEqual(recovery["action"], "RECOVERY_DATA_INCOMPLETE")
+        self.assertFalse(recovery["terminal"])
+        self.assertEqual(recovery["missing_count"], 1)
+        self.assertIn("09:52:00", recovery["missing_bars"][0])
+
+    def test_missing_last_blackout_candle_returns_recovery_data_incomplete(self):
+        """Data continuity: missing last blackout candle (09:54) triggers RECOVERY_DATA_INCOMPLETE."""
+        last_processed = pd.Timestamp("2026-11-25 09:50:00")
+        expected_latest = pd.Timestamp("2026-11-25 09:54:00")
+        # Received bars: 09:51, 09:52, 09:53 (09:54 is missing!)
+        idx = pd.date_range("2026-11-25 09:51:00", "2026-11-25 09:53:00", freq="min")
+        df = pd.DataFrame(
+            [
+                {"Open": 101.0, "High": 101.5, "Low": 100.5, "Close": 101.2},
+                {"Open": 101.2, "High": 101.8, "Low": 100.8, "Close": 101.4},
+                {"Open": 101.4, "High": 102.0, "Low": 101.0, "Close": 101.6},
+            ],
+            index=idx,
+        )
+        recovery = evaluate_stale_recovery(
+            in_trade=True,
+            latest_bar=df.iloc[-1],
+            trigger=102.0,
+            sl=100.0,
+            tp=106.0,
+            blackout_bars=df,
+            last_processed_ts=last_processed,
+            expected_latest_ts=expected_latest,
+        )
+        self.assertEqual(recovery["action"], "RECOVERY_DATA_INCOMPLETE")
+        self.assertFalse(recovery["terminal"])
+        self.assertEqual(recovery["missing_count"], 1)
+        self.assertIn("09:54:00", recovery["missing_bars"][0])
+
 
 if __name__ == "__main__":
     unittest.main()
+
 

@@ -270,8 +270,31 @@ def run_us_engine(test_mode: bool = False):
                         blackout_bars = closed.iloc[[-1]]
 
                     recovery = evaluate_stale_recovery(
-                        in_trade, latest_bar, trig, sl, tp, blackout_bars=blackout_bars
+                        in_trade,
+                        latest_bar,
+                        trig,
+                        sl,
+                        tp,
+                        blackout_bars=blackout_bars,
+                        last_processed_ts=last_processed,
+                        expected_latest_ts=latest_ts,
                     )
+
+                    if recovery["action"] == "RECOVERY_DATA_INCOMPLETE":
+                        missing_preview = ", ".join(recovery["missing_bars"][:3])
+                        if recovery["missing_count"] > 3:
+                            missing_preview += f" (+{recovery['missing_count'] - 3} more)"
+                        msg = (
+                            f"⚠️ <b>[US DATA GAP / RECOVERY INCOMPLETE]</b>\n"
+                            f"• <b>Stock:</b> {sym}\n"
+                            f"• <b>Missing Candles:</b> {recovery['missing_count']} ({missing_preview})\n"
+                            f"• <b>Action:</b> Signal monitoring paused; cannot safely determine trade state from incomplete data."
+                        )
+                        print(msg)
+                        send_telegram(msg)
+                        stale_polls = 1  # Retain recovery gate until complete data is supplied
+                        continue
+
                     last_processed = latest_ts
 
                     if recovery["action"] == "DISCARD_AND_RESUME":
