@@ -120,15 +120,18 @@ def evaluate_stale_recovery(
         }
 
     # In-trade evaluation
+    # If both SL and TP are touched in the same recovery bar, conservative risk management
+    # strictly prioritizes SL first (worst-case execution) to eliminate optimistic bias.
     if latest_l <= sl:
         exit_price = min(sl, latest_c)  # Conservative: accounts for potential adverse gap-down
+        reason = "ambiguous_bar_sl_and_tp_both_touched_assumed_sl" if latest_h >= tp else "stop_crossed_during_outage"
         return {
             "action": "OUTAGE_EXIT_STOP",
             "triggered": True,
             "terminal": True,
             "exit_price": exit_price,
             "uncertainty": True,
-            "reason": "stop_crossed_during_outage",
+            "reason": reason,
         }
     elif latest_h >= tp:
         return {

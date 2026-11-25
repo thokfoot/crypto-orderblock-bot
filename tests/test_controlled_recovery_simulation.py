@@ -185,7 +185,43 @@ class ControlledRecoverySimulationTests(unittest.TestCase):
                 terminal = False
 
         self.assertFalse(terminal, "Trade must not exit if price stayed within channel!")
-        self.assertTrue(in_trade)
+    def test_simulation_in_trade_outage_ambiguous_bar_sl_and_tp_both_touched_assumes_sl(self):
+        """
+        Scenario: Trade is active (entered at 100.0, SL=99.0, TP=102.0).
+        Feed goes stale. During blackout, an extreme volatility spike occurs such that
+        both SL (Low <= 99.0) and TP (High >= 102.0) are touched in the reconnection bar.
+        Conservative risk management MUST assume Stop Loss first, never optimistic Target!
+        """
+        trigger = 100.0
+        sl = 99.0
+        tp = 102.0
+
+        in_trade = True
+        terminal = False
+        exit_price = None
+        uncertainty_flag = False
+
+        # Extreme bar touching both 98.0 (<= SL) and 103.0 (>= TP)
+        t_reconnect = pd.Timestamp("2026-11-25 13:00:00", tz=IST)
+        reconnect_bar = pd.Series(
+            {"Open": 100.0, "High": 103.0, "Low": 98.0, "Close": 98.5},
+            name=t_reconnect,
+        )
+        stale_polls = 6
+
+        if stale_polls > 0:
+            recovery = evaluate_stale_recovery(in_trade, reconnect_bar, trigger, sl, tp)
+            if recovery["action"] == "OUTAGE_EXIT_STOP":
+                exit_price = recovery["exit_price"]
+                uncertainty_flag = recovery["uncertainty"]
+                terminal = True
+
+        # VERIFICATIONS:
+        self.assertTrue(terminal, "Ambiguous bar must terminate position!")
+        self.assertTrue(uncertainty_flag, "Uncertainty must be True!")
+        # Must strictly prioritize SL (and observable close gap 98.5), NEVER assume TP 102.0!
+        self.assertEqual(exit_price, 98.5)
+        self.assertEqual(recovery["reason"], "ambiguous_bar_sl_and_tp_both_touched_assumed_sl")
 
 
 if __name__ == "__main__":
