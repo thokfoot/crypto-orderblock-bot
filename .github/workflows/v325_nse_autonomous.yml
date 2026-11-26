@@ -47,6 +47,7 @@ jobs:
         env:
           AUTOMATION_TELEGRAM_BOT_TOKEN: ${{ secrets.AUTOMATION_TELEGRAM_BOT_TOKEN }}
           AUTOMATION_TELEGRAM_CHAT_ID: ${{ secrets.AUTOMATION_TELEGRAM_CHAT_ID }}
+          TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY }}
         run: |
           if [ "${{ github.event_name == 'workflow_dispatch' && inputs.test_mode }}" = "true" ]; then
             python scripts/v325_nse_cloud_runner.py --test

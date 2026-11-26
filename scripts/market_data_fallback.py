@@ -286,6 +286,64 @@ def _fetch_yfinance_history(clean_sym: str, period: str) -> pd.DataFrame:
         return pd.DataFrame()
 
 
+def fetch_twelve_data_1m_bars(symbol: str, exchange: str = "US", outputsize: int = 30) -> pd.DataFrame:
+    """
+    Independent Secondary Backup Feed: Twelve Data REST API.
+    Fetches genuine, provider-observed 1-minute OHLCV bars.
+
+    CREDIT PRESERVATION RULE:
+    Used exclusively as a secondary backup when primary feeds (Yahoo/REST) fail.
+    Requires TWELVE_DATA_API_KEY environment variable.
+    """
+    import os
+    api_key = os.environ.get("TWELVE_DATA_API_KEY", "").strip()
+    if not api_key:
+        return pd.DataFrame()
+
+    clean_sym = symbol.replace(".NS", "").replace(".BO", "").upper()
+    is_nse = exchange.upper() in ("NSE", "INDIA", "NIFTY")
+    tz_name = "Asia/Kolkata" if is_nse else "America/New_York"
+
+    if is_nse:
+        url = f"https://api.twelvedata.com/time_series?symbol={clean_sym}&exchange=NSE&interval=1min&outputsize={outputsize}&apikey={api_key}"
+    else:
+        url = f"https://api.twelvedata.com/time_series?symbol={clean_sym}&interval=1min&outputsize={outputsize}&apikey={api_key}"
+
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            data = json.loads(resp.read().decode("utf-8", errors="ignore"))
+
+        if data.get("status") == "error":
+            return pd.DataFrame()
+
+        values = data.get("values", [])
+        if not values:
+            return pd.DataFrame()
+
+        rows = []
+        for v in values:
+            try:
+                rows.append({
+                    "Datetime": pd.to_datetime(v["datetime"]),
+                    "Open": float(v["open"]),
+                    "High": float(v["high"]),
+                    "Low": float(v["low"]),
+                    "Close": float(v["close"]),
+                    "Volume": float(v.get("volume", 0.0)),
+                })
+            except (ValueError, KeyError):
+                continue
+
+        if rows:
+            df = pd.DataFrame(rows).set_index("Datetime").sort_index()
+            return normalize_1m_frame(df, tz_name)
+    except Exception:
+        pass
+
+    return pd.DataFrame()
+
+
 # -----------------------------------------------------------------------------
 # RESILIENT DUAL-FEED MERGER (STRICT TRUE OHLCV ONLY)
 # -----------------------------------------------------------------------------
@@ -295,12 +353,14 @@ def fetch_resilient_1m_bars(symbol: str, exchange: str = "NSE", period: str = "1
     1. Tries primary yfinance history.
     2. If yfinance is empty or fails, falls back to direct Yahoo v8 REST endpoints
        (query1/query2) to retrieve genuine OHLCV bars.
-    3. Normalizes timezone (IST for NSE, ET for US).
-    
+    3. If both Yahoo feeds fail, fails over to Independent Secondary Backup:
+       Twelve Data REST API (strictly preserving API credits).
+    4. Normalizes timezone (IST for NSE, ET for US).
+
     CRITICAL POLICY:
     This function NEVER appends synthetic/interpolated candles. If exchange OHLCV
-    data is missing or dropped, the returned DataFrame reflects genuine market data only,
-    allowing the runner's evaluate_stale_recovery guard to pause safely.
+    data is missing or dropped across all feeds, the returned DataFrame reflects
+    genuine market data only, allowing the runner's evaluate_stale_recovery guard to pause safely.
     """
     clean_sym = symbol
     if exchange.upper() == "NSE" and not clean_sym.endswith(".NS") and not clean_sym.startswith("^"):
@@ -321,5 +381,11 @@ def fetch_resilient_1m_bars(symbol: str, exchange: str = "NSE", period: str = "1
     )
     if not v8_df.empty:
         return normalize_1m_frame(v8_df, tz_name)
+
+    # Tier 3: Independent Secondary Backup — Twelve Data OHLCV
+    # (Called ONLY when Tier 1 & 2 fail, strictly preserving user credit limit)
+    td_df = fetch_twelve_data_1m_bars(symbol, exchange=exchange)
+    if not td_df.empty:
+        return normalize_1m_frame(td_df, tz_name)
 
     return pd.DataFrame()

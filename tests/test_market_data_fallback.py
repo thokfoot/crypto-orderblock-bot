@@ -18,6 +18,7 @@ from scripts.market_data_fallback import (
     fetch_live_reference_spot,
     fetch_raw_yahoo_v8_bars,
     fetch_resilient_1m_bars,
+    fetch_twelve_data_1m_bars,
     is_market_session_active,
 )
 
@@ -180,6 +181,70 @@ class TestMarketDataFallback(unittest.TestCase):
         df = fetch_resilient_1m_bars("TCS", exchange="NSE")
         self.assertTrue(df.empty)
         self.assertEqual(len(df), 0)
+
+    @patch.dict("os.environ", {"TWELVE_DATA_API_KEY": "dummy_test_key"})
+    @patch("urllib.request.urlopen")
+    def test_fetch_twelve_data_1m_bars_success(self, mock_urlopen):
+        sample_json = {
+            "meta": {"symbol": "SPY", "interval": "1min"},
+            "values": [
+                {
+                    "datetime": "2026-11-25 15:59:00",
+                    "open": "717.25",
+                    "high": "717.40",
+                    "low": "716.15",
+                    "close": "716.76",
+                    "volume": "1619677",
+                },
+                {
+                    "datetime": "2026-11-25 15:58:00",
+                    "open": "717.82",
+                    "high": "717.88",
+                    "low": "717.25",
+                    "close": "717.27",
+                    "volume": "517158",
+                },
+            ],
+            "status": "ok",
+        }
+        mock_response = MagicMock()
+        mock_response.read.return_value = json.dumps(sample_json).encode("utf-8")
+        mock_response.__enter__.return_value = mock_response
+        mock_urlopen.return_value = mock_response
+
+        df = fetch_twelve_data_1m_bars("SPY", exchange="US")
+        self.assertFalse(df.empty)
+        self.assertEqual(len(df), 2)
+        self.assertEqual(df["Close"].iloc[-1], 716.76)
+        self.assertEqual(df["Volume"].iloc[-1], 1619677.0)
+
+    @patch("scripts.market_data_fallback.fetch_twelve_data_1m_bars")
+    @patch("scripts.market_data_fallback.fetch_raw_yahoo_v8_bars")
+    @patch("scripts.market_data_fallback._fetch_yfinance_history")
+    def test_fetch_resilient_1m_bars_failover_to_twelve_data(
+        self, mock_yf, mock_v8, mock_td
+    ):
+        # Yahoo primary and REST both fail
+        mock_yf.return_value = pd.DataFrame()
+        mock_v8.return_value = pd.DataFrame()
+
+        # Twelve Data backup succeeds
+        fake_idx = pd.date_range("2026-11-25 15:50", periods=3, freq="min", tz="America/New_York")
+        fake_df = pd.DataFrame({
+            "Open": [715.0] * 3,
+            "High": [716.0] * 3,
+            "Low": [714.5] * 3,
+            "Close": [715.5] * 3,
+            "Volume": [20000] * 3,
+        }, index=fake_idx)
+        mock_td.return_value = fake_df
+
+        df = fetch_resilient_1m_bars("SPY", exchange="US")
+        self.assertFalse(df.empty)
+        self.assertEqual(len(df), 3)
+        self.assertEqual(df["Close"].iloc[-1], 715.5)
+        # Verify Twelve Data was called as secondary backup
+        mock_td.assert_called_once_with("SPY", exchange="US")
 
 
 if __name__ == "__main__":
