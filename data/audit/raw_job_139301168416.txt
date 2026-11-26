@@ -1,0 +1,323 @@
+run-us-engine	UNKNOWN STEP	﻿2026-11-25T15:07:12.1955013Z Current runner version: '2.338.2'
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1976078Z ##[group]Runner Image Provisioner
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1976942Z Hosted Compute Agent
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1977581Z Version: 20261111.635
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1978177Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1978841Z Build Date: 2026-11-11T01:49:01Z
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1979545Z Worker ID: {c873586b-392f-4663-9f24-76a207fc716b}
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1980415Z Region: centralus
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1981000Z Cloud: Azure
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1981515Z ##[endgroup]
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1982712Z ##[group]Operating System
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1983384Z Ubuntu
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1983886Z 26.04.1
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1984399Z LTS
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1984894Z ##[endgroup]
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1985425Z ##[group]Runner Image
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1986062Z Image: ubuntu-26.04
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1986609Z Version: 20261116.202.1
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1987931Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261116.202/images/ubuntu/Ubuntu2604-Readme.md
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1989462Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261116.202
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1990635Z ##[endgroup]
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1992172Z ##[group]GITHUB_TOKEN Permissions
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1994308Z Contents: read
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1994956Z Metadata: read
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1995486Z ##[endgroup]
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1997293Z Secret source: Actions
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1998197Z Cache mode: write
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.1998836Z Prepare workflow directory
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.2282792Z Prepare all required actions
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.2326802Z Getting action download info
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.5042352Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.5695847Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.7341191Z Complete job name: run-us-engine
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.8030572Z ##[group]Run actions/checkout@v4
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.8031479Z with:
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.8032019Z   repository: thokfoot/crypto-orderblock-bot
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.8035974Z   token: ***
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.8036453Z   ssh-strict: true
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.8036940Z   ssh-user: git
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.8037471Z   persist-credentials: true
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.8038023Z   clean: true
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.8038546Z   sparse-checkout-cone-mode: true
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.8039110Z   fetch-depth: 1
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.8039594Z   fetch-tags: false
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.8040167Z   show-progress: true
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.8041125Z   lfs: false
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.8041645Z   submodules: false
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.8042140Z   set-safe-directory: true
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.8042756Z   allow-unsafe-pr-checkout: false
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:12.8043533Z ##[endgroup]
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0565393Z Syncing repository: thokfoot/crypto-orderblock-bot
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0568015Z ##[group]Getting Git version info
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0569553Z Working directory is '/home/runner/work/crypto-orderblock-bot/crypto-orderblock-bot'
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0571746Z [command]/usr/bin/git version
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0572519Z git version 2.56.1
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0580583Z ##[endgroup]
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0592905Z Temporarily overriding HOME='/home/runner/work/_temp/61ac325e-ad4b-4ee8-b28d-302fb68ac172' before making global git config changes
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0621743Z Adding repository directory to the temporary git global config as a safe directory
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0623545Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/crypto-orderblock-bot/crypto-orderblock-bot
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0652941Z Deleting the contents of '/home/runner/work/crypto-orderblock-bot/crypto-orderblock-bot'
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0664175Z ##[group]Initializing the repository
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0667846Z [command]/usr/bin/git init /home/runner/work/crypto-orderblock-bot/crypto-orderblock-bot
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0782930Z hint: Using 'master' as the name for the initial branch. This default branch name
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0784605Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0786031Z hint: to use in all of your new repositories, which will suppress this warning,
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0786843Z hint: call:
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0787361Z hint:
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0787927Z hint: 	git config --global init.defaultBranch <name>
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0788832Z hint:
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0789457Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0790812Z hint: 'development'. The just-created branch can be renamed via this command:
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0791714Z hint:
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0792196Z hint: 	git branch -m <name>
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0792719Z hint:
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0793384Z hint: Disable this message with "git config set advice.defaultBranchName false"
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0796549Z Initialized empty Git repository in /home/runner/work/crypto-orderblock-bot/crypto-orderblock-bot/.git/
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0805921Z [command]/usr/bin/git remote add origin https://github.com/thokfoot/crypto-orderblock-bot
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0850928Z ##[endgroup]
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0851824Z ##[group]Disabling automatic garbage collection
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0854759Z [command]/usr/bin/git config --local gc.auto 0
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0882085Z ##[endgroup]
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0882987Z ##[group]Setting up auth
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0888372Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.0914467Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.1267050Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.1295833Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.1515678Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.1543692Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.1739121Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.1773237Z ##[endgroup]
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.1774297Z ##[group]Fetching the repository
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.1781027Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +92526203ed492e4b7bf235b3bac251ae7ff29126:refs/remotes/origin/main
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.5502604Z From https://github.com/thokfoot/crypto-orderblock-bot
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.5503631Z  * [new ref]         92526203ed492e4b7bf235b3bac251ae7ff29126 -> origin/main
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.5514641Z ##[endgroup]
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.5515439Z ##[group]Determining the checkout info
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.5516211Z ##[endgroup]
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.5521404Z [command]/usr/bin/git sparse-checkout disable
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.5564504Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.5590373Z ##[group]Checking out the ref
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.5594456Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.5697902Z Switched to a new branch 'main'
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.5701325Z branch 'main' set up to track 'origin/main'.
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.5706148Z ##[endgroup]
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.5740053Z [command]/usr/bin/git log -1 --format=%H
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.5757193Z 92526203ed492e4b7bf235b3bac251ae7ff29126
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.6008329Z ##[group]Run actions/setup-python@v5
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.6008940Z with:
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.6009362Z   python-version: 3.11
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.6009822Z   check-latest: false
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.6013698Z   token: ***
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.6014308Z   update-environment: true
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.6014817Z   allow-prereleases: false
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.6015291Z   freethreaded: false
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.6015771Z ##[endgroup]
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.7170723Z ##[group]Installed versions
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.7283168Z (node:2167) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.7284852Z (Use `node --trace-deprecation ...` to show where the warning was created)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.7285816Z Successfully set up CPython (3.11.18)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.7287048Z ##[endgroup]
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.7427029Z ##[group]Run python -m pip install --upgrade pip
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.7427884Z ^[[36;1mpython -m pip install --upgrade pip^[[0m
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.7428588Z ^[[36;1mpip install yfinance pandas numpy requests^[[0m
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.7463021Z shell: /usr/bin/bash -e {0}
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.7463558Z env:
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.7464052Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.18/x64
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.7464863Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib/pkgconfig
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.7465665Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.7466365Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.7467046Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.7467770Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:13.7468414Z ##[endgroup]
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:14.2651812Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages (26.3)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:14.7568466Z Collecting yfinance
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:14.8050800Z   Downloading yfinance-1.8.0-py3-none-any.whl.metadata (6.8 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:14.9384500Z Collecting pandas
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:14.9490998Z   Downloading pandas-3.1.1-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (16 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.1080394Z Collecting numpy
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.1186827Z   Downloading numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.1491024Z Collecting requests
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.1596194Z   Downloading requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.1924705Z Collecting beautifulsoup4>=4.11.1 (from yfinance)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.2027306Z   Downloading beautifulsoup4-4.15.0-py3-none-any.whl.metadata (3.8 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.2605208Z Collecting curl_cffi>=0.17 (from yfinance)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.2708141Z   Downloading curl_cffi-0.17.0-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (18 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.4549552Z Collecting lxml>=4.9.0 (from yfinance)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.4654663Z   Downloading lxml-6.1.3-cp311-cp311-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl.metadata (3.3 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.4962857Z Collecting peewee>=3.16.2 (from yfinance)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.5067341Z   Downloading peewee-4.5.3-py3-none-any.whl.metadata (10 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.5397670Z Collecting platformdirs>=2.0.0 (from yfinance)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.5489064Z   Downloading platformdirs-4.14.8-py3-none-any.whl.metadata (5.7 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.6718843Z Collecting protobuf>=3.19.0 (from yfinance)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.6822742Z   Downloading protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl.metadata (595 bytes)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.7186093Z Collecting pytz>=2022.5 (from yfinance)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.7290962Z   Downloading pytz-2026.6-py2.py3-none-any.whl.metadata (22 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.8507297Z Collecting websockets>=13.0 (from yfinance)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.8612106Z   Downloading websockets-17.4-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.3 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.8915131Z Collecting python-dateutil>=2.9.0 (from pandas)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:15.9022666Z   Downloading python_dateutil-4.0.0-py3-none-any.whl.metadata (7.3 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.0042864Z Collecting charset_normalizer<4,>=2 (from requests)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.0147164Z   Downloading charset_normalizer-3.5.3-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (43 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.0425420Z Collecting idna<4,>=2.5 (from requests)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.0527974Z   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.0805441Z Collecting urllib3<3,>=1.26 (from requests)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.0908536Z   Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.1159242Z Collecting certifi>=2023.5.7 (from requests)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.1262729Z   Downloading certifi-2026.11.20-py3-none-any.whl.metadata (2.5 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.1649762Z Collecting soupsieve>=1.6.1 (from beautifulsoup4>=4.11.1->yfinance)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.1762166Z   Downloading soupsieve-4.1.3-py3-none-any.whl.metadata (4.4 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.2005561Z Collecting typing-extensions>=4.0.0 (from beautifulsoup4>=4.11.1->yfinance)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.2109202Z   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.2920735Z Collecting cffi>=2.1.1 (from curl_cffi>=0.17->yfinance)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.3022520Z   Downloading cffi-2.1.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.3296511Z Collecting pycparser (from cffi>=2.1.1->curl_cffi>=0.17->yfinance)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.3399988Z   Downloading pycparser-3.12-py3-none-any.whl.metadata (9.7 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.3643909Z Collecting tzdata (from python-dateutil>=2.9.0->pandas)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.3747196Z   Downloading tzdata-2026.6-py2.py3-none-any.whl.metadata (1.4 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.3887232Z Downloading yfinance-1.8.0-py3-none-any.whl (158 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.4119383Z Downloading pandas-3.1.1-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (12.4 MB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.5227584Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.4/12.4 MB 119.6 MB/s  0:00:00
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.5339465Z Downloading numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.9 MB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.6555853Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.9/16.9 MB 139.6 MB/s  0:00:00
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.6663434Z Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.6787945Z Downloading charset_normalizer-3.5.3-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (263 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.6917491Z Downloading idna-3.20-py3-none-any.whl (69 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.7043342Z Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.7164868Z Downloading beautifulsoup4-4.15.0-py3-none-any.whl (109 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.7288573Z Downloading certifi-2026.11.20-py3-none-any.whl (127 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.7416383Z Downloading curl_cffi-0.17.0-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (14.1 MB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.9118107Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.1/14.1 MB 82.1 MB/s  0:00:00
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.9226056Z Downloading cffi-2.1.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (217 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.9357529Z Downloading lxml-6.1.3-cp311-cp311-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl (5.2 MB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.9600045Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.2/5.2 MB 220.9 MB/s  0:00:00
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:16.9702021Z Downloading peewee-4.5.3-py3-none-any.whl (194 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:17.0001872Z Downloading platformdirs-4.14.8-py3-none-any.whl (94 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:17.0126586Z Downloading protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl (343 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:17.0254680Z Downloading python_dateutil-4.0.0-py3-none-any.whl (92 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:17.0389648Z Downloading pytz-2026.6-py2.py3-none-any.whl (506 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:17.0543016Z Downloading soupsieve-4.1.3-py3-none-any.whl (59 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:17.0680753Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:17.0829825Z Downloading websockets-17.4-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (226 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:17.0953765Z Downloading pycparser-3.12-py3-none-any.whl (62 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:17.1074227Z Downloading tzdata-2026.6-py2.py3-none-any.whl (348 kB)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:17.2704792Z Installing collected packages: pytz, websockets, urllib3, tzdata, typing-extensions, soupsieve, pycparser, protobuf, platformdirs, peewee, numpy, lxml, idna, charset_normalizer, certifi, requests, python-dateutil, cffi, beautifulsoup4, pandas, curl_cffi, yfinance
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:23.2334605Z 
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:23.2348423Z Successfully installed beautifulsoup4-4.15.0 certifi-2026.11.20 cffi-2.1.1 charset_normalizer-3.5.3 curl_cffi-0.17.0 idna-3.20 lxml-6.1.3 numpy-2.4.6 pandas-3.1.1 peewee-4.5.3 platformdirs-4.14.8 protobuf-7.36.2 pycparser-3.12 python-dateutil-4.0.0 pytz-2026.6 requests-2.34.2 soupsieve-4.1.3 typing-extensions-4.16.0 tzdata-2026.6 urllib3-2.8.0 websockets-17.4 yfinance-1.8.0
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:23.3257645Z ##[group]Run python -m unittest discover -s tests -v
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:23.3258074Z ^[[36;1mpython -m unittest discover -s tests -v^[[0m
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:23.3277886Z shell: /usr/bin/bash -e {0}
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:23.3278245Z env:
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:23.3278604Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.18/x64
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:23.3279101Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib/pkgconfig
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:23.3279539Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:23.3279975Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:23.3280510Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:23.3280995Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:23.3281389Z ##[endgroup]
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0373773Z test_simulation_in_trade_missing_candle_triggers_recovery_incomplete_and_pauses (test_controlled_recovery_simulation.ControlledRecoverySimulationTests.test_simulation_in_trade_missing_candle_triggers_recovery_incomplete_and_pauses)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0395627Z Scenario: Trade is active (entered at 100.0, SL=99.0, TP=102.0). ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0397064Z test_simulation_in_trade_multi_bar_outage_catches_sl_even_if_later_candle_rebounds (test_controlled_recovery_simulation.ControlledRecoverySimulationTests.test_simulation_in_trade_multi_bar_outage_catches_sl_even_if_later_candle_rebounds)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0407775Z Scenario: Position is active (entered at 100.0, SL=99.0, TP=102.0). ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0409128Z test_simulation_in_trade_multi_bar_outage_catches_tp_even_if_later_candle_pulls_back (test_controlled_recovery_simulation.ControlledRecoverySimulationTests.test_simulation_in_trade_multi_bar_outage_catches_tp_even_if_later_candle_pulls_back)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0419713Z Scenario: Trade is active (entered at 100.0, SL=99.0, TP=102.0). ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0421131Z test_simulation_in_trade_outage_ambiguous_bar_sl_and_tp_both_touched_assumes_sl (test_controlled_recovery_simulation.ControlledRecoverySimulationTests.test_simulation_in_trade_outage_ambiguous_bar_sl_and_tp_both_touched_assumes_sl)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0430117Z Scenario: Trade is active (entered at 100.0, SL=99.0, TP=102.0). ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0430998Z test_simulation_in_trade_outage_channel_continuation (test_controlled_recovery_simulation.ControlledRecoverySimulationTests.test_simulation_in_trade_outage_channel_continuation)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0438625Z Scenario: Trade is active. Feed goes stale. Upon reconnection, price is within channel ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0439465Z test_simulation_in_trade_outage_stop_loss_with_gap (test_controlled_recovery_simulation.ControlledRecoverySimulationTests.test_simulation_in_trade_outage_stop_loss_with_gap)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0447036Z Scenario: Trade is active (entered at 100.0, SL=99.0, TP=102.0). ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0447753Z test_simulation_in_trade_outage_target_hit (test_controlled_recovery_simulation.ControlledRecoverySimulationTests.test_simulation_in_trade_outage_target_hit)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0455507Z Scenario: Trade is active. Feed goes stale. During blackout, price rallies past TP (102.0) ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0456619Z test_simulation_pre_entry_outage_discards_blackout_breakout (test_controlled_recovery_simulation.ControlledRecoverySimulationTests.test_simulation_pre_entry_outage_discards_blackout_breakout)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0468558Z Scenario: Before entry, market data goes stale for 10 minutes. ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0469902Z test_bad_credentials_do_not_get_skipped (test_dry_run_policy.FyersPolicyTests.test_bad_credentials_do_not_get_skipped) ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0471234Z test_missing_credentials_are_skipped_when_optional (test_dry_run_policy.FyersPolicyTests.test_missing_credentials_are_skipped_when_optional) ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0472060Z test_missing_credentials_fail_when_required (test_dry_run_policy.FyersPolicyTests.test_missing_credentials_fail_when_required) ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0472953Z test_valid_fyers_connection_passes (test_dry_run_policy.FyersPolicyTests.test_valid_fyers_connection_passes) ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0622890Z test_current_forming_minute_is_excluded (test_market_time_utils.MarketTimeUtilsTests.test_current_forming_minute_is_excluded) ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0629162Z test_exact_twenty_minute_window_is_accepted (test_market_time_utils.MarketTimeUtilsTests.test_exact_twenty_minute_window_is_accepted) ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0634967Z test_incomplete_or_window_is_rejected (test_market_time_utils.MarketTimeUtilsTests.test_incomplete_or_window_is_rejected) ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0639789Z test_stale_data_is_rejected (test_market_time_utils.MarketTimeUtilsTests.test_stale_data_is_rejected) ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0640948Z test_us_timezone_observes_dst (test_market_time_utils.MarketTimeUtilsTests.test_us_timezone_observes_dst) ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0641871Z test_continuity_explicit_expected_range_used_directly (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_continuity_explicit_expected_range_used_directly)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0648605Z Auditor Requirement #4: Explicitly supplied expected_range is used directly. ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0649546Z test_continuity_genuine_missing_candle_during_session_detected (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_continuity_genuine_missing_candle_during_session_detected)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0663120Z Exchange Calendar: Genuine missing candle within regular trading session is strictly flagged. ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0664293Z test_continuity_market_holiday_does_not_trigger_data_gap (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_continuity_market_holiday_does_not_trigger_data_gap)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0671832Z Exchange Calendar: NSE official holiday (Republic Day Jan 26) generates zero expected bars. ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0672980Z test_continuity_nse_session_boundary_overnight_weekend_no_false_gap (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_continuity_nse_session_boundary_overnight_weekend_no_false_gap)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0686975Z Exchange Calendar: Outage spanning Friday close to Monday open does NOT trigger false data gap. ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0687937Z test_continuity_us_session_boundary_overnight_no_false_gap (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_continuity_us_session_boundary_overnight_no_false_gap)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0703680Z Exchange Calendar: US outage spanning Mon close to Tue open does NOT trigger false data gap. ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0704741Z test_in_trade_multi_bar_dataframe_channel_survival (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_in_trade_multi_bar_dataframe_channel_survival)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0711060Z Multi-bar outage window: all bars stay within channel. ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0711822Z test_in_trade_multi_bar_dataframe_detects_intermediate_stop_loss (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_in_trade_multi_bar_dataframe_detects_intermediate_stop_loss)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0718032Z Multi-bar outage window: detects SL breach in candle 1 even if candle 2 rebounded. ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0718916Z test_in_trade_outage_stop_uses_observable_market_price_and_flags_uncertainty (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_in_trade_outage_stop_uses_observable_market_price_and_flags_uncertainty)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0726198Z In-trade outage: stop loss breach records observable market price and flags uncertainty. ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0726968Z test_in_trade_outage_target_flags_uncertainty (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_in_trade_outage_target_flags_uncertainty)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0734613Z In-trade outage: target hit records target with uncertainty flag. ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0736091Z test_in_trade_outage_within_channel_continues_without_exit (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_in_trade_outage_within_channel_continues_without_exit)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0743526Z In-trade outage: price remained within SL/TP channel; trade continues. ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0745107Z test_missing_first_blackout_candle_returns_recovery_data_incomplete (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_missing_first_blackout_candle_returns_recovery_data_incomplete)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0754009Z Data continuity: missing first blackout candle (09:51) triggers RECOVERY_DATA_INCOMPLETE. ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0755668Z test_missing_last_blackout_candle_returns_recovery_data_incomplete (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_missing_last_blackout_candle_returns_recovery_data_incomplete)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0763846Z Data continuity: missing last blackout candle (09:54) triggers RECOVERY_DATA_INCOMPLETE. ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0765295Z test_missing_middle_blackout_candle_returns_recovery_data_incomplete (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_missing_middle_blackout_candle_returns_recovery_data_incomplete)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0773514Z Data continuity: missing middle blackout candle (09:52) triggers RECOVERY_DATA_INCOMPLETE. ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0775313Z test_pre_entry_outage_discards_and_never_triggers_entry (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_pre_entry_outage_discards_and_never_triggers_entry)
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0781307Z Pre-entry outage: breakout candles formed in the dark are discarded. ... ok
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0781721Z 
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0781926Z ----------------------------------------------------------------------
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0782384Z Ran 31 tests in 0.041s
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0782582Z 
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.0782681Z OK
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.1308867Z ##[group]Run if [ "false" = "true" ]; then
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.1309275Z ^[[36;1mif [ "false" = "true" ]; then^[[0m
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.1309743Z ^[[36;1m  python scripts/v325_us_cloud_runner.py --test^[[0m
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.1310127Z ^[[36;1melse^[[0m
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.1310779Z ^[[36;1m  python scripts/v325_us_cloud_runner.py^[[0m
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.1311196Z ^[[36;1mfi^[[0m
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.1333689Z shell: /usr/bin/bash -e {0}
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.1334001Z env:
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.1334368Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.18/x64
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.1334924Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib/pkgconfig
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.1335427Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.1335924Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.1336372Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.1336961Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.1337911Z   AUTOMATION_TELEGRAM_BOT_TOKEN: ***
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.1338320Z   AUTOMATION_TELEGRAM_CHAT_ID: ***
+run-us-engine	UNKNOWN STEP	2026-11-25T15:07:24.1338640Z ##[endgroup]
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.3505794Z ================================================================================
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.3506432Z   STRATEGY v3.2.5 AUTONOMOUS CLOUD ENGINE: US WALL STREET SLEEVE
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.3507161Z   Timestamp: 2026-11-25T15:07:24.744122 | Test Mode: False
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.3507674Z ================================================================================
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.3511519Z 
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.3511799Z [Step 1] Scanning 8 US Mega Sectors (09:45-10:04 completed OR bars)...
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.3512595Z 🏆 Leader Sector: Semiconductors (Breadth: 100% Green, Avg Move: +2.27%)
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.3512894Z 
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.3513075Z Locked AMAT: Trigger >= $302.64, SL=$299.61, TP=$305.67
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.3513324Z 
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.3513602Z [Step 2] Monitoring completed 1-minute bars until 11:00 ET (signal-only; no orders).
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.3514187Z 🛡️ [US STAND DOWN] AMAT did not reach trigger before 11:00 ET. No signal entry.
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.4305127Z Post job cleanup.
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.5324975Z (node:2898) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.5325814Z (Use `node --trace-deprecation ...` to show where the warning was created)
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.5549699Z Post job cleanup.
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.6465850Z [command]/usr/bin/git version
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.6501485Z git version 2.56.1
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.6531241Z Temporarily overriding HOME='/home/runner/work/_temp/35214fa5-de5c-4a97-a231-49506bfb3a77' before making global git config changes
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.6532687Z Adding repository directory to the temporary git global config as a safe directory
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.6533827Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/crypto-orderblock-bot/crypto-orderblock-bot
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.6569453Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.6597724Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.6815319Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.6835603Z http.https://github.com/.extraheader
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.6844032Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.6871982Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.7085994Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.7116006Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.7435404Z Cleaning up orphan processes
+run-us-engine	UNKNOWN STEP	2026-11-25T16:00:17.7728317Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
