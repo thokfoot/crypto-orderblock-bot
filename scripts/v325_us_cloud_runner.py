@@ -31,7 +31,7 @@ try:
         exact_minute_window,
         is_fresh_1m_data,
     )
-    from scripts.market_data_fallback import fetch_resilient_1m_bars
+    from scripts.market_data_fallback import fetch_live_reference_spot, fetch_resilient_1m_bars
 except ModuleNotFoundError:
     from market_time_utils import (
         US_2026_HOLIDAYS,
@@ -40,7 +40,7 @@ except ModuleNotFoundError:
         exact_minute_window,
         is_fresh_1m_data,
     )
-    from market_data_fallback import fetch_resilient_1m_bars
+    from market_data_fallback import fetch_live_reference_spot, fetch_resilient_1m_bars
 
 # Ensure UTF-8 output
 if sys.platform == "win32":
@@ -264,9 +264,12 @@ def run_us_engine(test_mode: bool = False):
         if not fresh:
             stale_polls += 1
             if not stale_alert_sent:
+                ref_spot = fetch_live_reference_spot(sym, exchange="US")
+                spot_info = f" (Ref Spot: ${ref_spot['price']:.2f} via {ref_spot['source']})" if ref_spot else ""
                 warn = (
                     f"⚠️ [US DATA STALE] {sym}: latest completed 1-minute market-data bar "
-                    f"is older than 180 seconds. Signal monitoring is paused; no live orders are sent."
+                    f"is older than 180 seconds{spot_info}. Signal monitoring is paused safely "
+                    f"(no unverified fills; no live orders sent)."
                 )
                 print(warn)
                 send_telegram(warn)

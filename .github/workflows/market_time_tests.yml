@@ -29,10 +29,10 @@ jobs:
           python-version: "3.11"
 
       - name: Install test dependency
-        run: python -m pip install --upgrade pip pandas
+        run: python -m pip install --upgrade pip pandas requests yfinance
 
       - name: Run market-time unit tests
         run: python -m unittest discover -s tests -v
 
       - name: Compile trading scripts
-        run: python -m py_compile scripts/market_time_utils.py scripts/v325_us_cloud_runner.py scripts/v325_nse_cloud_runner.py scripts/dry_run_data_check.py
+        run: python -m py_compile scripts/market_time_utils.py scripts/market_data_fallback.py scripts/v325_us_cloud_runner.py scripts/v325_nse_cloud_runner.py scripts/dry_run_data_check.py

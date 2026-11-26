@@ -1,23 +1,24 @@
 """
 tests/test_market_data_fallback.py
-Unit tests for zero-intervention resilient market data fallback engine.
+Unit tests for multi-feed market data fallback and telemetry module.
 """
 
 from __future__ import annotations
 
 import datetime as dt
+import json
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 from zoneinfo import ZoneInfo
 import pandas as pd
 
 from scripts.market_data_fallback import (
-    is_market_session_active,
-    fetch_google_finance_quote,
     fetch_cnbc_us_quote,
-    fetch_independent_quote,
+    fetch_google_finance_quote,
+    fetch_live_reference_spot,
     fetch_raw_yahoo_v8_bars,
     fetch_resilient_1m_bars,
+    is_market_session_active,
 )
 
 
@@ -43,7 +44,7 @@ class TestMarketDataFallback(unittest.TestCase):
         sat_dt = dt.datetime(2026, 11, 28, 11, 0, tzinfo=self.ist)
         self.assertFalse(is_market_session_active("NSE", sat_dt))
 
-        # NSE Holiday (e.g., Republic Day Jan 26, 2026)
+        # NSE Holiday (Republic Day Jan 26, 2026)
         holiday_dt = dt.datetime(2026, 1, 26, 11, 0, tzinfo=self.ist)
         self.assertFalse(is_market_session_active("NSE", holiday_dt))
 
@@ -57,7 +58,25 @@ class TestMarketDataFallback(unittest.TestCase):
         self.assertFalse(is_market_session_active("US", thanksgiving_dt))
 
     @patch("urllib.request.urlopen")
-    def test_fetch_google_finance_quote_success(self, mock_urlopen):
+    def test_fetch_google_finance_quote_symbol_routing_spy(self, mock_urlopen):
+        sample_html = (
+            '<html><body><div class="N6SYTe"><span><span>$716.70</span></span></div></body></html>'
+        )
+        mock_response = MagicMock()
+        mock_response.read.return_value = sample_html.encode("utf-8")
+        mock_response.__enter__.return_value = mock_response
+        mock_urlopen.return_value = mock_response
+
+        res = fetch_google_finance_quote("SPY", "US")
+        self.assertIsNotNone(res)
+        self.assertEqual(res["symbol"], "SPY")
+        # SPY must be routed specifically to NYSEARCA, NOT NASDAQ
+        self.assertEqual(res["exchange"], "NYSEARCA")
+        self.assertEqual(res["price"], 716.70)
+        self.assertTrue(res["is_synthetic_spot"])
+
+    @patch("urllib.request.urlopen")
+    def test_fetch_google_finance_quote_nse_tcs(self, mock_urlopen):
         sample_html = (
             '<html><body><div class="N6SYTe"><span><span>₹2,640.30</span></span></div></body></html>'
         )
@@ -71,7 +90,6 @@ class TestMarketDataFallback(unittest.TestCase):
         self.assertEqual(res["symbol"], "TCS")
         self.assertEqual(res["exchange"], "NSE")
         self.assertEqual(res["price"], 2640.30)
-        self.assertTrue(res["ok"])
 
     @patch("urllib.request.urlopen")
     def test_fetch_cnbc_us_quote_success(self, mock_urlopen):
@@ -83,7 +101,6 @@ class TestMarketDataFallback(unittest.TestCase):
             }
         }
         mock_response = MagicMock()
-        import json
         mock_response.read.return_value = json.dumps(sample_json).encode("utf-8")
         mock_response.__enter__.return_value = mock_response
         mock_urlopen.return_value = mock_response
@@ -92,15 +109,44 @@ class TestMarketDataFallback(unittest.TestCase):
         self.assertIsNotNone(res)
         self.assertEqual(res["symbol"], "AMAT")
         self.assertEqual(res["price"], 311.18)
-        self.assertTrue(res["ok"])
+
+    @patch("scripts.market_data_fallback.fetch_google_finance_quote")
+    def test_fetch_live_reference_spot(self, mock_gf):
+        mock_gf.return_value = {
+            "source": "GoogleFinance_Telemetry",
+            "symbol": "TCS",
+            "price": 2640.30,
+            "ok": True,
+        }
+        spot = fetch_live_reference_spot("TCS", "NSE")
+        self.assertIsNotNone(spot)
+        self.assertEqual(spot["price"], 2640.30)
+
+    @patch("scripts.market_data_fallback._fetch_yfinance_history")
+    def test_fetch_resilient_1m_bars_primary_success(self, mock_yf):
+        # Mock yfinance primary returning valid OHLCV
+        fake_idx = pd.date_range("2026-11-25 09:15", periods=5, freq="min", tz="Asia/Kolkata")
+        fake_df = pd.DataFrame({
+            "Open": [2600.0] * 5,
+            "High": [2610.0] * 5,
+            "Low": [2595.0] * 5,
+            "Close": [2605.0] * 5,
+            "Volume": [1000] * 5,
+        }, index=fake_idx)
+        mock_yf.return_value = fake_df
+
+        df = fetch_resilient_1m_bars("TCS", exchange="NSE")
+        self.assertFalse(df.empty)
+        self.assertEqual(len(df), 5)
+        self.assertEqual(df["Close"].iloc[-1], 2605.0)
 
     @patch("scripts.market_data_fallback.fetch_raw_yahoo_v8_bars")
-    @patch("yfinance.Ticker")
-    def test_fetch_resilient_1m_bars_fallback_to_raw_v8(self, mock_ticker, mock_v8):
-        # Simulate yfinance failure
-        mock_ticker.side_effect = Exception("Yahoo Finance API temporary 429 rate limit")
+    @patch("scripts.market_data_fallback._fetch_yfinance_history")
+    def test_fetch_resilient_1m_bars_fallback_to_raw_v8(self, mock_yf, mock_v8):
+        # Primary fails / empty
+        mock_yf.return_value = pd.DataFrame()
 
-        # Mock direct v8 REST success
+        # Direct REST v8 succeeds
         fake_idx = pd.date_range("2026-11-25 09:15", periods=5, freq="min", tz="Asia/Kolkata")
         fake_df = pd.DataFrame({
             "Open": [2600.0] * 5,
@@ -116,47 +162,24 @@ class TestMarketDataFallback(unittest.TestCase):
         self.assertEqual(len(df), 5)
         self.assertEqual(df["Close"].iloc[-1], 2605.0)
 
-    @patch("scripts.market_data_fallback.is_market_session_active")
-    @patch("scripts.market_data_fallback.fetch_independent_quote")
-    @patch("yfinance.Ticker")
-    def test_fetch_resilient_1m_bars_synthetic_fallback_during_outage(
-        self, mock_ticker, mock_indep, mock_active
+    @patch("scripts.market_data_fallback.fetch_raw_yahoo_v8_bars")
+    @patch("scripts.market_data_fallback._fetch_yfinance_history")
+    def test_fetch_resilient_1m_bars_never_injects_synthetic_single_price_candles(
+        self, mock_yf, mock_v8
     ):
-        # Session is active
-        mock_active.return_value = True
+        """
+        CRITICAL ARCHITECTURAL TEST:
+        When exchange feeds drop candles, fetch_resilient_1m_bars MUST NOT
+        fabricate or invent synthetic candles with Open=High=Low=Close.
+        It must return only true bars so downstream stale-data guards pause safely.
+        """
+        # Both yfinance and direct v8 return empty (feed outage)
+        mock_yf.return_value = pd.DataFrame()
+        mock_v8.return_value = pd.DataFrame()
 
-        # yfinance returns stale data (last bar at 15:15 IST, 15 minutes ago)
-        now_dt = dt.datetime(2026, 11, 25, 15, 25, tzinfo=self.ist)
-        stale_idx = pd.date_range("2026-11-25 15:10", "2026-11-25 15:15", freq="min", tz="Asia/Kolkata")
-        stale_df = pd.DataFrame({
-            "Open": [2620.0] * 6,
-            "High": [2625.0] * 6,
-            "Low": [2618.0] * 6,
-            "Close": [2622.0] * 6,
-            "Volume": [500] * 6,
-        }, index=stale_idx)
-        mock_inst = MagicMock()
-        mock_inst.history.return_value = stale_df
-        mock_ticker.return_value = mock_inst
-
-        # Google Finance provides live quote at ₹2,630.00
-        mock_indep.return_value = {
-            "source": "GoogleFinance_ZeroKey",
-            "price": 2630.00,
-            "ok": True,
-        }
-
-        # Call resilient fetcher with mocked current time
-        with patch("datetime.datetime") as mock_dt:
-            mock_dt.now.return_value = now_dt
-            mock_dt.combine = dt.datetime.combine
-            mock_dt.time = dt.time
-            mock_dt.date = dt.date
-            df = fetch_resilient_1m_bars("TCS", exchange="NSE")
-
-        self.assertFalse(df.empty)
-        # Should have appended a synthetic bar at the current minute
-        self.assertIn(df.index[-1].minute, [25, stale_idx[-1].minute])
+        df = fetch_resilient_1m_bars("TCS", exchange="NSE")
+        self.assertTrue(df.empty)
+        self.assertEqual(len(df), 0)
 
 
 if __name__ == "__main__":

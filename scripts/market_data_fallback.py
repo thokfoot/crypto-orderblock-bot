@@ -1,16 +1,21 @@
 """
 scripts/market_data_fallback.py
-Zero-Intervention Resilient Dual-Feed Market Data Fallback Module
-Strategy v3.2.5 & v3.3 Autonomous Execution Engines
+Multi-Feed Market Data & Telemetry Fallback Engine
+Strategy v3.2.5 & v3.3 Cloud Execution Runners
 
-Requires ZERO user accounts, ZERO API keys, and ZERO manual token refreshes.
-Provides automatic failover when Yahoo Finance drops candles or experiences latency.
-
-Feeds:
-1. Primary: yfinance / Yahoo Finance Python client.
-2. Direct REST Fallback: Raw Yahoo v8 Chart REST API (query1 & query2 endpoints).
-3. Independent Public Fallback: Google Finance Realtime Web Endpoint (NSE & US).
-4. Independent US Fallback: CNBC Realtime Public REST API (US equities).
+ARCHITECTURE & INTEGRITY RULES:
+1. Trade Execution Integrity:
+   Trading signals, breakouts, Stop-Loss (SL), and Take-Profit (TP) evaluations
+   MUST ONLY operate on verified exchange OHLCV 1-minute bars.
+   Synthetic single-price candles (Open=High=Low=Close, Volume=0) are STRICTLY
+   PROHIBITED from being injected into the execution DataFrame.
+2. Direct REST Failover:
+   Direct queries to Yahoo v8 Chart REST endpoints (query1 and query2) serve as
+   the secondary OHLCV feed if the yfinance client drops requests or fails.
+3. Telemetry Reference Feed:
+   Google Finance and CNBC public endpoints provide emergency spot-price telemetry.
+   If primary data feeds stall or drop candles, reference spot quotes are emitted
+   to Telegram alerts for human oversight, while the execution engine pauses safely.
 """
 
 from __future__ import annotations
@@ -66,16 +71,16 @@ def is_market_session_active(exchange: str, now_dt: dt.datetime | None = None) -
     is_nse = exchange.upper() in ("NSE", "INDIA", "NIFTY")
     tz = IST if is_nse else ET
     cur_now = now_dt.astimezone(tz) if (now_dt and now_dt.tzinfo) else (now_dt.replace(tzinfo=tz) if now_dt else dt.datetime.now(tz))
-    
+
     # Check weekday (0 = Monday, 4 = Friday)
     if cur_now.weekday() >= 5:
         return False
-        
+
     cur_date = cur_now.date()
     holidays = NSE_2026_HOLIDAYS if is_nse else US_2026_HOLIDAYS
     if cur_date in holidays:
         return False
-        
+
     cur_time = cur_now.time()
     if is_nse:
         return dt.time(9, 15) <= cur_time <= dt.time(15, 30)
@@ -84,66 +89,82 @@ def is_market_session_active(exchange: str, now_dt: dt.datetime | None = None) -
 
 
 # -----------------------------------------------------------------------------
-# INDEPENDENT ZERO-KEY REALTIME QUOTE FETCHER (GOOGLE FINANCE + CNBC)
+# INDEPENDENT ZERO-KEY REALTIME TELEMETRY (GOOGLE FINANCE + CNBC)
 # -----------------------------------------------------------------------------
 def fetch_google_finance_quote(symbol: str, exchange: str = "NSE") -> dict[str, Any] | None:
     """
-    Fetches real-time price from Google Finance with zero API keys or accounts.
-    Supported exchanges: 'NSE', 'BSE', 'NASDAQ', 'NYSE', 'NYSEARCA'.
+    Fetches real-time reference spot price from Google Finance.
+    Used for monitoring telemetry and alerting; NOT injected as synthetic OHLCV.
+    Accurately maps exchanges including NYSEARCA (SPY), NASDAQ (QQQ), and NSE.
     """
-    clean_sym = symbol.replace(".NS", "").replace(".BO", "")
-    
-    # Map exchange for Google Finance ticker syntax
-    if exchange.upper() in {"US", "NASDAQ"}:
+    clean_sym = symbol.replace(".NS", "").replace(".BO", "").upper()
+
+    # Accurate exchange routing for Google Finance
+    if clean_sym in {"SPY", "IVV", "VOO", "DIA"}:
+        exch_tag = "NYSEARCA"
+    elif clean_sym in {
+        "QQQ", "AAPL", "MSFT", "NVDA", "AVGO", "CSCO", "AMZN",
+        "GOOGL", "META", "NFLX", "AMD", "QCOM", "TXN", "INTC", "MU", "AMAT",
+    }:
+        exch_tag = "NASDAQ"
+    elif clean_sym in {
+        "JPM", "V", "MA", "BAC", "WFC", "GS", "LLY", "JNJ",
+        "ABBV", "MRK", "PFE", "AMGN", "REGN", "VRTX", "TSLA",
+        "HD", "MCD", "NKE", "SBUX", "GE", "CAT", "BA", "UNP",
+        "HON", "ETN", "XOM", "CVX", "COP", "SLB", "EOG", "VLO",
+    }:
+        exch_tag = "NYSE"
+    elif exchange.upper() in {"NASDAQ", "US"}:
         exch_tag = "NASDAQ"
     elif exchange.upper() in {"NYSE", "NYSEARCA"}:
         exch_tag = exchange.upper()
     else:
         exch_tag = "NSE"
-        
+
     url = f"https://www.google.com/finance/quote/{clean_sym}:{exch_tag}"
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept-Language": "en-US,en;q=0.9"})
-    
+
     try:
         with urllib.request.urlopen(req, timeout=6) as resp:
             html = resp.read().decode("utf-8", errors="ignore")
-            
+
         # Target the primary ticker price container (class N6SYTe)
         m = re.search(r'class="N6SYTe"[^>]*><span[^>]*><span[^>]*>[^0-9]*([0-9,.]+)<', html)
         if m:
             clean_str = m.group(1).replace(",", "")
             price = float(clean_str)
             return {
-                "source": "GoogleFinance_ZeroKey",
+                "source": "GoogleFinance_Telemetry",
                 "symbol": clean_sym,
                 "exchange": exch_tag,
                 "price": price,
                 "timestamp": dt.datetime.now(IST if exch_tag == "NSE" else ET),
+                "is_synthetic_spot": True,
                 "ok": True,
             }
-            
-        # Fallback attribute data-last-price
+
         match_attr = re.search(r'data-last-price="([0-9.]+)"', html)
         if match_attr:
             price = float(match_attr.group(1))
             return {
-                "source": "GoogleFinance_Attr",
+                "source": "GoogleFinance_Attr_Telemetry",
                 "symbol": clean_sym,
                 "exchange": exch_tag,
                 "price": price,
                 "timestamp": dt.datetime.now(IST if exch_tag == "NSE" else ET),
+                "is_synthetic_spot": True,
                 "ok": True,
             }
     except Exception:
         pass
-        
+
     return None
 
 
 def fetch_cnbc_us_quote(symbol: str) -> dict[str, Any] | None:
     """
-    Fetches official real-time US quote from CNBC's public JSON endpoint.
-    Zero API key required.
+    Fetches real-time US reference spot price from CNBC's public JSON endpoint.
+    Used for telemetry and heartbeat verification only.
     """
     clean_sym = symbol.upper()
     url = f"https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols={clean_sym}&requestMethod=itv&noform=1&partnerId=2&fund=1&exthrs=1&output=json"
@@ -157,11 +178,12 @@ def fetch_cnbc_us_quote(symbol: str) -> dict[str, Any] | None:
                 last_price = float(q.get("last", "0").replace(",", ""))
                 if last_price > 0:
                     return {
-                        "source": "CNBC_Public_REST",
+                        "source": "CNBC_Public_Telemetry",
                         "symbol": clean_sym,
                         "exchange": "US",
                         "price": last_price,
                         "timestamp": dt.datetime.now(ET),
+                        "is_synthetic_spot": True,
                         "ok": True,
                     }
     except Exception:
@@ -169,39 +191,36 @@ def fetch_cnbc_us_quote(symbol: str) -> dict[str, Any] | None:
     return None
 
 
-def fetch_independent_quote(symbol: str, exchange: str = "NSE") -> dict[str, Any] | None:
+def fetch_live_reference_spot(symbol: str, exchange: str = "NSE") -> dict[str, Any] | None:
     """
-    Master fallback quote fetcher trying independent sources in sequence.
-    Zero accounts, zero keys.
+    Master telemetry fallback fetcher for monitoring alerts during primary feed delays.
     """
-    # 1. Try Google Finance (works for both NSE & US)
     gf = fetch_google_finance_quote(symbol, exchange)
     if gf and gf.get("ok"):
         return gf
-        
-    # 2. If US stock, try CNBC public REST endpoint
+
     if exchange.upper() in {"US", "NASDAQ", "NYSE", "NYSEARCA"}:
         cnbc = fetch_cnbc_us_quote(symbol)
         if cnbc and cnbc.get("ok"):
             return cnbc
-            
+
     return None
 
 
 # -----------------------------------------------------------------------------
-# DIRECT YAHOO V8 REST CHART FETCHER (BYPASSING YFINANCE CRUMB CACHE)
+# DIRECT YAHOO V8 REST CHART FETCHER (RAW OHLCV MINUTE DATA)
 # -----------------------------------------------------------------------------
 def fetch_raw_yahoo_v8_bars(symbol: str, range_str: str = "1d", interval: str = "1m") -> pd.DataFrame:
     """
     Queries Yahoo's raw v8 Chart API directly across redundant server endpoints
-    (query1 and query2). Bypasses any yfinance library-level caching or dropping bugs.
+    (query1 and query2). Retrieves genuine OHLCV bars, bypassing yfinance client bugs.
     """
     clean_sym = symbol if (".NS" in symbol or ".BO" in symbol or "^" in symbol) else symbol
     endpoints = [
         f"https://query1.finance.yahoo.com/v8/finance/chart/{clean_sym}?range={range_str}&interval={interval}",
         f"https://query2.finance.yahoo.com/v8/finance/chart/{clean_sym}?range={range_str}&interval={interval}",
     ]
-    
+
     for url in endpoints:
         try:
             req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
@@ -215,13 +234,13 @@ def fetch_raw_yahoo_v8_bars(symbol: str, range_str: str = "1d", interval: str = 
                 indicators = block.get("indicators", {}).get("quote", [{}])[0]
                 if not timestamps or not indicators:
                     continue
-                    
+
                 opens = indicators.get("open", [])
                 highs = indicators.get("high", [])
                 lows = indicators.get("low", [])
                 closes = indicators.get("close", [])
                 volumes = indicators.get("volume", [])
-                
+
                 rows = []
                 for i, ts in enumerate(timestamps):
                     o = opens[i] if i < len(opens) else None
@@ -229,16 +248,18 @@ def fetch_raw_yahoo_v8_bars(symbol: str, range_str: str = "1d", interval: str = 
                     l = lows[i] if i < len(lows) else None
                     c = closes[i] if i < len(closes) else None
                     v = volumes[i] if i < len(volumes) else None
-                    
-                    rows.append({
-                        "timestamp": ts,
-                        "Open": o,
-                        "High": h,
-                        "Low": l,
-                        "Close": c,
-                        "Volume": v,
-                    })
-                    
+
+                    # Only accept bars with complete OHLC
+                    if o is not None and h is not None and l is not None and c is not None:
+                        rows.append({
+                            "timestamp": ts,
+                            "Open": float(o),
+                            "High": float(h),
+                            "Low": float(l),
+                            "Close": float(c),
+                            "Volume": float(v) if v is not None else 0.0,
+                        })
+
                 if rows:
                     df = pd.DataFrame(rows)
                     df["Datetime"] = pd.to_datetime(df["timestamp"], unit="s", utc=True)
@@ -247,83 +268,58 @@ def fetch_raw_yahoo_v8_bars(symbol: str, range_str: str = "1d", interval: str = 
                     return df
         except Exception:
             continue
-            
+
     return pd.DataFrame()
 
 
+def _fetch_yfinance_history(clean_sym: str, period: str) -> pd.DataFrame:
+    """
+    Internal helper to isolate yfinance client invocation.
+    Allows clean mocking without requiring yfinance to be installed.
+    """
+    try:
+        import yfinance as yf
+        t = yf.Ticker(clean_sym)
+        raw = t.history(period=period, interval="1m", prepost=False, auto_adjust=False)
+        return raw if (raw is not None and not raw.empty) else pd.DataFrame()
+    except Exception:
+        return pd.DataFrame()
+
+
 # -----------------------------------------------------------------------------
-# RESILIENT DUAL-FEED MERGER WITH ZERO-KEY FALLBACK
+# RESILIENT DUAL-FEED MERGER (STRICT TRUE OHLCV ONLY)
 # -----------------------------------------------------------------------------
 def fetch_resilient_1m_bars(symbol: str, exchange: str = "NSE", period: str = "1d") -> pd.DataFrame:
     """
-    Main resilient entrypoint:
+    Main resilient OHLCV entrypoint:
     1. Tries primary yfinance history.
-    2. If yfinance is empty or fails, falls back to direct Yahoo v8 REST endpoints.
+    2. If yfinance is empty or fails, falls back to direct Yahoo v8 REST endpoints
+       (query1/query2) to retrieve genuine OHLCV bars.
     3. Normalizes timezone (IST for NSE, ET for US).
-    4. If market is actively open and latest bar is stale (>120s), supplements with
-       an independent zero-key Google Finance / CNBC live quote so the engine never gets stranded.
-    """
-    import yfinance as yf
     
+    CRITICAL POLICY:
+    This function NEVER appends synthetic/interpolated candles. If exchange OHLCV
+    data is missing or dropped, the returned DataFrame reflects genuine market data only,
+    allowing the runner's evaluate_stale_recovery guard to pause safely.
+    """
     clean_sym = symbol
     if exchange.upper() == "NSE" and not clean_sym.endswith(".NS") and not clean_sym.startswith("^"):
         clean_sym += ".NS"
-        
+
     tz_name = "Asia/Kolkata" if exchange.upper() in ("NSE", "INDIA", "NIFTY") else "America/New_York"
-    tz_obj = IST if exchange.upper() in ("NSE", "INDIA", "NIFTY") else ET
-    
-    df = pd.DataFrame()
-    
-    # Tier 1: Try yfinance
-    try:
-        t = yf.Ticker(clean_sym)
-        raw = t.history(period=period, interval="1m", prepost=False, auto_adjust=False)
-        if raw is not None and not raw.empty:
-            df = normalize_1m_frame(raw, tz_name)
-    except Exception:
-        df = pd.DataFrame()
-        
-    # Tier 2: If yfinance failed or returned empty, try direct v8 API
-    if df.empty:
-        v8_df = fetch_raw_yahoo_v8_bars(clean_sym, range_str=period if period in ("1d", "5d", "1mo") else "1d", interval="1m")
-        if not v8_df.empty:
-            v8_df.dropna(subset=["Close"], inplace=True)
-            df = normalize_1m_frame(v8_df, tz_name)
-            
-    # Tier 3: Verify latest price during ACTIVE market hours
-    now_dt = dt.datetime.now(tz_obj)
-    if is_market_session_active(exchange, now_dt):
-        need_fallback = False
-        if df.empty:
-            need_fallback = True
-        else:
-            last_ts = df.index[-1]
-            age_seconds = (now_dt - last_ts).total_seconds()
-            if age_seconds > 120:
-                need_fallback = True
-                
-        if need_fallback:
-            indep = fetch_independent_quote(symbol, exchange)
-            if indep and indep.get("ok"):
-                live_price = float(indep["price"])
-                bar_dt = now_dt.replace(second=0, microsecond=0)
-                
-                synthetic_bar = pd.DataFrame([{
-                    "Open": live_price,
-                    "High": live_price,
-                    "Low": live_price,
-                    "Close": live_price,
-                    "Volume": 0,
-                }], index=pd.DatetimeIndex([bar_dt], tz=tz_obj))
-                
-                if df.empty:
-                    df = synthetic_bar
-                elif bar_dt > df.index[-1]:
-                    df = pd.concat([df, synthetic_bar])
-                elif bar_dt == df.index[-1]:
-                    # Update close of currently forming bar
-                    df.loc[bar_dt, "Close"] = live_price
-                    df.loc[bar_dt, "High"] = max(df.loc[bar_dt, "High"], live_price)
-                    df.loc[bar_dt, "Low"] = min(df.loc[bar_dt, "Low"], live_price)
-                    
-    return df
+
+    # Tier 1: Try yfinance client
+    raw = _fetch_yfinance_history(clean_sym, period)
+    if not raw.empty:
+        return normalize_1m_frame(raw, tz_name)
+
+    # Tier 2: Direct REST query1/query2 failover
+    v8_df = fetch_raw_yahoo_v8_bars(
+        clean_sym,
+        range_str=period if period in ("1d", "5d", "1mo") else "1d",
+        interval="1m"
+    )
+    if not v8_df.empty:
+        return normalize_1m_frame(v8_df, tz_name)
+
+    return pd.DataFrame()

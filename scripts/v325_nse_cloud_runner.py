@@ -24,10 +24,10 @@ from zoneinfo import ZoneInfo
 
 try:
     from scripts.market_time_utils import completed_1m_bars, evaluate_stale_recovery, exact_minute_window, is_fresh_1m_data, normalize_1m_frame
-    from scripts.market_data_fallback import fetch_resilient_1m_bars
+    from scripts.market_data_fallback import fetch_live_reference_spot, fetch_resilient_1m_bars
 except ModuleNotFoundError:
     from market_time_utils import completed_1m_bars, evaluate_stale_recovery, exact_minute_window, is_fresh_1m_data, normalize_1m_frame
-    from market_data_fallback import fetch_resilient_1m_bars
+    from market_data_fallback import fetch_live_reference_spot, fetch_resilient_1m_bars
 
 IST_ZONE_NAME = "Asia/Kolkata"
 IST = ZoneInfo(IST_ZONE_NAME)
@@ -400,9 +400,12 @@ def run_monitoring_loop(candidate: dict[str, Any], is_test: bool = False) -> Non
         if not fresh:
             stale_polls += 1
             if not stale_alert_sent:
+                ref_spot = fetch_live_reference_spot(clean_sym, exchange="NSE")
+                spot_info = f" (Ref Spot: ₹{ref_spot['price']:.2f} via {ref_spot['source']})" if ref_spot else ""
                 msg = (
                     f"⚠️ [NSE STALE DATA] {clean_sym}: latest completed 1-minute bar "
-                    f"is older than 180 seconds. Signal monitoring is paused."
+                    f"is older than 180 seconds{spot_info}. Signal monitoring is paused "
+                    f"safely (no unverified fills)."
                 )
                 print(msg)
                 send_telegram(msg)
