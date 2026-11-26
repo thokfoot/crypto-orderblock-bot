@@ -77,9 +77,11 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 IST = ZoneInfo("Asia/Kolkata")
 ET = ZoneInfo("America/New_York")
 
-# In-memory rate limiting and caching for Twelve Data API credits
+# In-memory rate limiting, global quota protection, and caching for Twelve Data API credits
 _TWELVE_DATA_CACHE: dict[str, tuple[float, pd.DataFrame]] = {}
-TWELVE_DATA_MIN_INTERVAL_SECONDS = 60.0
+_TWELVE_DATA_GLOBAL_CALL_TIMESTAMPS: list[float] = []
+TWELVE_DATA_PER_SYMBOL_COOLDOWN_SECONDS = 60.0
+TWELVE_DATA_GLOBAL_MAX_CALLS_PER_MINUTE = 6  # Conservative ceiling below the 8 req/min limit
 
 
 def is_market_session_active(exchange: str, now_dt: dt.datetime | None = None) -> bool:
@@ -319,6 +321,7 @@ def fetch_twelve_data_1m_bars(symbol: str, exchange: str = "US", outputsize: int
     lag, or contain missing candles. Cached with a 60-second cooldown per symbol
     to strictly observe the 8 requests/minute rate limit.
     """
+    global _TWELVE_DATA_GLOBAL_CALL_TIMESTAMPS
     import os
     api_key = os.environ.get("TWELVE_DATA_API_KEY", "").strip()
     if not api_key:
@@ -330,11 +333,24 @@ def fetch_twelve_data_1m_bars(symbol: str, exchange: str = "US", outputsize: int
     cache_key = f"{clean_sym}:{exchange.upper()}"
     now_mono = time.monotonic()
 
-    # Rate limiting & credit preservation: return cache if queried within 60s
+    # Finding 2 & 3: Check per-symbol cache (covers both prior successes and cached failures)
     if cache_key in _TWELVE_DATA_CACHE:
         last_time, cached_df = _TWELVE_DATA_CACHE[cache_key]
-        if (now_mono - last_time) < TWELVE_DATA_MIN_INTERVAL_SECONDS:
+        if (now_mono - last_time) < TWELVE_DATA_PER_SYMBOL_COOLDOWN_SECONDS:
             return cached_df.copy()
+
+    # Finding 2: Global process-wide rate ceiling (max 6 calls per rolling 60 seconds)
+    _TWELVE_DATA_GLOBAL_CALL_TIMESTAMPS = [
+        t for t in _TWELVE_DATA_GLOBAL_CALL_TIMESTAMPS if (now_mono - t) < 60.0
+    ]
+    if len(_TWELVE_DATA_GLOBAL_CALL_TIMESTAMPS) >= TWELVE_DATA_GLOBAL_MAX_CALLS_PER_MINUTE:
+        # Global ceiling reached: return existing cached DataFrame if available, else empty
+        if cache_key in _TWELVE_DATA_CACHE:
+            return _TWELVE_DATA_CACHE[cache_key][1].copy()
+        return pd.DataFrame()
+
+    # Record this outgoing call attempt in global rolling tracker
+    _TWELVE_DATA_GLOBAL_CALL_TIMESTAMPS.append(now_mono)
 
     if is_nse:
         url = f"https://api.twelvedata.com/time_series?symbol={clean_sym}&exchange=NSE&interval=1min&outputsize={outputsize}&apikey={api_key}"
@@ -347,10 +363,13 @@ def fetch_twelve_data_1m_bars(symbol: str, exchange: str = "US", outputsize: int
             data = json.loads(resp.read().decode("utf-8", errors="ignore"))
 
         if data.get("status") == "error":
+            # Finding 3: Cache the failure so repeated errors don't trigger repeated requests
+            _TWELVE_DATA_CACHE[cache_key] = (now_mono, pd.DataFrame())
             return pd.DataFrame()
 
         values = data.get("values", [])
         if not values:
+            _TWELVE_DATA_CACHE[cache_key] = (now_mono, pd.DataFrame())
             return pd.DataFrame()
 
         rows = []
@@ -374,7 +393,8 @@ def fetch_twelve_data_1m_bars(symbol: str, exchange: str = "US", outputsize: int
             _TWELVE_DATA_CACHE[cache_key] = (now_mono, res)
             return res
     except Exception:
-        pass
+        # Finding 3: Cache network/HTTP exception as failure to prevent retry spam
+        _TWELVE_DATA_CACHE[cache_key] = (now_mono, pd.DataFrame())
 
     return pd.DataFrame()
 
@@ -382,7 +402,10 @@ def fetch_twelve_data_1m_bars(symbol: str, exchange: str = "US", outputsize: int
 def merge_ohlcv_frames(primary_df: pd.DataFrame, secondary_df: pd.DataFrame, tz_name: str) -> pd.DataFrame:
     """
     Safely merges two genuine OHLCV DataFrames.
-    Deduplicates on timestamp index, preserving the most complete/recent records.
+    CRITICAL QUALITY RULE (Finding 1):
+    Primary provider (Yahoo) candles are NEVER overwritten by secondary feed.
+    Secondary feed candles are inserted ONLY for timestamps that are missing
+    from the primary frame.
     """
     if primary_df.empty and secondary_df.empty:
         return pd.DataFrame()
@@ -399,8 +422,13 @@ def merge_ohlcv_frames(primary_df: pd.DataFrame, secondary_df: pd.DataFrame, tz_
     s_utc = s.copy()
     s_utc.index = s_utc.index.tz_convert("UTC")
 
-    combined = pd.concat([p_utc, s_utc])
-    combined = combined[~combined.index.duplicated(keep="last")].sort_index()
+    # Finding 1: Only insert secondary candles for timestamps NOT in primary
+    missing_mask = ~s_utc.index.isin(p_utc.index)
+    bars_to_insert = s_utc.loc[missing_mask]
+    if bars_to_insert.empty:
+        return normalize_1m_frame(p, tz_name)
+
+    combined = pd.concat([p_utc, bars_to_insert]).sort_index()
     return normalize_1m_frame(combined, tz_name)
 
 

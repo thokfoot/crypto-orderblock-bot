@@ -20,6 +20,7 @@ from scripts.market_data_fallback import (
     fetch_resilient_1m_bars,
     fetch_twelve_data_1m_bars,
     is_market_session_active,
+    merge_ohlcv_frames,
 )
 
 
@@ -27,6 +28,9 @@ class TestMarketDataFallback(unittest.TestCase):
     def setUp(self):
         self.ist = ZoneInfo("Asia/Kolkata")
         self.et = ZoneInfo("America/New_York")
+        import scripts.market_data_fallback as fb
+        fb._TWELVE_DATA_CACHE.clear()
+        fb._TWELVE_DATA_GLOBAL_CALL_TIMESTAMPS.clear()
 
     def test_is_market_session_active_nse(self):
         # Regular trading day at 10:30 IST (Wednesday)
@@ -329,6 +333,105 @@ class TestMarketDataFallback(unittest.TestCase):
         df2 = fetch_twelve_data_1m_bars("QQQ", exchange="US")
         self.assertEqual(len(df2), 1)
         # Network request MUST NOT have incremented
+        self.assertEqual(mock_urlopen.call_count, 1)
+
+    def test_merge_ohlcv_frames_never_overwrites_primary_candles(self):
+        """
+        FINDING 1 AUDIT TEST:
+        Primary Yahoo candles must NEVER be overwritten on overlapping timestamps.
+        Secondary Twelve Data candles are inserted ONLY for genuinely missing timestamps.
+        """
+        ts1 = pd.Timestamp("2026-11-25 10:00", tz=self.et)
+        ts2 = pd.Timestamp("2026-11-25 10:01", tz=self.et)
+        ts_missing = pd.Timestamp("2026-11-25 10:02", tz=self.et)
+
+        # Primary has ts1 and ts2 (with Close=700.0 and Close=701.0)
+        primary = pd.DataFrame({
+            "Open": [699.0, 700.0],
+            "High": [701.0, 702.0],
+            "Low": [698.0, 699.0],
+            "Close": [700.0, 701.0],
+            "Volume": [1000.0, 1200.0],
+        }, index=pd.DatetimeIndex([ts1, ts2]))
+
+        # Secondary has ts1, ts2 (with conflicting Close=999.0) and missing ts_missing (Close=705.0)
+        secondary = pd.DataFrame({
+            "Open": [999.0, 999.0, 704.0],
+            "High": [999.0, 999.0, 706.0],
+            "Low": [999.0, 999.0, 703.0],
+            "Close": [999.0, 999.0, 705.0],
+            "Volume": [5000.0, 5000.0, 1500.0],
+        }, index=pd.DatetimeIndex([ts1, ts2, ts_missing]))
+
+        merged = merge_ohlcv_frames(primary, secondary, "America/New_York")
+
+        self.assertEqual(len(merged), 3)
+        # Verify primary ts1 and ts2 were NOT overwritten by secondary 999.0
+        self.assertEqual(merged.loc[ts1, "Close"], 700.0)
+        self.assertEqual(merged.loc[ts2, "Close"], 701.0)
+        # Verify missing ts_missing was inserted
+        self.assertEqual(merged.loc[ts_missing, "Close"], 705.0)
+
+    @patch.dict("os.environ", {"TWELVE_DATA_API_KEY": "test_key"})
+    @patch("urllib.request.urlopen")
+    def test_twelve_data_global_rate_ceiling(self, mock_urlopen):
+        """
+        FINDING 2 AUDIT TEST:
+        Process-wide global call ceiling strictly prevents exceeding 6 calls/min across all symbols.
+        """
+        import scripts.market_data_fallback as fb
+        fb._TWELVE_DATA_CACHE.clear()
+        fb._TWELVE_DATA_GLOBAL_CALL_TIMESTAMPS.clear()
+
+        sample_json = {
+            "meta": {"symbol": "TEST", "interval": "1min"},
+            "values": [{"datetime": "2026-11-25 15:59:00", "open": "100", "high": "101", "low": "99", "close": "100", "volume": "100"}],
+            "status": "ok",
+        }
+        mock_response = MagicMock()
+        mock_response.read.return_value = json.dumps(sample_json).encode("utf-8")
+        mock_response.__enter__.return_value = mock_response
+        mock_urlopen.return_value = mock_response
+
+        # Call with 6 distinct symbols
+        symbols = ["SYM1", "SYM2", "SYM3", "SYM4", "SYM5", "SYM6"]
+        for s in symbols:
+            df = fetch_twelve_data_1m_bars(s, exchange="US")
+            self.assertEqual(len(df), 1)
+
+        self.assertEqual(mock_urlopen.call_count, 6)
+
+        # 7th call with a new symbol must be blocked by global ceiling!
+        df7 = fetch_twelve_data_1m_bars("SYM7", exchange="US")
+        self.assertTrue(df7.empty)
+        # Network request must still be 6 (no 7th call made)
+        self.assertEqual(mock_urlopen.call_count, 6)
+
+    @patch.dict("os.environ", {"TWELVE_DATA_API_KEY": "test_key"})
+    @patch("urllib.request.urlopen")
+    def test_twelve_data_failure_is_cached(self, mock_urlopen):
+        """
+        FINDING 3 AUDIT TEST:
+        API failure or HTTP error is cached for 60s so it does not retry on every poll.
+        """
+        import scripts.market_data_fallback as fb
+        fb._TWELVE_DATA_CACHE.clear()
+
+        # Simulate API error response
+        error_json = {"code": 404, "message": "Symbol not available", "status": "error"}
+        mock_response = MagicMock()
+        mock_response.read.return_value = json.dumps(error_json).encode("utf-8")
+        mock_response.__enter__.return_value = mock_response
+        mock_urlopen.return_value = mock_response
+
+        # Call 1: fails
+        df1 = fetch_twelve_data_1m_bars("FAILSYM", exchange="US")
+        self.assertTrue(df1.empty)
+        self.assertEqual(mock_urlopen.call_count, 1)
+
+        # Call 2 immediately: must return cached failure without issuing another request
+        df2 = fetch_twelve_data_1m_bars("FAILSYM", exchange="US")
+        self.assertTrue(df2.empty)
         self.assertEqual(mock_urlopen.call_count, 1)
 
 
