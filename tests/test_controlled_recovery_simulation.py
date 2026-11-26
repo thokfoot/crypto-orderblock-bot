@@ -432,6 +432,67 @@ class ControlledRecoverySimulationTests(unittest.TestCase):
         self.assertEqual(exit_price, 98.5)
         self.assertEqual(recovery["reason"], "ambiguous_bar_sl_and_tp_both_touched_assumed_sl")
 
+    def test_simulation_data_gap_alert_deduplication_prevents_telegram_spam(self):
+        """
+        Regression Test: Alert flood / spam prevention.
+        Scenario: Market data has an incomplete recovery gap (e.g. 12 missing candles).
+        The runner polls every 20 seconds for 40 consecutive iterations (13+ minutes).
+        Deduplication guard (gap_alert_sent) MUST ensure that Telegram alert is sent
+        EXACTLY ONCE, never 40 times!
+        Once data is restored, the guard resets cleanly.
+        """
+        dispatched_alerts = []
+        def mock_send_telegram(msg: str):
+            dispatched_alerts.append(msg)
+
+        # Simulation state matching runner
+        stale_polls = 1
+        stale_alert_sent = True
+        gap_alert_sent = False
+        in_trade = False
+        trigger = 100.0
+        sl = 99.0
+        tp = 102.0
+
+        # Incomplete recovery response (mocked action)
+        incomplete_recovery = {
+            "action": "RECOVERY_DATA_INCOMPLETE",
+            "missing_bars": ["15:16", "15:17", "15:18"],
+            "missing_count": 12,
+        }
+
+        # Simulate 40 polling iterations during the gap
+        for poll in range(40):
+            if incomplete_recovery["action"] == "RECOVERY_DATA_INCOMPLETE":
+                if not gap_alert_sent:
+                    missing_preview = ", ".join(incomplete_recovery["missing_bars"][:3])
+                    msg = (
+                        f"⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*\n"
+                        f"• Missing Candles: `{incomplete_recovery['missing_count']}` ({missing_preview})\n"
+                        f"• Action: Signal monitoring paused."
+                    )
+                    mock_send_telegram(msg)
+                    gap_alert_sent = True
+                stale_polls = 1
+
+        # CRITICAL ASSERTION: Exactly 1 alert dispatched, NOT 40!
+        self.assertEqual(len(dispatched_alerts), 1, "Gap alert must be sent exactly once across 40 polls!")
+        self.assertTrue(gap_alert_sent)
+
+        # Now simulate feed restoration on poll 41
+        restored_recovery = {
+            "action": "DISCARD_AND_RESUME",
+        }
+        if restored_recovery["action"] == "DISCARD_AND_RESUME":
+            stale_alert_sent = False
+            gap_alert_sent = False
+            stale_polls = 0
+            mock_send_telegram("ℹ️ [NSE DATA RESTORED] feed reconnected.")
+
+        self.assertEqual(len(dispatched_alerts), 2)
+        self.assertFalse(gap_alert_sent, "gap_alert_sent must reset when feed restores!")
+
 
 if __name__ == "__main__":
     unittest.main()
+

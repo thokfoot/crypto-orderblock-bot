@@ -270,6 +270,7 @@ def run_us_engine(test_mode: bool = False):
     last_close = None
     stale_polls = 0
     stale_alert_sent = False
+    gap_alert_sent = False
     terminal = False
 
     print("\n[Step 2] Monitoring completed 1-minute bars until 11:00 ET (signal-only; no orders).")
@@ -294,8 +295,6 @@ def run_us_engine(test_mode: bool = False):
                 stale_alert_sent = True
         else:
             if stale_polls > 0:
-                stale_alert_sent = False
-                stale_polls = 0
                 if not closed.empty:
                     latest_ts = closed.index[-1]
                     latest_bar = closed.iloc[-1]
@@ -326,20 +325,26 @@ def run_us_engine(test_mode: bool = False):
                     )
 
                     if recovery["action"] == "RECOVERY_DATA_INCOMPLETE":
-                        missing_preview = ", ".join(recovery["missing_bars"][:3])
-                        if recovery["missing_count"] > 3:
-                            missing_preview += f" (+{recovery['missing_count'] - 3} more)"
-                        msg = (
-                            f"⚠️ <b>[US DATA GAP / RECOVERY INCOMPLETE]</b>\n"
-                            f"• <b>Stock:</b> {sym}\n"
-                            f"• <b>Missing Candles:</b> {recovery['missing_count']} ({missing_preview})\n"
-                            f"• <b>Action:</b> Signal monitoring paused; cannot safely determine trade state from incomplete data."
-                        )
-                        print(msg)
-                        send_telegram(msg)
+                        if not gap_alert_sent:
+                            missing_preview = ", ".join(recovery["missing_bars"][:3])
+                            if recovery["missing_count"] > 3:
+                                missing_preview += f" (+{recovery['missing_count'] - 3} more)"
+                            msg = (
+                                f"⚠️ <b>[US DATA GAP / RECOVERY INCOMPLETE]</b>\n"
+                                f"• <b>Stock:</b> {sym}\n"
+                                f"• <b>Missing Candles:</b> {recovery['missing_count']} ({missing_preview})\n"
+                                f"• <b>Action:</b> Signal monitoring paused; cannot safely determine trade state from incomplete data."
+                            )
+                            print(msg)
+                            send_telegram(msg)
+                            gap_alert_sent = True
                         stale_polls = 1  # Retain recovery gate until complete data is supplied
                         continue
 
+                    # Recovery succeeded: clear outage & gap alert guards
+                    stale_alert_sent = False
+                    gap_alert_sent = False
+                    stale_polls = 0
                     last_processed = latest_ts
 
                     if recovery["action"] == "DISCARD_AND_RESUME":
