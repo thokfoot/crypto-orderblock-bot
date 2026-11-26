@@ -12,7 +12,11 @@ ARCHITECTURE & INTEGRITY RULES:
 2. Direct REST Failover:
    Direct queries to Yahoo v8 Chart REST endpoints (query1 and query2) serve as
    the secondary OHLCV feed if the yfinance client drops requests or fails.
-3. Telemetry Reference Feed:
+3. Independent Secondary OHLCV Feed (Twelve Data):
+   Twelve Data REST API serves as an independent secondary provider for genuine
+   1-minute OHLCV bars when primary Yahoo feeds are empty, stale, or have missing candles.
+   Rate-limited and cached to protect API credits.
+4. Telemetry Reference Feed:
    Google Finance and CNBC public endpoints provide emergency spot-price telemetry.
    If primary data feeds stall or drop candles, reference spot quotes are emitted
    to Telegram alerts for human oversight, while the execution engine pauses safely.
@@ -23,6 +27,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 import re
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -34,6 +39,7 @@ try:
     from scripts.market_time_utils import (
         NSE_2026_HOLIDAYS,
         US_2026_HOLIDAYS,
+        is_fresh_1m_data,
         normalize_1m_frame,
     )
 except ImportError:
@@ -41,6 +47,7 @@ except ImportError:
         from market_time_utils import (
             NSE_2026_HOLIDAYS,
             US_2026_HOLIDAYS,
+            is_fresh_1m_data,
             normalize_1m_frame,
         )
     except ImportError:
@@ -56,10 +63,23 @@ except ImportError:
             res.index = idx.tz_localize(tz) if idx.tz is None else idx.tz_convert(tz)
             return res[~res.index.duplicated(keep="last")].sort_index()
 
+        def is_fresh_1m_data(frame, now, timezone_name, max_age_seconds=180):
+            if frame is None or frame.empty:
+                return False
+            tz = ZoneInfo(timezone_name)
+            local_now = now.astimezone(tz) if now.tzinfo else now.replace(tzinfo=tz)
+            latest_bar = frame.index[-1].to_pydatetime()
+            age = (local_now - latest_bar).total_seconds()
+            return 0 <= age <= max_age_seconds
+
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 
 IST = ZoneInfo("Asia/Kolkata")
 ET = ZoneInfo("America/New_York")
+
+# In-memory rate limiting and caching for Twelve Data API credits
+_TWELVE_DATA_CACHE: dict[str, tuple[float, pd.DataFrame]] = {}
+TWELVE_DATA_MIN_INTERVAL_SECONDS = 60.0
 
 
 def is_market_session_active(exchange: str, now_dt: dt.datetime | None = None) -> bool:
@@ -286,14 +306,18 @@ def _fetch_yfinance_history(clean_sym: str, period: str) -> pd.DataFrame:
         return pd.DataFrame()
 
 
+# -----------------------------------------------------------------------------
+# INDEPENDENT SECONDARY FEED (TWELVE DATA OHLCV)
+# -----------------------------------------------------------------------------
 def fetch_twelve_data_1m_bars(symbol: str, exchange: str = "US", outputsize: int = 30) -> pd.DataFrame:
     """
     Independent Secondary Backup Feed: Twelve Data REST API.
     Fetches genuine, provider-observed 1-minute OHLCV bars.
 
     CREDIT PRESERVATION RULE:
-    Used exclusively as a secondary backup when primary feeds (Yahoo/REST) fail.
-    Requires TWELVE_DATA_API_KEY environment variable.
+    Used exclusively as a secondary backup when primary feeds (Yahoo/REST) fail,
+    lag, or contain missing candles. Cached with a 60-second cooldown per symbol
+    to strictly observe the 8 requests/minute rate limit.
     """
     import os
     api_key = os.environ.get("TWELVE_DATA_API_KEY", "").strip()
@@ -303,6 +327,14 @@ def fetch_twelve_data_1m_bars(symbol: str, exchange: str = "US", outputsize: int
     clean_sym = symbol.replace(".NS", "").replace(".BO", "").upper()
     is_nse = exchange.upper() in ("NSE", "INDIA", "NIFTY")
     tz_name = "Asia/Kolkata" if is_nse else "America/New_York"
+    cache_key = f"{clean_sym}:{exchange.upper()}"
+    now_mono = time.monotonic()
+
+    # Rate limiting & credit preservation: return cache if queried within 60s
+    if cache_key in _TWELVE_DATA_CACHE:
+        last_time, cached_df = _TWELVE_DATA_CACHE[cache_key]
+        if (now_mono - last_time) < TWELVE_DATA_MIN_INTERVAL_SECONDS:
+            return cached_df.copy()
 
     if is_nse:
         url = f"https://api.twelvedata.com/time_series?symbol={clean_sym}&exchange=NSE&interval=1min&outputsize={outputsize}&apikey={api_key}"
@@ -337,55 +369,101 @@ def fetch_twelve_data_1m_bars(symbol: str, exchange: str = "US", outputsize: int
 
         if rows:
             df = pd.DataFrame(rows).set_index("Datetime").sort_index()
-            return normalize_1m_frame(df, tz_name)
+            res = normalize_1m_frame(df, tz_name)
+            # Store in cache
+            _TWELVE_DATA_CACHE[cache_key] = (now_mono, res)
+            return res
     except Exception:
         pass
 
     return pd.DataFrame()
 
 
+def merge_ohlcv_frames(primary_df: pd.DataFrame, secondary_df: pd.DataFrame, tz_name: str) -> pd.DataFrame:
+    """
+    Safely merges two genuine OHLCV DataFrames.
+    Deduplicates on timestamp index, preserving the most complete/recent records.
+    """
+    if primary_df.empty and secondary_df.empty:
+        return pd.DataFrame()
+    if primary_df.empty:
+        return normalize_1m_frame(secondary_df, tz_name)
+    if secondary_df.empty:
+        return normalize_1m_frame(primary_df, tz_name)
+
+    p = normalize_1m_frame(primary_df, tz_name)
+    s = normalize_1m_frame(secondary_df, tz_name)
+
+    p_utc = p.copy()
+    p_utc.index = p_utc.index.tz_convert("UTC")
+    s_utc = s.copy()
+    s_utc.index = s_utc.index.tz_convert("UTC")
+
+    combined = pd.concat([p_utc, s_utc])
+    combined = combined[~combined.index.duplicated(keep="last")].sort_index()
+    return normalize_1m_frame(combined, tz_name)
+
+
+def _get_current_time(tz_obj: ZoneInfo) -> dt.datetime:
+    return dt.datetime.now(tz_obj)
+
+
 # -----------------------------------------------------------------------------
-# RESILIENT DUAL-FEED MERGER (STRICT TRUE OHLCV ONLY)
+# RESILIENT DUAL-FEED MERGER (GAP-AWARE & CREDIT-PROTECTED)
 # -----------------------------------------------------------------------------
 def fetch_resilient_1m_bars(symbol: str, exchange: str = "NSE", period: str = "1d") -> pd.DataFrame:
     """
     Main resilient OHLCV entrypoint:
     1. Tries primary yfinance history.
-    2. If yfinance is empty or fails, falls back to direct Yahoo v8 REST endpoints
-       (query1/query2) to retrieve genuine OHLCV bars.
-    3. If both Yahoo feeds fail, fails over to Independent Secondary Backup:
-       Twelve Data REST API (strictly preserving API credits).
-    4. Normalizes timezone (IST for NSE, ET for US).
-
-    CRITICAL POLICY:
-    This function NEVER appends synthetic/interpolated candles. If exchange OHLCV
-    data is missing or dropped across all feeds, the returned DataFrame reflects
-    genuine market data only, allowing the runner's evaluate_stale_recovery guard to pause safely.
+    2. If yfinance is empty or fails, falls back to direct Yahoo v8 REST endpoints (query1/query2).
+    3. Gap & Stale Detection:
+       If during active market hours Yahoo returns empty data, OR data that is stale (>180s),
+       OR data with internal gaps in today's completed bars, it automatically queries the
+       independent secondary backup: Twelve Data REST API.
+    4. Merges genuine OHLCV bars without fabricating synthetic candles.
     """
     clean_sym = symbol
     if exchange.upper() == "NSE" and not clean_sym.endswith(".NS") and not clean_sym.startswith("^"):
         clean_sym += ".NS"
 
     tz_name = "Asia/Kolkata" if exchange.upper() in ("NSE", "INDIA", "NIFTY") else "America/New_York"
+    tz_obj = IST if exchange.upper() in ("NSE", "INDIA", "NIFTY") else ET
 
     # Tier 1: Try yfinance client
     raw = _fetch_yfinance_history(clean_sym, period)
-    if not raw.empty:
-        return normalize_1m_frame(raw, tz_name)
+    df = normalize_1m_frame(raw, tz_name) if not raw.empty else pd.DataFrame()
 
-    # Tier 2: Direct REST query1/query2 failover
-    v8_df = fetch_raw_yahoo_v8_bars(
-        clean_sym,
-        range_str=period if period in ("1d", "5d", "1mo") else "1d",
-        interval="1m"
-    )
-    if not v8_df.empty:
-        return normalize_1m_frame(v8_df, tz_name)
+    # Tier 2: Direct REST query1/query2 failover if yfinance empty
+    if df.empty:
+        v8_df = fetch_raw_yahoo_v8_bars(
+            clean_sym,
+            range_str=period if period in ("1d", "5d", "1mo") else "1d",
+            interval="1m"
+        )
+        if not v8_df.empty:
+            df = normalize_1m_frame(v8_df, tz_name)
 
-    # Tier 3: Independent Secondary Backup — Twelve Data OHLCV
-    # (Called ONLY when Tier 1 & 2 fail, strictly preserving user credit limit)
-    td_df = fetch_twelve_data_1m_bars(symbol, exchange=exchange)
-    if not td_df.empty:
-        return normalize_1m_frame(td_df, tz_name)
+    # Tier 3: Gap & Stale Failover to Twelve Data (Independent Backup)
+    now_dt = _get_current_time(tz_obj)
+    needs_twelve_data = False
 
-    return pd.DataFrame()
+    if df.empty:
+        needs_twelve_data = True
+    elif is_market_session_active(exchange, now_dt):
+        # 3a. Check if data is stale (>180s old)
+        if not is_fresh_1m_data(df, now_dt, tz_name, max_age_seconds=180):
+            needs_twelve_data = True
+        else:
+            # 3b. Check for internal missing candles during today's regular session
+            today_bars = df[df.index.date == now_dt.date()]
+            if len(today_bars) >= 2:
+                diffs = today_bars.index.to_series().diff().iloc[1:]
+                if (diffs > dt.timedelta(minutes=1)).any():
+                    needs_twelve_data = True
+
+    if needs_twelve_data:
+        td_df = fetch_twelve_data_1m_bars(symbol, exchange=exchange, outputsize=30)
+        if not td_df.empty:
+            df = merge_ohlcv_frames(df, td_df, tz_name)
+
+    return df
