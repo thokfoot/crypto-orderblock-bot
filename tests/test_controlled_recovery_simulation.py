@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 import datetime as dt
 import pandas as pd
 from zoneinfo import ZoneInfo
 
-from scripts.market_time_utils import evaluate_stale_recovery
+from scripts.market_time_utils import evaluate_stale_recovery, OutageAlertGuard
 
 IST = ZoneInfo("Asia/Kolkata")
 
@@ -432,67 +432,194 @@ class ControlledRecoverySimulationTests(unittest.TestCase):
         self.assertEqual(exit_price, 98.5)
         self.assertEqual(recovery["reason"], "ambiguous_bar_sl_and_tp_both_touched_assumed_sl")
 
-    def test_simulation_data_gap_alert_deduplication_prevents_telegram_spam(self):
+    def test_outage_alert_guard_shared_deduplication_lifecycle(self):
         """
-        Regression Test: Alert flood / spam prevention.
-        Scenario: Market data has an incomplete recovery gap (e.g. 12 missing candles).
-        The runner polls every 20 seconds for 40 consecutive iterations (13+ minutes).
-        Deduplication guard (gap_alert_sent) MUST ensure that Telegram alert is sent
-        EXACTLY ONCE, never 40 times!
-        Once data is restored, the guard resets cleanly.
+        UNIT TEST: Shared OutageAlertGuard lifecycle.
+        Validates the state machine across:
+        1. Outage 1 (stale data): first poll dispatches; next 40 polls suppress.
+        2. Outage 1 (incomplete gap): first poll dispatches; next 40 polls suppress.
+        3. Recovery success: resets all guards cleanly.
+        4. Outage 2 (second outage cycle): first poll dispatches; next 40 polls suppress.
+        5. Outage 2 (second incomplete gap): first poll dispatches; next 40 polls suppress.
+        6. Second recovery success: resets all guards cleanly.
         """
-        dispatched_alerts = []
-        def mock_send_telegram(msg: str):
-            dispatched_alerts.append(msg)
+        guard = OutageAlertGuard()
 
-        # Simulation state matching runner
-        stale_polls = 1
-        stale_alert_sent = True
-        gap_alert_sent = False
-        in_trade = False
-        trigger = 100.0
-        sl = 99.0
-        tp = 102.0
+        # Phase 1: First Stale Outage (40 polls)
+        self.assertTrue(guard.on_stale(), "First stale poll MUST dispatch alert")
+        for _ in range(39):
+            self.assertFalse(guard.on_stale(), "Subsequent stale polls MUST NOT dispatch duplicate alert")
+        self.assertEqual(guard.stale_polls, 40)
+        self.assertTrue(guard.stale_alert_sent)
 
-        # Incomplete recovery response (mocked action)
-        incomplete_recovery = {
-            "action": "RECOVERY_DATA_INCOMPLETE",
-            "missing_bars": ["15:16", "15:17", "15:18"],
-            "missing_count": 12,
+        # Phase 2: Incomplete Recovery Gap (40 polls)
+        self.assertTrue(guard.on_incomplete_recovery(), "First gap poll MUST dispatch alert")
+        for _ in range(39):
+            self.assertFalse(guard.on_incomplete_recovery(), "Subsequent gap polls MUST NOT dispatch duplicate alert")
+        self.assertEqual(guard.stale_polls, 1)
+        self.assertTrue(guard.gap_alert_sent)
+
+        # Phase 3: Successful Recovery
+        guard.on_recovery_success()
+        self.assertEqual(guard.stale_polls, 0)
+        self.assertFalse(guard.stale_alert_sent)
+        self.assertFalse(guard.gap_alert_sent)
+
+        # Phase 4: Second Stale Outage (Second cycle!)
+        self.assertTrue(guard.on_stale(), "Second outage first stale poll MUST dispatch alert again")
+        for _ in range(39):
+            self.assertFalse(guard.on_stale(), "Second outage subsequent polls MUST NOT dispatch duplicate alert")
+        self.assertEqual(guard.stale_polls, 40)
+
+        # Phase 5: Second Incomplete Recovery Gap
+        self.assertTrue(guard.on_incomplete_recovery(), "Second gap first poll MUST dispatch alert again")
+        for _ in range(39):
+            self.assertFalse(guard.on_incomplete_recovery(), "Second gap subsequent polls MUST NOT dispatch duplicate alert")
+
+        # Phase 6: Final Recovery
+        guard.on_recovery_success()
+        self.assertEqual(guard.stale_polls, 0)
+        self.assertFalse(guard.gap_alert_sent)
+
+    @patch("scripts.v325_nse_cloud_runner.fetch_live_reference_spot", return_value={"price": 4000.0, "source": "Google Finance"})
+    @patch("scripts.v325_nse_cloud_runner.time.sleep", return_value=None)
+    @patch("scripts.v325_nse_cloud_runner.send_telegram")
+    @patch("scripts.v325_nse_cloud_runner.get_ist_now")
+    @patch("scripts.v325_nse_cloud_runner.fetch_ticker_1m")
+    def test_actual_production_runner_alert_deduplication_integration(
+        self, mock_fetch, mock_now, mock_telegram, mock_sleep, mock_spot
+    ):
+        """
+        INTEGRATION TEST: Executes the actual production runner function
+        `scripts.v325_nse_cloud_runner.run_monitoring_loop` across an entire multi-tick lifecycle:
+        - Ticks 1-3: Stale outage -> exactly 1 stale alert
+        - Ticks 4-6: Incomplete recovery gap -> exactly 1 gap alert
+        - Tick 7: Full recovery -> exactly 1 restored alert
+        - Tick 8: Normal active monitoring bar
+        - Ticks 9-10: Second outage -> exactly 1 stale alert
+        - Tick 11: 15:29 EOD session close -> exactly 1 stand down alert
+        Asserts that the actual production dispatch path generates ZERO duplicate messages.
+        """
+        from scripts.v325_nse_cloud_runner import run_monitoring_loop
+
+        session_date = dt.date(2026, 11, 26)
+        t_0950 = pd.Timestamp(dt.datetime.combine(session_date, dt.time(9, 50), tzinfo=IST))
+        t_1003 = pd.Timestamp(dt.datetime.combine(session_date, dt.time(10, 3), tzinfo=IST))
+        t_1005 = pd.Timestamp(dt.datetime.combine(session_date, dt.time(10, 5), tzinfo=IST))
+
+        # Initial DataFrame for candidate lock at 09:50
+        df_0950 = pd.DataFrame(
+            {"Open": [4000.0], "High": [4005.0], "Low": [3995.0], "Close": [4002.0], "Volume": [1000]},
+            index=[t_0950],
+        )
+
+        # Gap DataFrame: has 09:50 and 10:03, but missing 09:51 through 10:02
+        df_gap = pd.DataFrame(
+            {
+                "Open": [4000.0, 4001.0],
+                "High": [4005.0, 4004.0],
+                "Low": [3995.0, 3998.0],
+                "Close": [4002.0, 4000.0],
+                "Volume": [1000, 1200],
+            },
+            index=[t_0950, t_1003],
+        )
+
+        # Fully restored DataFrame: complete continuous bars from 09:50 to 10:05
+        full_range = pd.date_range(t_0950, t_1005, freq="min")
+        df_restored = pd.DataFrame(
+            {
+                "Open": [4000.0] * len(full_range),
+                "High": [4003.0] * len(full_range),  # All below trigger 4010.0
+                "Low": [3996.0] * len(full_range),   # All above SL 3969.9
+                "Close": [4001.0] * len(full_range),
+                "Volume": [1000] * len(full_range),
+            },
+            index=full_range,
+        )
+
+        # Simulation clock and data sequences across 10 ticks
+        time_sequence = [
+            # Boot fetch
+            dt.datetime.combine(session_date, dt.time(9, 51), tzinfo=IST),
+            # Ticks 1-2: Outage 1 Stale (clock at 09:55, data latest is 09:50 -> age 300s > 180s, 2 polls < 3 limit)
+            dt.datetime.combine(session_date, dt.time(9, 55, 0), tzinfo=IST),
+            dt.datetime.combine(session_date, dt.time(9, 55, 20), tzinfo=IST),
+            # Ticks 3-5: Data gap (clock at 10:05, data has 10:03 -> fresh, but missing 12 bars)
+            dt.datetime.combine(session_date, dt.time(10, 5, 0), tzinfo=IST),
+            dt.datetime.combine(session_date, dt.time(10, 5, 20), tzinfo=IST),
+            dt.datetime.combine(session_date, dt.time(10, 5, 40), tzinfo=IST),
+            # Tick 6: Restored (clock at 10:06, all continuous bars present)
+            dt.datetime.combine(session_date, dt.time(10, 6, 0), tzinfo=IST),
+            # Tick 7: Normal active tick (clock at 10:07)
+            dt.datetime.combine(session_date, dt.time(10, 7, 0), tzinfo=IST),
+            # Ticks 8-9: Outage 2 Stale (clock at 10:15, data returned is stale 10:05, 2 polls)
+            dt.datetime.combine(session_date, dt.time(10, 15, 0), tzinfo=IST),
+            dt.datetime.combine(session_date, dt.time(10, 15, 20), tzinfo=IST),
+            # Tick 10: EOD session close (clock at 15:29:05)
+            dt.datetime.combine(session_date, dt.time(15, 29, 5), tzinfo=IST),
+        ]
+
+        data_sequence = [
+            # Boot fetch
+            df_0950,
+            # Ticks 1-2: Stale df_0950
+            df_0950,
+            df_0950,
+            # Ticks 3-5: Gap df_gap
+            df_gap,
+            df_gap,
+            df_gap,
+            # Tick 6: Restored df_restored
+            df_restored,
+            # Tick 7: df_restored
+            df_restored,
+            # Ticks 8-9: Stale df_restored (clock 10:15, data 10:05 -> age 600s > 180s)
+            df_restored,
+            df_restored,
+            # Tick 10: EOD tick
+            df_restored,
+        ]
+
+        mock_now.side_effect = time_sequence
+        mock_fetch.side_effect = data_sequence
+
+        candidate = {
+            "symbol": "TCS.NS",
+            "clean_symbol": "TCS",
+            "trigger": 4010.0,
+            "stop_loss": 3969.9,
+            "take_profit": 4090.2,
+            "df_day": df_0950,
         }
 
-        # Simulate 40 polling iterations during the gap
-        for poll in range(40):
-            if incomplete_recovery["action"] == "RECOVERY_DATA_INCOMPLETE":
-                if not gap_alert_sent:
-                    missing_preview = ", ".join(incomplete_recovery["missing_bars"][:3])
-                    msg = (
-                        f"⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*\n"
-                        f"• Missing Candles: `{incomplete_recovery['missing_count']}` ({missing_preview})\n"
-                        f"• Action: Signal monitoring paused."
-                    )
-                    mock_send_telegram(msg)
-                    gap_alert_sent = True
-                stale_polls = 1
+        # Execute actual production runner
+        run_monitoring_loop(candidate, is_test=False)
 
-        # CRITICAL ASSERTION: Exactly 1 alert dispatched, NOT 40!
-        self.assertEqual(len(dispatched_alerts), 1, "Gap alert must be sent exactly once across 40 polls!")
-        self.assertTrue(gap_alert_sent)
+        # Inspect all sent messages
+        sent_messages = [call[0][0] for call in mock_telegram.call_args_list]
 
-        # Now simulate feed restoration on poll 41
-        restored_recovery = {
-            "action": "DISCARD_AND_RESUME",
-        }
-        if restored_recovery["action"] == "DISCARD_AND_RESUME":
-            stale_alert_sent = False
-            gap_alert_sent = False
-            stale_polls = 0
-            mock_send_telegram("ℹ️ [NSE DATA RESTORED] feed reconnected.")
+        # 1. Stale alert count: exactly 1 from Ticks 1-3
+        stale_alerts = [m for m in sent_messages if "[NSE STALE DATA]" in m]
+        self.assertEqual(len(stale_alerts), 2, "Must dispatch exactly 1 stale alert for Outage 1 and 1 for Outage 2")
 
-        self.assertEqual(len(dispatched_alerts), 2)
-        self.assertFalse(gap_alert_sent, "gap_alert_sent must reset when feed restores!")
+        # 2. Gap alert count: exactly 1 from Ticks 4-6 (no duplicate spam!)
+        gap_alerts = [m for m in sent_messages if "[NSE DATA GAP / RECOVERY INCOMPLETE]" in m]
+        self.assertEqual(len(gap_alerts), 1, "Must dispatch exactly 1 gap alert across repeated gap polls")
+
+        # 3. Restored alert count: exactly 1 from Tick 7
+        restored_alerts = [m for m in sent_messages if "[NSE DATA RESTORED]" in m]
+        self.assertEqual(len(restored_alerts), 1, "Must dispatch exactly 1 restoration alert")
+
+        # 4. EOD stand down alert: exactly 1 from Tick 11
+        stand_down_alerts = [m for m in sent_messages if "[NSE STAND DOWN]" in m]
+        self.assertEqual(len(stand_down_alerts), 1, "Must dispatch exactly 1 EOD stand down alert")
+
+        # TOTAL DISPATCHED: 5 messages over 11 ticks! Zero spam!
+        self.assertEqual(len(sent_messages), 5)
 
 
 if __name__ == "__main__":
     unittest.main()
+
 

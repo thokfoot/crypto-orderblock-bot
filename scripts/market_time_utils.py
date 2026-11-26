@@ -386,3 +386,49 @@ def evaluate_stale_recovery(
         "reason": "trade_active_within_channel",
     }
 
+
+class OutageAlertGuard:
+    """
+    Manages and deduplicates Telegram notifications during market-data outages
+    and incomplete candle recovery gaps across NSE and US runners.
+    Ensures exactly 1 alert per incident, suppresses repeated 20-second polling spam,
+    and cleanly resets when data is restored.
+    """
+
+    def __init__(self):
+        self.stale_polls: int = 0
+        self.stale_alert_sent: bool = False
+        self.gap_alert_sent: bool = False
+
+    def on_stale(self) -> bool:
+        """
+        Invoked when a market-data poll returns stale data (>180s).
+        Returns True if a stale alert should be dispatched (first time only), False otherwise.
+        """
+        self.stale_polls += 1
+        if not self.stale_alert_sent:
+            self.stale_alert_sent = True
+            return True
+        return False
+
+    def on_incomplete_recovery(self) -> bool:
+        """
+        Invoked when evaluated recovery contains missing candles (RECOVERY_DATA_INCOMPLETE).
+        Returns True if a gap alert should be dispatched (first time only), False otherwise.
+        """
+        self.stale_polls = 1  # Retain recovery gate until complete data is supplied
+        if not self.gap_alert_sent:
+            self.gap_alert_sent = True
+            return True
+        return False
+
+    def on_recovery_success(self) -> None:
+        """
+        Invoked when recovery evaluation succeeds and live forward monitoring can resume.
+        Clears all outage and gap alert guards.
+        """
+        self.stale_polls = 0
+        self.stale_alert_sent = False
+        self.gap_alert_sent = False
+
+

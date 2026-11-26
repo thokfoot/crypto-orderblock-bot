@@ -25,6 +25,7 @@ from zoneinfo import ZoneInfo
 
 try:
     from scripts.market_time_utils import (
+        OutageAlertGuard,
         US_2026_HOLIDAYS,
         completed_1m_bars,
         evaluate_stale_recovery,
@@ -34,6 +35,7 @@ try:
     from scripts.market_data_fallback import fetch_live_reference_spot, fetch_resilient_1m_bars
 except ModuleNotFoundError:
     from market_time_utils import (
+        OutageAlertGuard,
         US_2026_HOLIDAYS,
         completed_1m_bars,
         evaluate_stale_recovery,
@@ -268,9 +270,7 @@ def run_us_engine(test_mode: bool = False):
     in_trade = False
     entry_fill = 0.0
     last_close = None
-    stale_polls = 0
-    stale_alert_sent = False
-    gap_alert_sent = False
+    guard = OutageAlertGuard()
     terminal = False
 
     print("\n[Step 2] Monitoring completed 1-minute bars until 11:00 ET (signal-only; no orders).")
@@ -281,8 +281,7 @@ def run_us_engine(test_mode: bool = False):
 
         fresh = is_fresh_1m_data(raw_df, now_et, ET_ZONE_NAME, max_age_seconds=180)
         if not fresh:
-            stale_polls += 1
-            if not stale_alert_sent:
+            if guard.on_stale():
                 ref_spot = fetch_live_reference_spot(sym, exchange="US")
                 spot_info = f" (Ref Spot: ${ref_spot['price']:.2f} via {ref_spot['source']})" if ref_spot else ""
                 warn = (
@@ -292,9 +291,8 @@ def run_us_engine(test_mode: bool = False):
                 )
                 print(warn)
                 send_telegram(warn)
-                stale_alert_sent = True
         else:
-            if stale_polls > 0:
+            if guard.stale_polls > 0:
                 if not closed.empty:
                     latest_ts = closed.index[-1]
                     latest_bar = closed.iloc[-1]
@@ -325,7 +323,7 @@ def run_us_engine(test_mode: bool = False):
                     )
 
                     if recovery["action"] == "RECOVERY_DATA_INCOMPLETE":
-                        if not gap_alert_sent:
+                        if guard.on_incomplete_recovery():
                             missing_preview = ", ".join(recovery["missing_bars"][:3])
                             if recovery["missing_count"] > 3:
                                 missing_preview += f" (+{recovery['missing_count'] - 3} more)"
@@ -337,14 +335,10 @@ def run_us_engine(test_mode: bool = False):
                             )
                             print(msg)
                             send_telegram(msg)
-                            gap_alert_sent = True
-                        stale_polls = 1  # Retain recovery gate until complete data is supplied
                         continue
 
                     # Recovery succeeded: clear outage & gap alert guards
-                    stale_alert_sent = False
-                    gap_alert_sent = False
-                    stale_polls = 0
+                    guard.on_recovery_success()
                     last_processed = latest_ts
 
                     if recovery["action"] == "DISCARD_AND_RESUME":
@@ -501,7 +495,7 @@ def run_us_engine(test_mode: bool = False):
             send_telegram(msg)
             break
 
-        if stale_polls >= 3 and not in_trade:
+        if guard.stale_polls >= 3 and not in_trade:
             msg = f"🛡️ [US STAND DOWN] {sym}: market data remained stale for 3 consecutive checks. No signal entry."
             print(msg)
             send_telegram(msg)

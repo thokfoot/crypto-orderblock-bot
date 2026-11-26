@@ -23,10 +23,24 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 try:
-    from scripts.market_time_utils import completed_1m_bars, evaluate_stale_recovery, exact_minute_window, is_fresh_1m_data, normalize_1m_frame
+    from scripts.market_time_utils import (
+        OutageAlertGuard,
+        completed_1m_bars,
+        evaluate_stale_recovery,
+        exact_minute_window,
+        is_fresh_1m_data,
+        normalize_1m_frame,
+    )
     from scripts.market_data_fallback import fetch_live_reference_spot, fetch_resilient_1m_bars
 except ModuleNotFoundError:
-    from market_time_utils import completed_1m_bars, evaluate_stale_recovery, exact_minute_window, is_fresh_1m_data, normalize_1m_frame
+    from market_time_utils import (
+        OutageAlertGuard,
+        completed_1m_bars,
+        evaluate_stale_recovery,
+        exact_minute_window,
+        is_fresh_1m_data,
+        normalize_1m_frame,
+    )
     from market_data_fallback import fetch_live_reference_spot, fetch_resilient_1m_bars
 
 IST_ZONE_NAME = "Asia/Kolkata"
@@ -388,9 +402,7 @@ def run_monitoring_loop(candidate: dict[str, Any], is_test: bool = False) -> Non
         else pd.Timestamp(datetime.datetime.combine(monitor_boot_now.date(), datetime.time(9, 44), tzinfo=IST))
     )
     last_close = None
-    stale_polls = 0
-    stale_alert_sent = False
-    gap_alert_sent = False
+    guard = OutageAlertGuard()
     terminal = False
 
     while not terminal:
@@ -399,8 +411,7 @@ def run_monitoring_loop(candidate: dict[str, Any], is_test: bool = False) -> Non
         fresh = df is not None and is_fresh_1m_data(df, now, IST_ZONE_NAME, max_age_seconds=180)
 
         if not fresh:
-            stale_polls += 1
-            if not stale_alert_sent:
+            if guard.on_stale():
                 ref_spot = fetch_live_reference_spot(clean_sym, exchange="NSE")
                 spot_info = f" (Ref Spot: ₹{ref_spot['price']:.2f} via {ref_spot['source']})" if ref_spot else ""
                 msg = (
@@ -410,9 +421,8 @@ def run_monitoring_loop(candidate: dict[str, Any], is_test: bool = False) -> Non
                 )
                 print(msg)
                 send_telegram(msg)
-                stale_alert_sent = True
         else:
-            if stale_polls > 0:
+            if guard.stale_polls > 0:
                 completed = completed_1m_bars(df, now, IST_ZONE_NAME)
                 if completed.empty:
                     continue
@@ -446,7 +456,7 @@ def run_monitoring_loop(candidate: dict[str, Any], is_test: bool = False) -> Non
                 )
 
                 if recovery["action"] == "RECOVERY_DATA_INCOMPLETE":
-                    if not gap_alert_sent:
+                    if guard.on_incomplete_recovery():
                         missing_preview = ", ".join(recovery["missing_bars"][:3])
                         if recovery["missing_count"] > 3:
                             missing_preview += f" (+{recovery['missing_count'] - 3} more)"
@@ -458,14 +468,10 @@ def run_monitoring_loop(candidate: dict[str, Any], is_test: bool = False) -> Non
                         )
                         print(msg)
                         send_telegram(msg)
-                        gap_alert_sent = True
-                    stale_polls = 1  # Retain recovery gate until complete data is supplied
                     continue
 
                 # Recovery succeeded: clear outage & gap alert guards
-                stale_alert_sent = False
-                gap_alert_sent = False
-                stale_polls = 0
+                guard.on_recovery_success()
                 last_processed = latest_ts
 
                 if recovery["action"] == "DISCARD_AND_RESUME":
@@ -604,7 +610,7 @@ def run_monitoring_loop(candidate: dict[str, Any], is_test: bool = False) -> Non
             send_telegram(msg)
             break
 
-        if stale_polls >= 3 and not in_trade:
+        if guard.stale_polls >= 3 and not in_trade:
             msg = f"🛡️ [NSE STAND DOWN] {clean_sym}: market data remained stale for 3 consecutive checks. No signal entry."
             print(msg)
             send_telegram(msg)
