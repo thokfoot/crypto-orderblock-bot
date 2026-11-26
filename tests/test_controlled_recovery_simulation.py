@@ -615,8 +615,182 @@ class ControlledRecoverySimulationTests(unittest.TestCase):
         stand_down_alerts = [m for m in sent_messages if "[NSE STAND DOWN]" in m]
         self.assertEqual(len(stand_down_alerts), 1, "Must dispatch exactly 1 EOD stand down alert")
 
-        # TOTAL DISPATCHED: 5 messages over 11 ticks! Zero spam!
+        # TOTAL DISPATCHED: 5 messages over 10 ticks! Zero spam!
         self.assertEqual(len(sent_messages), 5)
+
+    @patch("scripts.v325_us_cloud_runner.fetch_live_reference_spot", return_value={"price": 200.0, "source": "Google Finance"})
+    @patch("scripts.v325_us_cloud_runner.time.sleep", return_value=None)
+    @patch("scripts.v325_us_cloud_runner.send_telegram")
+    @patch("scripts.v325_us_cloud_runner.get_et_now")
+    @patch("scripts.v325_us_cloud_runner.fetch_1m_bars")
+    def test_actual_us_production_runner_alert_deduplication_integration(
+        self, mock_fetch, mock_now, mock_telegram, mock_sleep, mock_spot
+    ):
+        """
+        INTEGRATION TEST: Executes the actual US production runner function
+        `scripts.v325_us_cloud_runner.run_us_engine(test_mode=False)` across the full monitoring lifecycle:
+        - Step 1: Candidate scan & lock -> exactly 1 scan complete alert
+        - Step 2: Monitoring loop:
+          - Ticks 1-2: Outage 1 (stale data) -> exactly 1 stale alert
+          - Ticks 3-5: Incomplete recovery gap -> exactly 1 gap alert
+          - Tick 6: Full recovery -> exactly 1 restored alert
+          - Tick 7: Normal active monitoring bar
+          - Ticks 8-9: Outage 2 (second stale outage) -> exactly 1 stale alert
+          - Tick 10: 11:00 ET execution window close -> exactly 1 stand down alert
+        Asserts that the actual US production runner dispatch path generates ZERO duplicate messages.
+        """
+        from scripts.v325_us_cloud_runner import run_us_engine
+
+        ET = ZoneInfo("America/New_York")
+        session_date = dt.date(2026, 11, 25)  # Wednesday, regular trading session
+        t_0945 = pd.Timestamp(dt.datetime.combine(session_date, dt.time(9, 45), tzinfo=ET))
+        t_1004 = pd.Timestamp(dt.datetime.combine(session_date, dt.time(10, 4), tzinfo=ET))
+        t_1014 = pd.Timestamp(dt.datetime.combine(session_date, dt.time(10, 14), tzinfo=ET))
+        t_1015 = pd.Timestamp(dt.datetime.combine(session_date, dt.time(10, 15), tzinfo=ET))
+
+        # 20 complete OR bars (09:45-10:04 ET) for candidate AAPL (sweet spot move +1.0%)
+        or_range = pd.date_range(t_0945, t_1004, freq="min")
+        df_aapl_or = pd.DataFrame(
+            {
+                "Open": [200.0] + [201.0] * 19,
+                "High": [202.5] * len(or_range),
+                "Low": [199.5] * len(or_range),
+                "Close": [201.0] * 19 + [202.0],  # Move = +1.0%
+                "Volume": [1000] * len(or_range),
+            },
+            index=or_range,
+        )
+
+        # 20 complete OR bars for MSFT (move = +0.5%)
+        df_msft_or = pd.DataFrame(
+            {
+                "Open": [300.0] + [301.0] * 19,
+                "High": [302.0] * len(or_range),
+                "Low": [299.0] * len(or_range),
+                "Close": [301.0] * 19 + [301.5],  # Move = +0.5%
+                "Volume": [1000] * len(or_range),
+            },
+            index=or_range,
+        )
+
+        # Gap DataFrame: has 10:04 and 10:14, but missing 10:05 through 10:13
+        df_gap = pd.DataFrame(
+            {
+                "Open": [202.0, 201.8],
+                "High": [202.5, 202.2],
+                "Low": [199.5, 200.5],
+                "Close": [202.0, 201.5],
+                "Volume": [1000, 1200],
+            },
+            index=[t_1004, t_1014],
+        )
+
+        # Fully restored DataFrame: complete continuous bars from 09:45 to 10:15
+        full_range = pd.date_range(t_0945, t_1015, freq="min")
+        df_restored = pd.DataFrame(
+            {
+                "Open": [200.0] * len(full_range),
+                "High": [202.3] * len(full_range),  # All below trigger (~202.56)
+                "Low": [201.0] * len(full_range),   # All above SL (~200.53)
+                "Close": [201.5] * len(full_range),
+                "Volume": [1000] * len(full_range),
+            },
+            index=full_range,
+        )
+
+        # Time sequence:
+        # Step 1: 10:05:00 ET
+        # Boot fetch: 10:05:05 ET
+        # Ticks 1-2: Stale (clock at 10:09, data latest is 10:04 -> age 300s > 180s, 2 polls < 3 limit)
+        # Ticks 3-5: Data gap (clock at 10:15, data has 10:14 -> fresh, missing 10:05-10:13)
+        # Tick 6: Restored (clock at 10:16, all continuous bars present)
+        # Tick 7: Normal active monitoring tick (clock at 10:17)
+        # Ticks 8-9: Outage 2 Stale (clock at 10:25, data returned is stale 10:15, 2 polls)
+        # Tick 10: Execution window close (clock at 11:00:05 ET)
+        time_sequence = [
+            # Step 1: scan time check and sector scans
+            dt.datetime.combine(session_date, dt.time(10, 5, 0), tzinfo=ET),
+            dt.datetime.combine(session_date, dt.time(10, 5, 0), tzinfo=ET),
+            dt.datetime.combine(session_date, dt.time(10, 5, 0), tzinfo=ET),
+            dt.datetime.combine(session_date, dt.time(10, 5, 0), tzinfo=ET),
+            # Step 2: monitor start & boot fetch
+            dt.datetime.combine(session_date, dt.time(10, 5, 5), tzinfo=ET),
+            # Ticks 1-2: Outage 1 Stale
+            dt.datetime.combine(session_date, dt.time(10, 9, 0), tzinfo=ET),
+            dt.datetime.combine(session_date, dt.time(10, 9, 20), tzinfo=ET),
+            # Ticks 3-5: Incomplete recovery gap
+            dt.datetime.combine(session_date, dt.time(10, 15, 0), tzinfo=ET),
+            dt.datetime.combine(session_date, dt.time(10, 15, 20), tzinfo=ET),
+            dt.datetime.combine(session_date, dt.time(10, 15, 40), tzinfo=ET),
+            # Tick 6: Restored
+            dt.datetime.combine(session_date, dt.time(10, 16, 0), tzinfo=ET),
+            # Tick 7: Normal tick
+            dt.datetime.combine(session_date, dt.time(10, 17, 0), tzinfo=ET),
+            # Ticks 8-9: Outage 2 Stale
+            dt.datetime.combine(session_date, dt.time(10, 25, 0), tzinfo=ET),
+            dt.datetime.combine(session_date, dt.time(10, 25, 20), tzinfo=ET),
+            # Tick 10: Window close exit
+            dt.datetime.combine(session_date, dt.time(11, 0, 5), tzinfo=ET),
+        ]
+
+        # Data sequence:
+        # Step 1: AAPL, MSFT scans
+        # Boot fetch: AAPL
+        # Monitoring ticks: AAPL
+        data_sequence = [
+            # Step 1 scans
+            df_aapl_or,
+            df_msft_or,
+            # Boot fetch
+            df_aapl_or,
+            # Ticks 1-2: Stale df_aapl_or
+            df_aapl_or,
+            df_aapl_or,
+            # Ticks 3-5: Gap df_gap
+            df_gap,
+            df_gap,
+            df_gap,
+            # Tick 6: Restored df_restored
+            df_restored,
+            # Tick 7: df_restored
+            df_restored,
+            # Ticks 8-9: Stale df_restored
+            df_restored,
+            df_restored,
+            # Tick 10: EOD tick
+            df_restored,
+        ]
+
+        mock_now.side_effect = time_sequence
+        mock_fetch.side_effect = data_sequence
+
+        with patch.dict("scripts.v325_us_cloud_runner.US_SECTORS", {"MegaCap_Tech": ["AAPL", "MSFT"]}, clear=True):
+            run_us_engine(test_mode=False)
+
+        sent_messages = [call[0][0] for call in mock_telegram.call_args_list]
+
+        # 1. Candidate scan lock alert: exactly 1
+        scan_alerts = [m for m in sent_messages if "[US PAPER SIGNAL]" in m and "US SCAN COMPLETE" in m]
+        self.assertEqual(len(scan_alerts), 1, "Must dispatch exactly 1 US scan complete alert")
+
+        # 2. Stale alerts: exactly 2 (one for Outage 1, one for Outage 2)
+        stale_alerts = [m for m in sent_messages if "[US DATA STALE]" in m]
+        self.assertEqual(len(stale_alerts), 2, "Must dispatch exactly 1 stale alert per outage incident")
+
+        # 3. Gap alerts: exactly 1 across repeated polls (no duplicate spam!)
+        gap_alerts = [m for m in sent_messages if "[US DATA GAP / RECOVERY INCOMPLETE]" in m]
+        self.assertEqual(len(gap_alerts), 1, "Must dispatch exactly 1 gap alert across repeated gap polls")
+
+        # 4. Restored alert: exactly 1
+        restored_alerts = [m for m in sent_messages if "[US DATA RESTORED]" in m]
+        self.assertEqual(len(restored_alerts), 1, "Must dispatch exactly 1 restoration alert")
+
+        # 5. Stand down alert: exactly 1 at 11:00 ET close
+        stand_down_alerts = [m for m in sent_messages if "[US STAND DOWN]" in m]
+        self.assertEqual(len(stand_down_alerts), 1, "Must dispatch exactly 1 window close stand down alert")
+
+        # TOTAL DISPATCHED: 6 messages! Zero spam!
+        self.assertEqual(len(sent_messages), 6)
 
 
 if __name__ == "__main__":

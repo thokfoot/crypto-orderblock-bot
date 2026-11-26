@@ -89,12 +89,16 @@ def send_telegram(text: str) -> dict[str, Any]:
         print(f"[TELEGRAM ERROR] {e}")
         raise RuntimeError("Telegram alert delivery failed; stopping the signal engine.") from e
 
+def get_et_now() -> datetime.datetime:
+    return datetime.datetime.now(ET)
+
+
 def fetch_1m_bars(ticker: str) -> pd.DataFrame:
     try:
         df = fetch_resilient_1m_bars(ticker, exchange="US", period="1d")
         if df.empty:
             return pd.DataFrame()
-        return completed_1m_bars(df, datetime.datetime.now(ET), ET_ZONE_NAME)
+        return completed_1m_bars(df, get_et_now(), ET_ZONE_NAME)
     except Exception as e:
         print(f"Error fetching {ticker}: {e}")
         return pd.DataFrame()
@@ -108,7 +112,7 @@ def run_us_engine(test_mode: bool = False):
     # GitHub cron is UTC-based. The workflow runs at both possible UTC offsets;
     # only the run that lands near 10:05 New York time is allowed to scan.
     if not test_mode:
-        now_et = datetime.datetime.now(ET)
+        now_et = get_et_now()
 
         # Check official US holidays (e.g., Thanksgiving)
         if now_et.date() in US_2026_HOLIDAYS:
@@ -132,16 +136,16 @@ def run_us_engine(test_mode: bool = False):
             print(msg)
             send_telegram(msg)
             return
-        while datetime.datetime.now(ET).time() < datetime.time(10, 5):
+        while get_et_now().time() < datetime.time(10, 5):
             time.sleep(5)
-        now_et = datetime.datetime.now(ET)
+        now_et = get_et_now()
         if now_et.time() > latest:
             msg = f"🛡️ [US ENGINE SKIPPED] Scan startup missed the 10:15 ET cutoff ({now_et:%H:%M:%S %Z})."
             print(msg)
             send_telegram(msg)
             return
 
-    scan_now_et = datetime.datetime.now(ET)
+    scan_now_et = get_et_now()
     scan_date = scan_now_et.date()
 
     # Step 1: Scan 8 Mega Sectors
@@ -249,7 +253,7 @@ def run_us_engine(test_mode: bool = False):
     # Step 2: process each newly completed 1-minute bar once, through 11:00 ET.
     window_start = datetime.datetime.combine(scan_date, datetime.time(10, 5), tzinfo=ET)
     window_end = datetime.datetime.combine(scan_date, datetime.time(11, 0), tzinfo=ET)
-    monitor_start_et = datetime.datetime.now(ET)
+    monitor_start_et = get_et_now()
     if monitor_start_et >= window_end:
         msg = (
             f"🛡️ [US STAND DOWN] {sym}: candidate scan completed after the 11:00 ET execution window. "
@@ -275,7 +279,7 @@ def run_us_engine(test_mode: bool = False):
 
     print("\n[Step 2] Monitoring completed 1-minute bars until 11:00 ET (signal-only; no orders).")
     while not terminal:
-        now_et = datetime.datetime.now(ET)
+        now_et = get_et_now()
         raw_df = fetch_1m_bars(sym)
         closed = completed_1m_bars(raw_df, now_et, ET_ZONE_NAME)
 
