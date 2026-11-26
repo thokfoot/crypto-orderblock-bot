@@ -1,0 +1,2 @@
+session,date,market,symbol,sector,entry_trigger,trigger_time,reconstructed_exit,reconstructed_exit_time,reconstructed_gross_pnl_pct,reconstructed_mode_a_net_pnl_pct,reconstructed_mfe_pct,reconstructed_mae_pct,reconstructed_hold_time_min,data_source,verification_verdict
+28,2026-11-26,NSE,TCS.NS,IT_Tech,2590.28,14:06:00 IST,2640.3,15:28:00 IST,1.93,1.8314,1.93,-0.21,82.0,Yahoo Finance settled 1m candles (retrospective),UNVERIFIED_BY_ENGINE (Final 14m feed outage; manual review required)
