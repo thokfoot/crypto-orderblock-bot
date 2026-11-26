@@ -6,7 +6,7 @@ Strategy v3.2.5 & v3.3 Cloud Execution Runners
 ARCHITECTURE & INTEGRITY RULES:
 1. Trade Execution Integrity:
    Trading signals, breakouts, Stop-Loss (SL), and Take-Profit (TP) evaluations
-   MUST ONLY operate on verified exchange OHLCV 1-minute bars.
+   MUST ONLY operate on complete provider OHLCV 1-minute bars.
    Synthetic single-price candles (Open=High=Low=Close, Volume=0) are STRICTLY
    PROHIBITED from being injected into the execution DataFrame.
 2. Direct REST Failover:

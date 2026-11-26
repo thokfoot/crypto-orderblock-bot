@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "scripts/market_time_utils.py"
+      - "scripts/market_data_fallback.py"
       - "scripts/v325_us_cloud_runner.py"
       - "scripts/v325_nse_cloud_runner.py"
       - "scripts/dry_run_data_check.py"
