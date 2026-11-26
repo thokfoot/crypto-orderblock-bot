@@ -181,7 +181,12 @@ def run_us_engine(test_mode: bool = False):
 
     if not sector_results:
         print("❌ No qualifying US sectors found. Standing down.")
-        send_telegram("🛡️ [US ENGINE STAND DOWN] No sector met minimum constituent breadth.")
+        stand_down_msg = (
+            "🧪 [US TEST ONLY] 🛡️ [US ENGINE STAND DOWN] No sector met minimum constituent breadth."
+            if test_mode
+            else "🛡️ [US ENGINE STAND DOWN] No sector met minimum constituent breadth."
+        )
+        send_telegram(stand_down_msg)
         return
 
     # Rank Leader Sector
@@ -192,7 +197,8 @@ def run_us_engine(test_mode: bool = False):
     # Select Primary Candidate (sweet spot momentum 0.50% to 1.80%)
     valid_cands = [c for c in leader["candidates"] if c["move"] > 0]
     if not valid_cands:
-        msg = f"🛡️ [US STAND DOWN] {scan_date.isoformat()}: leader sector has no positive candidate."
+        tag = "🧪 [US TEST ONLY] " if test_mode else ""
+        msg = f"{tag}🛡️ [US STAND DOWN] {scan_date.isoformat()}: leader sector has no positive candidate."
         print(msg)
         send_telegram(msg)
         return
@@ -207,8 +213,20 @@ def run_us_engine(test_mode: bool = False):
     sl = round(trig * 0.9900, 2)
     tp = round(trig * 1.0100, 2)
 
+    tag = "🧪 <b>[US TEST ONLY — DIAGNOSTIC SCAN]</b>" if test_mode else "🎯 <b>[US PAPER SIGNAL]</b>"
+    data_desc = (
+        "Current-day Yahoo Finance 1-minute data; test-mode freshness gate bypassed"
+        if test_mode
+        else "Yahoo Finance 1-minute bars (freshness checked)"
+    )
+    exec_desc = (
+        "Manual diagnostic test run; Step 2 live monitoring loop skipped."
+        if test_mode
+        else "Signal monitoring only; this script sends no broker orders."
+    )
+
     scan_msg = (
-        f"🎯 <b>[US PAPER SIGNAL] US SCAN COMPLETE — {scan_date.isoformat()}</b>\n\n"
+        f"{tag} <b>US SCAN COMPLETE — {scan_date.isoformat()}</b>\n\n"
         f"• <b>#1 Sector:</b> {leader['sec']} ({leader['breadth']:.0f}% Green)\n"
         f"• <b>Primary Candidate:</b> {sym}\n"
         f"• <b>Completed ORH:</b> ${orh:.2f}\n"
@@ -216,8 +234,8 @@ def run_us_engine(test_mode: bool = False):
         f"• <b>1.00% Hard SL:</b> ${sl:.2f}\n"
         f"• <b>+1.00% Take Profit:</b> ${tp:.2f}\n"
         f"• <b>Execution Window:</b> 10:05-11:00 ET (55 Mins)\n"
-        f"• <b>Data:</b> Yahoo Finance 1-minute bars (freshness checked)\n"
-        f"• <b>Execution:</b> Signal monitoring only; this script sends no broker orders."
+        f"• <b>Data:</b> {data_desc}\n"
+        f"• <b>Execution:</b> {exec_desc}"
     )
     send_telegram(scan_msg)
     print(f"\nLocked {sym}: Trigger >= ${trig:.2f}, SL=${sl:.2f}, TP=${tp:.2f}")
