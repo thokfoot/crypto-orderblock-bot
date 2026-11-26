@@ -24,8 +24,10 @@ from zoneinfo import ZoneInfo
 
 try:
     from scripts.market_time_utils import completed_1m_bars, evaluate_stale_recovery, exact_minute_window, is_fresh_1m_data, normalize_1m_frame
+    from scripts.market_data_fallback import fetch_resilient_1m_bars
 except ModuleNotFoundError:
     from market_time_utils import completed_1m_bars, evaluate_stale_recovery, exact_minute_window, is_fresh_1m_data, normalize_1m_frame
+    from market_data_fallback import fetch_resilient_1m_bars
 
 IST_ZONE_NAME = "Asia/Kolkata"
 IST = ZoneInfo(IST_ZONE_NAME)
@@ -91,12 +93,14 @@ def get_ist_now() -> datetime.datetime:
     return datetime.datetime.now(IST)
 
 def fetch_ticker_1m(symbol: str, period: str = "5d") -> Any:
-    import yfinance as yf
-    t = yf.Ticker(symbol)
-    df = t.history(period=period, interval="1m", prepost=False, auto_adjust=False)
-    if df.empty:
+    try:
+        df = fetch_resilient_1m_bars(symbol, exchange="NSE", period=period)
+        if df.empty:
+            return None
+        return normalize_1m_frame(df, IST_ZONE_NAME)
+    except Exception as exc:
+        print(f"[DATA FETCH ERROR] {symbol}: {exc}")
         return None
-    return normalize_1m_frame(df, IST_ZONE_NAME)
 
 def compute_atr_pct(symbol: str, as_of: datetime.date | None = None) -> float | None:
     try:

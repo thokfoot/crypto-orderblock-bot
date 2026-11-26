@@ -24,9 +24,23 @@ import yfinance as yf
 from zoneinfo import ZoneInfo
 
 try:
-    from scripts.market_time_utils import completed_1m_bars, evaluate_stale_recovery, exact_minute_window, is_fresh_1m_data
+    from scripts.market_time_utils import (
+        US_2026_HOLIDAYS,
+        completed_1m_bars,
+        evaluate_stale_recovery,
+        exact_minute_window,
+        is_fresh_1m_data,
+    )
+    from scripts.market_data_fallback import fetch_resilient_1m_bars
 except ModuleNotFoundError:
-    from market_time_utils import completed_1m_bars, evaluate_stale_recovery, exact_minute_window, is_fresh_1m_data
+    from market_time_utils import (
+        US_2026_HOLIDAYS,
+        completed_1m_bars,
+        evaluate_stale_recovery,
+        exact_minute_window,
+        is_fresh_1m_data,
+    )
+    from market_data_fallback import fetch_resilient_1m_bars
 
 # Ensure UTF-8 output
 if sys.platform == "win32":
@@ -75,11 +89,9 @@ def send_telegram(text: str) -> dict[str, Any]:
 
 def fetch_1m_bars(ticker: str) -> pd.DataFrame:
     try:
-        t = yf.Ticker(ticker)
-        df = t.history(period="1d", interval="1m", prepost=False, auto_adjust=False)
+        df = fetch_resilient_1m_bars(ticker, exchange="US", period="1d")
         if df.empty:
             return pd.DataFrame()
-        # Yahoo timestamps are exchange-local; normalize before filtering.
         return completed_1m_bars(df, datetime.datetime.now(ET), ET_ZONE_NAME)
     except Exception as e:
         print(f"Error fetching {ticker}: {e}")
@@ -95,6 +107,17 @@ def run_us_engine(test_mode: bool = False):
     # only the run that lands near 10:05 New York time is allowed to scan.
     if not test_mode:
         now_et = datetime.datetime.now(ET)
+
+        # Check official US holidays (e.g., Thanksgiving)
+        if now_et.date() in US_2026_HOLIDAYS:
+            msg = (
+                f"🛡️ [US ENGINE STAND DOWN] Today ({now_et.date()}) is an official "
+                f"US market holiday (Thanksgiving / Closed). Engine standing down."
+            )
+            print(msg)
+            send_telegram(msg)
+            return
+
         current_time = now_et.time()
         earliest = datetime.time(10, 3)
         latest = datetime.time(10, 15)
