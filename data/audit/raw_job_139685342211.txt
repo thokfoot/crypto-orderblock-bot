@@ -1,0 +1,843 @@
+run-nse-engine	UNKNOWN STEP	﻿2026-11-26T04:06:51.8781931Z Current runner version: '2.338.2'
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8809620Z ##[group]Runner Image Provisioner
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8810630Z Hosted Compute Agent
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8811319Z Version: 20261111.635
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8811980Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8812739Z Build Date: 2026-11-11T01:49:01Z
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8813534Z Worker ID: {5f8496b7-6294-4004-abac-ee571dd8c73a}
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8814249Z Region: westus
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8814847Z Cloud: Azure
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8815394Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8817139Z ##[group]Operating System
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8817863Z Ubuntu
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8818605Z 26.04.1
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8819196Z LTS
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8819802Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8820464Z ##[group]Runner Image
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8821118Z Image: ubuntu-26.04
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8821708Z Version: 20261116.202.1
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8823050Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261116.202/images/ubuntu/Ubuntu2604-Readme.md
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8824719Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261116.202
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8826204Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8827407Z ##[group]GITHUB_TOKEN Permissions
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8829965Z Contents: read
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8830604Z Metadata: read
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8831256Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8833557Z Secret source: Actions
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8834591Z Cache mode: write
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.8835424Z Prepare workflow directory
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.9235088Z Prepare all required actions
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:51.9302440Z Getting action download info
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.2953613Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.3993693Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.5738774Z Complete job name: run-nse-engine
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.6677087Z ##[group]Run actions/checkout@v4
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.6678226Z with:
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.6678754Z   repository: thokfoot/crypto-orderblock-bot
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.6682726Z   token: ***
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.6683184Z   ssh-strict: true
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.6683645Z   ssh-user: git
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.6684109Z   persist-credentials: true
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.6684620Z   clean: true
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.6685086Z   sparse-checkout-cone-mode: true
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.6685637Z   fetch-depth: 1
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.6686087Z   fetch-tags: false
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.6686545Z   show-progress: true
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.6687014Z   lfs: false
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.6687440Z   submodules: false
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.6687901Z   set-safe-directory: true
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.6688555Z   allow-unsafe-pr-checkout: false
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.6689388Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.9909808Z Syncing repository: thokfoot/crypto-orderblock-bot
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.9913445Z ##[group]Getting Git version info
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.9915584Z Working directory is '/home/runner/work/crypto-orderblock-bot/crypto-orderblock-bot'
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.9918829Z [command]/usr/bin/git version
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.9919989Z git version 2.56.1
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.9924109Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.9932817Z Temporarily overriding HOME='/home/runner/work/_temp/7fcb35c7-61ec-4ceb-b305-e515203036c8' before making global git config changes
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.9936144Z Adding repository directory to the temporary git global config as a safe directory
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.9939211Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/crypto-orderblock-bot/crypto-orderblock-bot
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.9993141Z Deleting the contents of '/home/runner/work/crypto-orderblock-bot/crypto-orderblock-bot'
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:52.9999768Z ##[group]Initializing the repository
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0040396Z [command]/usr/bin/git init /home/runner/work/crypto-orderblock-bot/crypto-orderblock-bot
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0154689Z hint: Using 'master' as the name for the initial branch. This default branch name
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0157685Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0159961Z hint: to use in all of your new repositories, which will suppress this warning,
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0161288Z hint: call:
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0161783Z hint:
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0162396Z hint: 	git config --global init.defaultBranch <name>
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0163113Z hint:
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0164207Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0165321Z hint: 'development'. The just-created branch can be renamed via this command:
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0166191Z hint:
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0166658Z hint: 	git branch -m <name>
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0167562Z hint:
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0169093Z hint: Disable this message with "git config set advice.defaultBranchName false"
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0171591Z Initialized empty Git repository in /home/runner/work/crypto-orderblock-bot/crypto-orderblock-bot/.git/
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0186052Z [command]/usr/bin/git remote add origin https://github.com/thokfoot/crypto-orderblock-bot
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0250476Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0252050Z ##[group]Disabling automatic garbage collection
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0256156Z [command]/usr/bin/git config --local gc.auto 0
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0295534Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0296423Z ##[group]Setting up auth
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0305149Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0347009Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0912236Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.0954093Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.1245505Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.1291142Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.1593324Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.1636665Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.1637667Z ##[group]Fetching the repository
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.1649674Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +84746063d468fc7d8dad429b87cd5dc65f6d4f8b:refs/remotes/origin/main
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.5697758Z From https://github.com/thokfoot/crypto-orderblock-bot
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.5700443Z  * [new ref]         84746063d468fc7d8dad429b87cd5dc65f6d4f8b -> origin/main
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.5711749Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.5713519Z ##[group]Determining the checkout info
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.5716784Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.5718713Z [command]/usr/bin/git sparse-checkout disable
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.5775827Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.5809493Z ##[group]Checking out the ref
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.5813478Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.5951037Z Switched to a new branch 'main'
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.5956606Z branch 'main' set up to track 'origin/main'.
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.5965160Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.6014906Z [command]/usr/bin/git log -1 --format=%H
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.6041067Z 84746063d468fc7d8dad429b87cd5dc65f6d4f8b
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.6465355Z ##[group]Run actions/setup-python@v5
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.6466694Z with:
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.6467669Z   python-version: 3.11
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.6468907Z   check-latest: false
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.6479219Z   token: ***
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.6480530Z   update-environment: true
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.6481697Z   allow-prereleases: false
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.6482832Z   freethreaded: false
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.6483863Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.8005780Z ##[group]Installed versions
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.8134362Z (node:2411) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.8139356Z (Use `node --trace-deprecation ...` to show where the warning was created)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.8142567Z Successfully set up CPython (3.11.18)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.8146042Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.8468150Z ##[group]Run python -m pip install --upgrade pip
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.8470792Z ^[[36;1mpython -m pip install --upgrade pip^[[0m
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.8473222Z ^[[36;1mpip install yfinance pandas numpy requests^[[0m
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.8534242Z shell: /usr/bin/bash -e {0}
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.8535393Z env:
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.8536550Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.8538836Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib/pkgconfig
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.8540749Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.8542486Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.8544223Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.8545972Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:53.8547459Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:54.5916409Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages (26.3)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:55.1981790Z Collecting yfinance
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:55.2482307Z   Downloading yfinance-1.8.0-py3-none-any.whl.metadata (6.8 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:55.4019300Z Collecting pandas
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:55.4155436Z   Downloading pandas-3.1.1-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (16 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:55.6293532Z Collecting numpy
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:55.6442886Z   Downloading numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:55.6917194Z Collecting requests
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:55.7045155Z   Downloading requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:55.7283613Z Collecting beautifulsoup4>=4.11.1 (from yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:55.7419952Z   Downloading beautifulsoup4-4.15.0-py3-none-any.whl.metadata (3.8 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:55.8151172Z Collecting curl_cffi>=0.17 (from yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:55.8294063Z   Downloading curl_cffi-0.17.0-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (18 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.0697387Z Collecting lxml>=4.9.0 (from yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.0873113Z   Downloading lxml-6.1.3-cp311-cp311-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl.metadata (3.3 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.1200987Z Collecting peewee>=3.16.2 (from yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.1341577Z   Downloading peewee-4.5.3-py3-none-any.whl.metadata (10 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.1655056Z Collecting platformdirs>=2.0.0 (from yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.1769640Z   Downloading platformdirs-4.14.8-py3-none-any.whl.metadata (5.7 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.3223648Z Collecting protobuf>=3.19.0 (from yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.3350884Z   Downloading protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl.metadata (595 bytes)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.3750284Z Collecting pytz>=2022.5 (from yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.3887061Z   Downloading pytz-2026.6-py2.py3-none-any.whl.metadata (22 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.5421385Z Collecting websockets>=13.0 (from yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.5654545Z   Downloading websockets-17.4-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.3 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.5884105Z Collecting python-dateutil>=2.9.0 (from pandas)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.6014792Z   Downloading python_dateutil-4.0.0-py3-none-any.whl.metadata (7.3 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.7397060Z Collecting charset_normalizer<4,>=2 (from requests)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.7512709Z   Downloading charset_normalizer-3.5.3-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (43 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.7785305Z Collecting idna<4,>=2.5 (from requests)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.7907328Z   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.8192390Z Collecting urllib3<3,>=1.26 (from requests)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.8351560Z   Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.8679920Z Collecting certifi>=2023.5.7 (from requests)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.8820966Z   Downloading certifi-2026.11.20-py3-none-any.whl.metadata (2.5 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.9096739Z Collecting soupsieve>=1.6.1 (from beautifulsoup4>=4.11.1->yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.9204449Z   Downloading soupsieve-4.1.3-py3-none-any.whl.metadata (4.4 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.9444710Z Collecting typing-extensions>=4.0.0 (from beautifulsoup4>=4.11.1->yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:56.9574837Z   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.0643765Z Collecting cffi>=2.1.1 (from curl_cffi>=0.17->yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.0768676Z   Downloading cffi-2.1.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.0983523Z Collecting pycparser (from cffi>=2.1.1->curl_cffi>=0.17->yfinance)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.1101188Z   Downloading pycparser-3.12-py3-none-any.whl.metadata (9.7 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.1346375Z Collecting tzdata (from python-dateutil>=2.9.0->pandas)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.1472260Z   Downloading tzdata-2026.6-py2.py3-none-any.whl.metadata (1.4 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.1664121Z Downloading yfinance-1.8.0-py3-none-any.whl (158 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.1971699Z Downloading pandas-3.1.1-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (12.4 MB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.2941063Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.4/12.4 MB 138.2 MB/s  0:00:00
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.3072221Z Downloading numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.9 MB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.3877155Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.9/16.9 MB 214.3 MB/s  0:00:00
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.3992726Z Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.4255270Z Downloading charset_normalizer-3.5.3-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (263 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.4394313Z Downloading idna-3.20-py3-none-any.whl (69 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.4559371Z Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.4701498Z Downloading beautifulsoup4-4.15.0-py3-none-any.whl (109 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.4837169Z Downloading certifi-2026.11.20-py3-none-any.whl (127 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.4969089Z Downloading curl_cffi-0.17.0-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (14.1 MB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.5495326Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.1/14.1 MB 278.8 MB/s  0:00:00
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.5615970Z Downloading cffi-2.1.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (217 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.6099340Z Downloading lxml-6.1.3-cp311-cp311-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl (5.2 MB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.6275745Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.2/5.2 MB 325.4 MB/s  0:00:00
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.6385544Z Downloading peewee-4.5.3-py3-none-any.whl (194 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.6519693Z Downloading platformdirs-4.14.8-py3-none-any.whl (94 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.6671378Z Downloading protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl (343 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.6819503Z Downloading python_dateutil-4.0.0-py3-none-any.whl (92 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.6951451Z Downloading pytz-2026.6-py2.py3-none-any.whl (506 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.7112391Z Downloading soupsieve-4.1.3-py3-none-any.whl (59 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.7242765Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.7374107Z Downloading websockets-17.4-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (226 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.7545370Z Downloading pycparser-3.12-py3-none-any.whl (62 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.7680030Z Downloading tzdata-2026.6-py2.py3-none-any.whl (348 kB)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:06:57.9639683Z Installing collected packages: pytz, websockets, urllib3, tzdata, typing-extensions, soupsieve, pycparser, protobuf, platformdirs, peewee, numpy, lxml, idna, charset_normalizer, certifi, requests, python-dateutil, cffi, beautifulsoup4, pandas, curl_cffi, yfinance
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.1917465Z 
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.1935098Z Successfully installed beautifulsoup4-4.15.0 certifi-2026.11.20 cffi-2.1.1 charset_normalizer-3.5.3 curl_cffi-0.17.0 idna-3.20 lxml-6.1.3 numpy-2.4.6 pandas-3.1.1 peewee-4.5.3 platformdirs-4.14.8 protobuf-7.36.2 pycparser-3.12 python-dateutil-4.0.0 pytz-2026.6 requests-2.34.2 soupsieve-4.1.3 typing-extensions-4.16.0 tzdata-2026.6 urllib3-2.8.0 websockets-17.4 yfinance-1.8.0
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.3278819Z ##[group]Run python -m unittest discover -s tests -v
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.3279310Z ^[[36;1mpython -m unittest discover -s tests -v^[[0m
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.3313921Z shell: /usr/bin/bash -e {0}
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.3314183Z env:
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.3314471Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.3314943Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib/pkgconfig
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.3315404Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.3315815Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.3316232Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.3316642Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.3316990Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8468964Z test_simulation_in_trade_missing_candle_triggers_recovery_incomplete_and_pauses (test_controlled_recovery_simulation.ControlledRecoverySimulationTests.test_simulation_in_trade_missing_candle_triggers_recovery_incomplete_and_pauses)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8499438Z Scenario: Trade is active (entered at 100.0, SL=99.0, TP=102.0). ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8501114Z test_simulation_in_trade_multi_bar_outage_catches_sl_even_if_later_candle_rebounds (test_controlled_recovery_simulation.ControlledRecoverySimulationTests.test_simulation_in_trade_multi_bar_outage_catches_sl_even_if_later_candle_rebounds)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8517786Z Scenario: Position is active (entered at 100.0, SL=99.0, TP=102.0). ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8519675Z test_simulation_in_trade_multi_bar_outage_catches_tp_even_if_later_candle_pulls_back (test_controlled_recovery_simulation.ControlledRecoverySimulationTests.test_simulation_in_trade_multi_bar_outage_catches_tp_even_if_later_candle_pulls_back)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8534363Z Scenario: Trade is active (entered at 100.0, SL=99.0, TP=102.0). ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8536259Z test_simulation_in_trade_outage_ambiguous_bar_sl_and_tp_both_touched_assumes_sl (test_controlled_recovery_simulation.ControlledRecoverySimulationTests.test_simulation_in_trade_outage_ambiguous_bar_sl_and_tp_both_touched_assumes_sl)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8549853Z Scenario: Trade is active (entered at 100.0, SL=99.0, TP=102.0). ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8551553Z test_simulation_in_trade_outage_channel_continuation (test_controlled_recovery_simulation.ControlledRecoverySimulationTests.test_simulation_in_trade_outage_channel_continuation)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8562710Z Scenario: Trade is active. Feed goes stale. Upon reconnection, price is within channel ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8564518Z test_simulation_in_trade_outage_stop_loss_with_gap (test_controlled_recovery_simulation.ControlledRecoverySimulationTests.test_simulation_in_trade_outage_stop_loss_with_gap)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8575137Z Scenario: Trade is active (entered at 100.0, SL=99.0, TP=102.0). ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8576712Z test_simulation_in_trade_outage_target_hit (test_controlled_recovery_simulation.ControlledRecoverySimulationTests.test_simulation_in_trade_outage_target_hit)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8587320Z Scenario: Trade is active. Feed goes stale. During blackout, price rallies past TP (102.0) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8590012Z test_simulation_pre_entry_outage_discards_blackout_breakout (test_controlled_recovery_simulation.ControlledRecoverySimulationTests.test_simulation_pre_entry_outage_discards_blackout_breakout)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8607351Z Scenario: Before entry, market data goes stale for 10 minutes. ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8608846Z test_bad_credentials_do_not_get_skipped (test_dry_run_policy.FyersPolicyTests.test_bad_credentials_do_not_get_skipped) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8610568Z test_missing_credentials_are_skipped_when_optional (test_dry_run_policy.FyersPolicyTests.test_missing_credentials_are_skipped_when_optional) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8611776Z test_missing_credentials_fail_when_required (test_dry_run_policy.FyersPolicyTests.test_missing_credentials_fail_when_required) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8612953Z test_valid_fyers_connection_passes (test_dry_run_policy.FyersPolicyTests.test_valid_fyers_connection_passes) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8634580Z test_current_forming_minute_is_excluded (test_market_time_utils.MarketTimeUtilsTests.test_current_forming_minute_is_excluded) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8643329Z test_exact_twenty_minute_window_is_accepted (test_market_time_utils.MarketTimeUtilsTests.test_exact_twenty_minute_window_is_accepted) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8651295Z test_incomplete_or_window_is_rejected (test_market_time_utils.MarketTimeUtilsTests.test_incomplete_or_window_is_rejected) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8658665Z test_stale_data_is_rejected (test_market_time_utils.MarketTimeUtilsTests.test_stale_data_is_rejected) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8660153Z test_us_timezone_observes_dst (test_market_time_utils.MarketTimeUtilsTests.test_us_timezone_observes_dst) ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8662040Z test_continuity_explicit_expected_range_used_directly (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_continuity_explicit_expected_range_used_directly)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8671221Z Auditor Requirement #4: Explicitly supplied expected_range is used directly. ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8673084Z test_continuity_genuine_missing_candle_during_session_detected (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_continuity_genuine_missing_candle_during_session_detected)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8692752Z Exchange Calendar: Genuine missing candle within regular trading session is strictly flagged. ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8694611Z test_continuity_market_holiday_does_not_trigger_data_gap (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_continuity_market_holiday_does_not_trigger_data_gap)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8707025Z Exchange Calendar: NSE official holiday (Republic Day Jan 26) generates zero expected bars. ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8709244Z test_continuity_nse_session_boundary_overnight_weekend_no_false_gap (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_continuity_nse_session_boundary_overnight_weekend_no_false_gap)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8733048Z Exchange Calendar: Outage spanning Friday close to Monday open does NOT trigger false data gap. ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8734958Z test_continuity_us_session_boundary_overnight_no_false_gap (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_continuity_us_session_boundary_overnight_no_false_gap)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8759959Z Exchange Calendar: US outage spanning Mon close to Tue open does NOT trigger false data gap. ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8761715Z test_in_trade_multi_bar_dataframe_channel_survival (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_in_trade_multi_bar_dataframe_channel_survival)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8770967Z Multi-bar outage window: all bars stay within channel. ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8772649Z test_in_trade_multi_bar_dataframe_detects_intermediate_stop_loss (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_in_trade_multi_bar_dataframe_detects_intermediate_stop_loss)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8782167Z Multi-bar outage window: detects SL breach in candle 1 even if candle 2 rebounded. ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8784127Z test_in_trade_outage_stop_uses_observable_market_price_and_flags_uncertainty (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_in_trade_outage_stop_uses_observable_market_price_and_flags_uncertainty)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8794081Z In-trade outage: stop loss breach records observable market price and flags uncertainty. ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8795766Z test_in_trade_outage_target_flags_uncertainty (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_in_trade_outage_target_flags_uncertainty)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8804137Z In-trade outage: target hit records target with uncertainty flag. ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8805809Z test_in_trade_outage_within_channel_continues_without_exit (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_in_trade_outage_within_channel_continues_without_exit)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8814702Z In-trade outage: price remained within SL/TP channel; trade continues. ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8816596Z test_missing_first_blackout_candle_returns_recovery_data_incomplete (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_missing_first_blackout_candle_returns_recovery_data_incomplete)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8827054Z Data continuity: missing first blackout candle (09:51) triggers RECOVERY_DATA_INCOMPLETE. ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8829237Z test_missing_last_blackout_candle_returns_recovery_data_incomplete (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_missing_last_blackout_candle_returns_recovery_data_incomplete)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8838979Z Data continuity: missing last blackout candle (09:54) triggers RECOVERY_DATA_INCOMPLETE. ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8840961Z test_missing_middle_blackout_candle_returns_recovery_data_incomplete (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_missing_middle_blackout_candle_returns_recovery_data_incomplete)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8851606Z Data continuity: missing middle blackout candle (09:52) triggers RECOVERY_DATA_INCOMPLETE. ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8853405Z test_pre_entry_outage_discards_and_never_triggers_entry (test_stale_feed_recovery.StaleFeedRecoveryRegressionTests.test_pre_entry_outage_discards_and_never_triggers_entry)
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8860906Z Pre-entry outage: breakout candles formed in the dark are discarded. ... ok
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8861452Z 
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8861713Z ----------------------------------------------------------------------
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8862337Z Ran 31 tests in 0.040s
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8862562Z 
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.8862685Z OK
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.9444387Z ##[group]Run if [ "false" = "true" ]; then
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.9444765Z ^[[36;1mif [ "false" = "true" ]; then^[[0m
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.9445148Z ^[[36;1m  python scripts/v325_nse_cloud_runner.py --test^[[0m
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.9445488Z ^[[36;1melse^[[0m
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.9445753Z ^[[36;1m  python scripts/v325_nse_cloud_runner.py^[[0m
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.9446059Z ^[[36;1mfi^[[0m
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.9478898Z shell: /usr/bin/bash -e {0}
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.9479160Z env:
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.9479448Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.9479956Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib/pkgconfig
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.9480472Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.9480876Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.9481291Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.9481767Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.9482385Z   AUTOMATION_TELEGRAM_BOT_TOKEN: ***
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.9482699Z   AUTOMATION_TELEGRAM_CHAT_ID: ***
+run-nse-engine	UNKNOWN STEP	2026-11-26T04:07:06.9482962Z ##[endgroup]
+run-nse-engine	UNKNOWN STEP	2026-11-26T05:22:13.8436853Z $TCS.NS: possibly delisted; no price data found  (period=1d)
+run-nse-engine	UNKNOWN STEP	2026-11-26T06:37:51.9482062Z $TCS.NS: possibly delisted; no price data found  (period=1d)
+run-nse-engine	UNKNOWN STEP	2026-11-26T07:53:29.5851201Z $TCS.NS: possibly delisted; no price data found  (period=1d)
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:09:07.9120093Z $TCS.NS: possibly delisted; no price data found  (period=1d)
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2944276Z ================================================================================
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2945440Z   STRATEGY v3.2.5 NSE 10-SECTOR SCANNER (Target Date: 2026-11-26)
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2946326Z   Timestamp: 2026-11-26 09:37:07 IST
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2947108Z ================================================================================
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2948213Z Fetching Nifty 50 benchmark (^NSEI)...
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2949108Z Nifty 50 Move: -0.28% (Open: 25876.00 -> Close: 25803.15)
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2949837Z 
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2950374Z ================================================================================
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2951225Z RANK  SECTOR               BREADTH         AVG MOVE     ALPHA vs NIFTY
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2952144Z ================================================================================
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2953021Z #1    IT_Tech              4/5 ( 80.0%)   coverage= 100%    +0.76%      +1.04pp
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2954060Z #2    Automobile           3/5 ( 60.0%)   coverage= 100%    -0.19%      +0.09pp
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2955139Z #3    Energy_Utilities     3/6 ( 50.0%)   coverage= 100%    +0.06%      +0.34pp
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2956084Z #4    Pharma_Health        2/5 ( 40.0%)   coverage= 100%    -0.10%      +0.18pp
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2956943Z #5    FinServices          2/5 ( 40.0%)   coverage= 100%    -0.53%      -0.24pp
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2957851Z #6    Metals_Materials     1/5 ( 20.0%)   coverage= 100%    -0.30%      -0.02pp
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2959059Z #7    Banking              1/6 ( 16.7%)   coverage= 100%    -0.22%      +0.06pp
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2959715Z #8    Consumer_Retail      0/4 (  0.0%)   coverage= 100%    -0.48%      -0.20pp
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2960252Z #9    Infra_CapGoods       0/3 (  0.0%)   coverage= 100%    -0.75%      -0.47pp
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2960684Z #10   FMCG                 0/5 (  0.0%)   coverage= 100%    -0.84%      -0.56pp
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2960925Z 
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2961295Z 🏆 #1 LEADER SECTOR: IT_Tech
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2962614Z 
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2962753Z ################################################################################
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2963178Z 🎯 PRIMARY CANDIDATE LOCKED: TCS (IT_Tech)
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2963566Z    • 20-min Completed ORH (09:15-09:34): ₹2589.50
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2963967Z    • Pre-Declared Trigger (>= ORH x 1.0003): >= ₹2590.28
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2964331Z    • 1.00% Hard Stop Loss: ₹2564.38
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2965098Z    • +2.00% Take Profit Target: ₹2642.09
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2965441Z    • 14d ATR: 2.74% (Threshold: >= 2.50%)
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2965789Z    • Execution Gate: STRICTLY >= 09:45:00 IST (Law 2)
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2966126Z ################################################################################
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2966627Z [Telegram Sent - msg_id 1015] 🎯 *[NSE PAPER SIGNAL] SCAN COMPLETE — 2026-11-26*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2966937Z 
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2967064Z ================================================================================
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2967778Z   LAUNCHING INTRADAY MONITORING LOOP: TCS
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2968605Z   Gate: >= 09:45:00 IST | Trigger: >= ₹2590.28 | SL: ₹2564.38 | TP: ₹2642.09
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2969010Z ================================================================================
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2969649Z ⚠️ [NSE STALE DATA] TCS: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2970554Z [Telegram Sent - msg_id 1016] ⚠️ [NSE STALE DATA] TCS: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2971616Z ℹ️ [NSE DATA RESTORED] TCS: feed reconnected at 10:51:00 IST. Blackout candles discarded to prevent retrospective backfilling. Resuming live forward monitoring.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2972871Z [Telegram Sent - msg_id 1017] ℹ️ [NSE DATA RESTORED] TCS: feed reconnected at 10:51:00 IST. Blackout candles discarded to prevent retrospective backfilling. Resuming live forward monitoring.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2974124Z ⚠️ [NSE STALE DATA] TCS: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2974989Z [Telegram Sent - msg_id 1018] ⚠️ [NSE STALE DATA] TCS: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2976052Z ℹ️ [NSE DATA RESTORED] TCS: feed reconnected at 12:07:00 IST. Blackout candles discarded to prevent retrospective backfilling. Resuming live forward monitoring.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2977269Z [Telegram Sent - msg_id 1019] ℹ️ [NSE DATA RESTORED] TCS: feed reconnected at 12:07:00 IST. Blackout candles discarded to prevent retrospective backfilling. Resuming live forward monitoring.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2978552Z ⚠️ [NSE STALE DATA] TCS: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2979441Z [Telegram Sent - msg_id 1020] ⚠️ [NSE STALE DATA] TCS: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2980500Z ℹ️ [NSE DATA RESTORED] TCS: feed reconnected at 13:22:00 IST. Blackout candles discarded to prevent retrospective backfilling. Resuming live forward monitoring.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2981719Z [Telegram Sent - msg_id 1021] ℹ️ [NSE DATA RESTORED] TCS: feed reconnected at 13:22:00 IST. Blackout candles discarded to prevent retrospective backfilling. Resuming live forward monitoring.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2982586Z 🚨 *[NSE PAPER SIGNAL] BREAKOUT LEVEL REACHED*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2982894Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2983134Z • Reference Fill: `₹2590.28`
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2983399Z • Time: `14:06:00 IST`
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2983670Z • 1.00% Hard SL: `₹2564.38`
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2983942Z • +2.00% TP Target: `₹2642.09`
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2984267Z • Note: *Signal only; no broker order was placed.*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2984736Z [Telegram Sent - msg_id 1022] 🚨 *[NSE PAPER SIGNAL] BREAKOUT LEVEL REACHED*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2985407Z ⚠️ [NSE STALE DATA] TCS: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2986307Z [Telegram Sent - msg_id 1023] ⚠️ [NSE STALE DATA] TCS: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2987185Z ℹ️ [NSE DATA RESTORED] TCS: feed resumed at 14:38:00 IST. Trade active (Current: ₹2590.30, SL: ₹2564.38, TP: ₹2642.09).
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2988486Z [Telegram Sent - msg_id 1024] ℹ️ [NSE DATA RESTORED] TCS: feed resumed at 14:38:00 IST. Trade active (Current: ₹2590.30, SL: ₹2564.38, TP: ₹2642.09).
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2989404Z ⚠️ [NSE STALE DATA] TCS: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2990273Z [Telegram Sent - msg_id 1025] ⚠️ [NSE STALE DATA] TCS: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2990898Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2991195Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2991672Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2992375Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2992970Z [Telegram Sent - msg_id 1026] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2993394Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2993676Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2994137Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2994811Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2995404Z [Telegram Sent - msg_id 1027] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2995803Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2996085Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2996530Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2997570Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2998852Z [Telegram Sent - msg_id 1028] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2999301Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.2999587Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3000170Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3001010Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3001742Z [Telegram Sent - msg_id 1029] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3002484Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3002812Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3003270Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3003939Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3004544Z [Telegram Sent - msg_id 1030] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3004949Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3005236Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3005692Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3006384Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3006976Z [Telegram Sent - msg_id 1031] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3007383Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3007670Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3008555Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3009278Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3009886Z [Telegram Sent - msg_id 1032] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3010325Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3010621Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3011075Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3011921Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3012522Z [Telegram Sent - msg_id 1033] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3012934Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3013215Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:06.3013661Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9622815Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9624023Z [Telegram Sent - msg_id 1034] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9624803Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9625349Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9626222Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9627396Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9628888Z [Telegram Sent - msg_id 1035] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9629652Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9630178Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9631021Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9632285Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9633402Z [Telegram Sent - msg_id 1036] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9634723Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9635259Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9636102Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9637373Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9638731Z [Telegram Sent - msg_id 1037] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9639504Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9640032Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9640868Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9642127Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9643240Z [Telegram Sent - msg_id 1038] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9644003Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9644556Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9645388Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9646645Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9647746Z [Telegram Sent - msg_id 1039] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9648774Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9649307Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9650138Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9651400Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9652492Z [Telegram Sent - msg_id 1040] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9653239Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9653761Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9654623Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9655871Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9656965Z [Telegram Sent - msg_id 1041] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9657728Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9658764Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9659662Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9660943Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9662063Z [Telegram Sent - msg_id 1042] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9662836Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9663359Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9664237Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9665515Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9666623Z [Telegram Sent - msg_id 1043] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9667372Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9667890Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9668974Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9670260Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9671354Z [Telegram Sent - msg_id 1044] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9672120Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9672657Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9673491Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9675019Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9676137Z [Telegram Sent - msg_id 1045] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9676909Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9677433Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9678531Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9679842Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9680961Z [Telegram Sent - msg_id 1046] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9681730Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9682258Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9683110Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9684459Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9685593Z [Telegram Sent - msg_id 1047] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9686362Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9686895Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9687731Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9689196Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9690286Z [Telegram Sent - msg_id 1048] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9691060Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9691586Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9692417Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9693691Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9694828Z [Telegram Sent - msg_id 1049] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9695591Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9696116Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9696956Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9698631Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9699791Z [Telegram Sent - msg_id 1050] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9700557Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9701090Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9701929Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9703241Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9704343Z [Telegram Sent - msg_id 1051] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9705138Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9705662Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9706512Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9707789Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9709156Z [Telegram Sent - msg_id 1052] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9709880Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9710379Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9711153Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9712319Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9713398Z [Telegram Sent - msg_id 1053] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9714411Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9714921Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9715757Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9717122Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9718387Z [Telegram Sent - msg_id 1054] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9718846Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9729245Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9729954Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9730690Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9731329Z [Telegram Sent - msg_id 1055] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9731761Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9732083Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9732562Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9733260Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9733895Z [Telegram Sent - msg_id 1056] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9734323Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9734619Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9735097Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9735783Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9736375Z [Telegram Sent - msg_id 1057] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9736795Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9737081Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:22.9737554Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6015620Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6017556Z [Telegram Sent - msg_id 1058] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6019134Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6020494Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6021403Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6022690Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6023800Z [Telegram Sent - msg_id 1059] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6024555Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6025070Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6025764Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6026781Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6027637Z [Telegram Sent - msg_id 1060] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6028509Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6028927Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6029610Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6030605Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6031464Z [Telegram Sent - msg_id 1061] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6032055Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6032470Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6033111Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6034265Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6035112Z [Telegram Sent - msg_id 1062] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6035680Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6035988Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6036469Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6037184Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6037806Z [Telegram Sent - msg_id 1063] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6038552Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6038856Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6039339Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6040053Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6043090Z [Telegram Sent - msg_id 1064] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6043764Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6044238Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6044996Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6045789Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6046436Z [Telegram Sent - msg_id 1065] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6046859Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6047145Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6047611Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6048709Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6049338Z [Telegram Sent - msg_id 1066] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6049747Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6050027Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6050483Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6051353Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6051949Z [Telegram Sent - msg_id 1067] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6052350Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6052637Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6053081Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6053740Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6054312Z [Telegram Sent - msg_id 1068] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6054879Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6055182Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6055648Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6056329Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6056938Z [Telegram Sent - msg_id 1069] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6057349Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6057633Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6058367Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6059061Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6059649Z [Telegram Sent - msg_id 1070] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6060066Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6060353Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6060796Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6061485Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6062082Z [Telegram Sent - msg_id 1071] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6062502Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6062787Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6063247Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6063919Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6064507Z [Telegram Sent - msg_id 1072] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6064906Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6065197Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6065646Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6066316Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6067043Z [Telegram Sent - msg_id 1073] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6067801Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6068582Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6069156Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6069946Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6070762Z [Telegram Sent - msg_id 1074] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6071193Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6071712Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6072462Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6073184Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6073792Z [Telegram Sent - msg_id 1075] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6074201Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6074484Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6075131Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6075827Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6076412Z [Telegram Sent - msg_id 1076] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6076814Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6077090Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6077544Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6078823Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6079429Z [Telegram Sent - msg_id 1077] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6079839Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6080122Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6080583Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6081252Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6081838Z [Telegram Sent - msg_id 1078] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6082239Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6082522Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6082969Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6083652Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6084227Z [Telegram Sent - msg_id 1079] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6084624Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6084901Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6085357Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6086039Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6086619Z [Telegram Sent - msg_id 1080] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6087019Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6087313Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6087760Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6088742Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6089346Z [Telegram Sent - msg_id 1081] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6089764Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6090053Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:39.6090513Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2917051Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2918872Z [Telegram Sent - msg_id 1082] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2919796Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2920434Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2921308Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2922299Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2923181Z [Telegram Sent - msg_id 1083] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2923767Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2924165Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2924798Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2926078Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2926788Z [Telegram Sent - msg_id 1084] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2927255Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2927575Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2928393Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2929209Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2929885Z [Telegram Sent - msg_id 1085] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2930528Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2930854Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2931365Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2932136Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2932817Z [Telegram Sent - msg_id 1086] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2933289Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2933611Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2934119Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2934888Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2935559Z [Telegram Sent - msg_id 1087] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2936023Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2936337Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2936784Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2937468Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2938298Z [Telegram Sent - msg_id 1088] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2938726Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2939015Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2939460Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2940123Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2940699Z [Telegram Sent - msg_id 1089] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2941105Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2941391Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2941840Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2942510Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2943099Z [Telegram Sent - msg_id 1090] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2943498Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2943918Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2944376Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2945042Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2945618Z [Telegram Sent - msg_id 1091] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2946016Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2946293Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2946738Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2947411Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2948098Z [Telegram Sent - msg_id 1092] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2948508Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2948785Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2949232Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2949901Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2950475Z [Telegram Sent - msg_id 1093] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2950868Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2951140Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2951582Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2952382Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2952952Z [Telegram Sent - msg_id 1094] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2953353Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2953634Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2954079Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2954740Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2955314Z [Telegram Sent - msg_id 1095] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2955719Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2955996Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2956437Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2957139Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2960261Z [Telegram Sent - msg_id 1096] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2960927Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2961385Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2962053Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2962764Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2963359Z [Telegram Sent - msg_id 1097] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2963771Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2964074Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2964531Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2965207Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2965820Z [Telegram Sent - msg_id 1098] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2966246Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2966540Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2967008Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2968593Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2969296Z [Telegram Sent - msg_id 1099] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2969714Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2970158Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2970772Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2971603Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2972447Z [Telegram Sent - msg_id 1100] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2972868Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2973148Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2973608Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2974275Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2974866Z [Telegram Sent - msg_id 1101] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2975273Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2975550Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2975994Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2976657Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2977238Z [Telegram Sent - msg_id 1102] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2977801Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2978339Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2978810Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2979489Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2980089Z [Telegram Sent - msg_id 1103] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2980498Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2980779Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2981234Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2981891Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2982464Z [Telegram Sent - msg_id 1104] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2982867Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2983163Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2983607Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2984263Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2984835Z [Telegram Sent - msg_id 1105] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2985235Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2985510Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T09:59:56.2985951Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2216767Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2217862Z [Telegram Sent - msg_id 1106] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2218784Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2219106Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2219936Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2220704Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2221375Z [Telegram Sent - msg_id 1107] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2221824Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2222380Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2222896Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2223637Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2224331Z [Telegram Sent - msg_id 1108] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2224997Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2225350Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2225839Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2226697Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2227417Z [Telegram Sent - msg_id 1109] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2228129Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2228471Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2228952Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2229641Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2230238Z [Telegram Sent - msg_id 1110] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2230650Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2230933Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2231512Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2232414Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2232996Z [Telegram Sent - msg_id 1111] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2233553Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2233844Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2234487Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2235184Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2235778Z [Telegram Sent - msg_id 1112] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2236186Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2236467Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2236914Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2237833Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2238719Z [Telegram Sent - msg_id 1113] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2239250Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2239529Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2240034Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2240917Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2241765Z [Telegram Sent - msg_id 1114] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2242301Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2242711Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2243169Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2243839Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2244437Z [Telegram Sent - msg_id 1115] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2244840Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2245122Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2245569Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2246516Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2247115Z [Telegram Sent - msg_id 1116] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2247516Z ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2247795Z • Stock: *TCS*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2248573Z • Missing Candles: `12` (2026-11-26 15:16:00+0530, 2026-11-26 15:17:00+0530, 2026-11-26 15:18:00+0530 (+9 more))
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2249255Z • Action: Signal monitoring paused; cannot safely determine trade state from incomplete data.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2249859Z [Telegram Sent - msg_id 1117] ⚠️ *[NSE DATA GAP / RECOVERY INCOMPLETE]*
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2250520Z ⚠️ [NSE STALE DATA] TCS: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2251396Z [Telegram Sent - msg_id 1118] ⚠️ [NSE STALE DATA] TCS: latest completed 1-minute bar is older than 180 seconds. Signal monitoring is paused.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2252236Z ⚠️ [NSE MONITOR ENDED] TCS: final fresh bar unavailable; exit price unverified. Manual review required.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.2253073Z [Telegram Sent - msg_id 1119] ⚠️ [NSE MONITOR ENDED] TCS: final fresh bar unavailable; exit price unverified. Manual review required.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.3189445Z Post job cleanup.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.4473047Z (node:5728) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.4473959Z (Use `node --trace-deprecation ...` to show where the warning was created)
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.4724015Z Post job cleanup.
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.5659080Z [command]/usr/bin/git version
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.5692671Z git version 2.56.1
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.5739189Z Temporarily overriding HOME='/home/runner/work/_temp/e392ade6-bd0d-466a-a359-bfaf1e8f9472' before making global git config changes
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.5740312Z Adding repository directory to the temporary git global config as a safe directory
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.5746497Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/crypto-orderblock-bot/crypto-orderblock-bot
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.5796923Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.5838695Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.6173376Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.6203165Z http.https://github.com/.extraheader
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.6216271Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.6317907Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.6644665Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.6683911Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.7162003Z Cleaning up orphan processes
+run-nse-engine	UNKNOWN STEP	2026-11-26T10:00:06.7498238Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
