@@ -16,6 +16,7 @@ import json
 import os
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from typing import Any
@@ -85,6 +86,21 @@ def send_telegram(text: str) -> dict[str, Any]:
         if result.get("ok") is not True:
             raise RuntimeError(result.get("description", "Telegram API rejected the message"))
         return result
+    except urllib.error.HTTPError as http_err:
+        if http_err.code == 400:
+            print(f"[Telegram Formatting Warning: HTTP 400] HTML parse failed; retrying as plain text...")
+            try:
+                plain_payload = json.dumps({"chat_id": chat_id, "text": text}).encode("utf-8")
+                plain_req = urllib.request.Request(url, data=plain_payload, headers={"Content-Type": "application/json"})
+                with urllib.request.urlopen(plain_req, timeout=10) as resp:
+                    result = json.loads(resp.read().decode())
+                if result.get("ok") is True:
+                    return result
+            except Exception as fallback_err:
+                print(f"[Telegram Plain Text Fallback Error: {fallback_err}]")
+                raise RuntimeError("Telegram alert delivery failed; stopping the signal engine.") from fallback_err
+        print(f"[TELEGRAM ERROR] {http_err}")
+        raise RuntimeError("Telegram alert delivery failed; stopping the signal engine.") from http_err
     except Exception as e:
         print(f"[TELEGRAM ERROR] {e}")
         raise RuntimeError("Telegram alert delivery failed; stopping the signal engine.") from e

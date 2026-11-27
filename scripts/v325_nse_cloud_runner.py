@@ -17,6 +17,7 @@ import os
 import sys
 import pandas as pd
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from typing import Any
@@ -96,6 +97,27 @@ def send_telegram(text: str) -> dict[str, Any]:
         msg_id = data.get("result", {}).get("message_id")
         print(f"[Telegram Sent - msg_id {msg_id}] {text.splitlines()[0]}")
         return {"ok": True, "message_id": msg_id}
+    except urllib.error.HTTPError as http_err:
+        if http_err.code == 400:
+            print(f"[Telegram Formatting Warning: HTTP 400] Markdown parse failed; retrying as plain text...")
+            try:
+                plain_payload = json.dumps({
+                    "chat_id": chat_id,
+                    "text": text,
+                    "disable_web_page_preview": True,
+                }).encode("utf-8")
+                plain_req = urllib.request.Request(url, data=plain_payload, headers={"Content-Type": "application/json", "User-Agent": USER_AGENT})
+                with urllib.request.urlopen(plain_req, timeout=15) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                if data.get("ok") is True:
+                    msg_id = data.get("result", {}).get("message_id")
+                    print(f"[Telegram Sent (Plain Text Fallback) - msg_id {msg_id}] {text.splitlines()[0]}")
+                    return {"ok": True, "message_id": msg_id}
+            except Exception as fallback_err:
+                print(f"[Telegram Plain Text Fallback Error: {fallback_err}] {text.splitlines()[0]}")
+                raise RuntimeError("Telegram alert delivery failed; stopping the signal engine.") from fallback_err
+        print(f"[Telegram Error: {http_err}] {text.splitlines()[0]}")
+        raise RuntimeError("Telegram alert delivery failed; stopping the signal engine.") from http_err
     except Exception as ex:
         print(f"[Telegram Error: {ex}] {text.splitlines()[0]}")
         raise RuntimeError("Telegram alert delivery failed; stopping the signal engine.") from ex
